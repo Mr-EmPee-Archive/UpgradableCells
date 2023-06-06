@@ -19,6 +19,8 @@ public final class UpgradableCells extends JavaPlugin {
    */
   public void onEnable() {
     Translator.init(this);
+
+    Logger.setDebugEnabled(true);
     Logger.setPrefix(Translator.translate("prefix"));
 
     iocContainer.initialize("relocations");
