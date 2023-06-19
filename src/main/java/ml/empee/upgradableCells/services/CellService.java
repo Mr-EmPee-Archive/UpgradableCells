@@ -1,16 +1,22 @@
 package ml.empee.upgradableCells.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
-import ml.empee.upgradableCells.model.entities.CellLevel;
+import ml.empee.upgradableCells.model.entities.CellProject;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.repositories.CellRepository;
 import ml.empee.upgradableCells.utils.Logger;
-import ml.empee.upgradableCells.utils.helpers.Schematic;
+import ml.empee.upgradableCells.model.content.Schematic;
+import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Handle cell upgrades
@@ -19,8 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CellService implements Bean {
 
-  private final List<CellLevel> cellUpgrades = new ArrayList<>();
+  private final List<CellProject> cellUpgrades = new ArrayList<>();
   private final JavaPlugin plugin;
+  private final CellRepository cellRepository;
 
   private File schematicFolder;
 
@@ -40,8 +47,8 @@ public class CellService implements Bean {
     Logger.info("Loading cell upgrades...");
 
     int level = 0;
-    for (File cellFile : getCellUpgradeSchematics()) {
-      var cellLevel = new CellLevel(cellFile.hashCode(), level, new Schematic(cellFile));
+    for (File cellFile : findCellUpgradeSchematics()) {
+      var cellLevel = new CellProject(level, new Schematic(cellFile));
       cellUpgrades.add(cellLevel);
       level += 1;
     }
@@ -49,7 +56,7 @@ public class CellService implements Bean {
     Logger.info("Loaded %s cells", cellUpgrades.size());
   }
 
-  private List<File> getCellUpgradeSchematics() {
+  private List<File> findCellUpgradeSchematics() {
     return Arrays.stream(schematicFolder.listFiles())
         .filter(File::isFile)
         .toList();
@@ -59,8 +66,24 @@ public class CellService implements Bean {
     return cellUpgrades.size();
   }
 
-  public CellLevel getCellLevel(int level) {
+  public CellProject getCellProject(int level) {
     return cellUpgrades.get(level);
+  }
+
+  @SneakyThrows
+  public Optional<OwnedCell> findCellByOwner(UUID owner) {
+    return cellRepository.findByOwner(owner).get().stream().findAny();
+  }
+
+  public Location getSpawnpoint(OwnedCell cell) {
+    return cell.getOrigin().add(getCellProject(cell.getLevel()).getSpawnpoint());
+  }
+
+  public void updateCellLevel(OwnedCell cell, int level) {
+    CellProject cellProject = cellUpgrades.get(level);
+    cell.setLevel(level);
+    cellProject.paste(cell);
+    cellRepository.save(cell);
   }
 
 }

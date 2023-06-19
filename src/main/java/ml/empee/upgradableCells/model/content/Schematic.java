@@ -1,4 +1,4 @@
-package ml.empee.upgradableCells.utils.helpers;
+package ml.empee.upgradableCells.model.content;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -9,6 +9,8 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.events.CellLevelUpEvent;
 import ml.empee.upgradableCells.utils.Logger;
 import ml.empee.upgradableCells.utils.NmsUtils;
 import org.bukkit.Bukkit;
@@ -31,7 +33,7 @@ import java.util.Map;
 
 public class Schematic {
 
-  private static final int DELAY_BETWEEN_SECTION_PASTING = 2; //ticks
+  private static final int DELAY_BETWEEN_PASTING = 20; //ticks
   private final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(Schematic.class);
   private final File file;
   private final Vector origin;
@@ -100,26 +102,28 @@ public class Schematic {
   /**
    * Paste the level
    */
-  public void paste(Location location) {
+  public void paste(OwnedCell cell) {
     Logger.debug("Starting pasting of schematic " + file.getName());
-    pasteRecursively(location, 0);
+    pasteRecursively(cell, 0, 5);
   }
 
-  private void pasteRecursively(Location location, int sectionIndex) {
-    //TODO: Handle for incomplete paste caused by a server stop
+  private void pasteRecursively(OwnedCell cell, int sectionIndex, int chunkSize) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      if (sectionIndex == sections.size()) {
-        Logger.debug("Finished pasting schematic " + file.getName());
-        return;
+      for (int i = sectionIndex; i < sectionIndex + chunkSize; i++) {
+        if (i >= sections.size()) {
+          Logger.debug("Finished pasting schematic " + file.getName());
+          Bukkit.getPluginManager().callEvent(new CellLevelUpEvent(cell));
+          return;
+        }
+
+        var section = sections.get(i);
+        section.forEach((position, block) -> {
+          NmsUtils.setBlockFast(cell.getOrigin().add(position), block);
+        });
       }
 
-      var section = sections.get(sectionIndex);
-      section.forEach((position, block) -> {
-        NmsUtils.setBlockFast(location.clone().add(position), block);
-      });
-
-      pasteRecursively(location, sectionIndex + 1);
-    }, DELAY_BETWEEN_SECTION_PASTING);
+      pasteRecursively(cell, sectionIndex + chunkSize, chunkSize);
+    }, DELAY_BETWEEN_PASTING);
   }
 
 }

@@ -2,7 +2,7 @@ package ml.empee.upgradableCells.model.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import ml.empee.upgradableCells.utils.helpers.Schematic;
+import ml.empee.upgradableCells.model.content.Schematic;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -11,10 +11,7 @@ import org.bukkit.util.Vector;
  */
 
 @AllArgsConstructor
-public class CellLevel {
-
-  @Getter
-  private final int id;
+public class CellProject {
 
   @Getter
   private final Integer level;
@@ -24,8 +21,8 @@ public class CellLevel {
     return schematic.getOrigin();
   }
 
-  public void paste(Location location) {
-    schematic.paste(location);
+  public void paste(OwnedCell cell) {
+    schematic.paste(cell);
   }
 
 }
