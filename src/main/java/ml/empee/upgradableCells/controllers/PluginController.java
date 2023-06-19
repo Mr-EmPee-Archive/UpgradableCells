@@ -5,11 +5,11 @@ import cloud.commandframework.annotations.CommandPermission;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
+import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
-import ml.empee.upgradableCells.utils.Translator;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public class PluginController implements Bean {
 
+  private final LangConfig langConfig;
   private final CommandsConfig commandsConfig;
   private final CellService cellService;
 
@@ -37,8 +38,7 @@ public class PluginController implements Bean {
   @CommandMethod("cell reload")
   @CommandPermission(Permissions.ADMIN)
   public void reload(CommandSender sender) {
-    Translator.reload();
-
+    langConfig.reload();
     Logger.log(sender, "&7The plugin has been reloaded");
   }
 

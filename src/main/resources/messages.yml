@@ -1,0 +1,8 @@
+prefix: "&5&l UC &8» &r"
+
+cmd:
+  missing-permission: "&cYou don't have enough permissions"
+  invalid-syntax: "&cInvalid command syntax. Check the help menu!"
+  invalid-sender: "&cInvalid sender type"
+  invalid-argument: "&cInvalid argument, %s"
+  unknown-error: "&cAn error has occurred, inform a staff member"

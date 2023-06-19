@@ -13,7 +13,6 @@ import cloud.commandframework.paper.PaperCommandManager;
 import io.leangen.geantyref.TypeToken;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.utils.Logger;
-import ml.empee.upgradableCells.utils.Translator;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,10 +24,13 @@ import java.util.function.Function;
 
 public class CommandsConfig implements Bean {
 
+  private final LangConfig langConfig;
   private final PaperCommandManager<CommandSender> commandManager;
   private final AnnotationParser<CommandSender> commandParser;
 
-  public CommandsConfig(JavaPlugin plugin) throws Exception {
+  public CommandsConfig(JavaPlugin plugin, LangConfig langConfig) throws Exception {
+    this.langConfig = langConfig;
+
     commandManager = new PaperCommandManager<>(
         plugin, CommandExecutionCoordinator.simpleCoordinator(), Function.identity(), Function.identity()
     );
@@ -51,23 +53,23 @@ public class CommandsConfig implements Bean {
 
   private void registerExceptionHandlers() {
     commandManager.registerExceptionHandler(NoPermissionException.class, (sender, e) -> {
-      Logger.log(sender, Translator.translate("cmd-no-permission"));
+      Logger.log(sender, langConfig.translate("cmd.missing-permission"));
     });
 
     commandManager.registerExceptionHandler(InvalidSyntaxException.class, (sender, e) -> {
-      Logger.log(sender, Translator.translate("cmd-invalid-syntax"));
+      Logger.log(sender, langConfig.translate("cmd.invalid-syntax"));
     });
 
     commandManager.registerExceptionHandler(InvalidCommandSenderException.class, (sender, e) -> {
-      Logger.log(sender, Translator.translate("cmd-invalid-sender"));
+      Logger.log(sender, langConfig.translate("cmd.invalid-sender"));
     });
 
     commandManager.registerExceptionHandler(ArgumentParseException.class, (sender, e) -> {
-      Logger.log(sender, Translator.translate("cmd-invalid-argument"), e.getCause().getMessage());
+      Logger.log(sender, langConfig.translate("cmd.invalid-argument"), e.getCause().getMessage());
     });
 
     commandManager.registerExceptionHandler(Exception.class, (sender, e) -> {
-      Logger.log(sender, Translator.translate("cmd-exception"));
+      Logger.log(sender, langConfig.translate("cmd.unknown-error"));
     });
   }
 
