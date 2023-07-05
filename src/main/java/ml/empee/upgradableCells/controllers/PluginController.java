@@ -9,6 +9,7 @@ import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
+import ml.empee.upgradableCells.services.WorldService;
 import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,6 +24,7 @@ public class PluginController implements Bean {
   private final LangConfig langConfig;
   private final CommandsConfig commandsConfig;
   private final CellService cellService;
+  private final WorldService worldService;
 
   @Override
   public void onStart() {
@@ -30,10 +32,9 @@ public class PluginController implements Bean {
   }
 
   @CommandMethod("cell levelup")
-  @CommandPermission(Permissions.ADMIN)
   public void levelup(Player player) {
     OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(
-        OwnedCell.of(player.getUniqueId(), -1, player.getLocation())
+        OwnedCell.of(player.getUniqueId(), -1, worldService.getFreeLocation())
     );
 
     if (cell.getLevel() + 1 == cellService.getAvailableLevels()) {
@@ -42,6 +43,17 @@ public class PluginController implements Bean {
     }
 
     cellService.updateCellLevel(cell, cell.getLevel() + 1);
+  }
+
+  @CommandMethod("cell")
+  public void cellHome(Player player) {
+    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);;
+    if (cell == null) {
+      Logger.log(player, "&cYou haven't a cell");
+      return;
+    }
+
+    player.teleport(cellService.getSpawnpoint(cell));
   }
 
   @CommandMethod("cell reload")
