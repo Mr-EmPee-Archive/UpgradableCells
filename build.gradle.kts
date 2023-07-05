@@ -13,7 +13,12 @@ plugins {
 }
 
 group = "ml.empee"
-version = "1.0.0-SNAPSHOT"
+if (project.hasProperty("tag")) {
+  version = project.property("tag")!!
+} else {
+  version = "develop"
+}
+
 var basePackage = "ml.empee.upgradableCells"
 
 bukkit {
