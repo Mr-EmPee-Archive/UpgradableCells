@@ -53,9 +53,6 @@ dependencies {
   implementation("cloud.commandframework:cloud-annotations:1.8.3")
 
   implementation("com.github.Mr-EmPee:ItemBuilder:1.0.0")
-
-  implementation("io.github.rysefoxx.inventory:RyseInventory-Plugin:1.5.7")
-  implementation("com.j256.ormlite:ormlite-jdbc:6.1")
 }
 
 tasks {

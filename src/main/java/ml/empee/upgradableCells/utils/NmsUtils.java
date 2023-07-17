@@ -12,6 +12,8 @@ import org.bukkit.craftbukkit.v1_19_R2.block.data.CraftBlockData;
  * Access NMS easily
  */
 
+//TODO: Updated for retrocompat
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class NmsUtils {
 
