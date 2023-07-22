@@ -31,7 +31,9 @@ public class PluginController implements Bean {
     commandsConfig.register(this);
   }
 
+  //TODO: Replace with GUI
   @CommandMethod("cell levelup")
+  @CommandPermission(Permissions.ADMIN)
   public void levelup(Player player) {
     OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
     if (cell == null) {
@@ -48,12 +50,12 @@ public class PluginController implements Bean {
     cellService.updateCellLevel(cell, cell.getLevel());
   }
 
-  @CommandMethod("cell")
+  @CommandMethod("home")
   public void cellHome(Player player) {
     OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
 
     if (cell == null) {
-      Logger.log(player, "&cYou haven't a cell");
+      Logger.log(player, langConfig.translate("cell.not-bought"));
       return;
     }
 
@@ -64,7 +66,7 @@ public class PluginController implements Bean {
   @CommandPermission(Permissions.ADMIN)
   public void reload(CommandSender sender) {
     langConfig.reload();
-    cellService.loadCellUpgrades();
+    cellService.reload();
 
     Logger.log(sender, "&7The plugin has been reloaded");
   }

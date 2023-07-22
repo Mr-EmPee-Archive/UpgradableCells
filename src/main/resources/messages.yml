@@ -6,3 +6,6 @@ cmd:
   invalid-sender: "&cInvalid sender type"
   invalid-argument: "&cInvalid argument, %s"
   unknown-error: "&cAn error has occurred, inform a staff member"
+
+cell:
+  not-bought: "&cYou haven't bought a cell yet."

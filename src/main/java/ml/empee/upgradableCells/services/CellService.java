@@ -50,7 +50,7 @@ public class CellService implements Bean {
   /**
    * Load cell levels from the schematic folder
    */
-  public void loadCellUpgrades() {
+  private void loadCellUpgrades() {
     schematicFolder.mkdir();
     cellUpgrades.clear();
 
@@ -67,6 +67,7 @@ public class CellService implements Bean {
   }
 
   public void reload() {
+    loadCellUpgrades();
     ownedCellsCache.reload();
   }
 
