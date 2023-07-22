@@ -18,6 +18,7 @@ import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +39,6 @@ public class Schematic {
   private final File file;
   private final Vector origin;
 
-  @Getter
   private final List<Map<Vector, BlockData>> sections;
 
   @SneakyThrows
@@ -61,6 +61,18 @@ public class Schematic {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Nullable
+  public BlockData getBlock(Vector vector) {
+    for (Map<Vector, BlockData> section : sections) {
+      var data = section.get(vector);
+      if (data != null) {
+        return data;
+      }
+    }
+
+    return null;
   }
 
   private List<Map<Vector, BlockData>> readSections(Clipboard clipboard) {

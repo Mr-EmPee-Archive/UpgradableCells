@@ -26,9 +26,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CellService implements Bean {
 
-  private final List<CellProject> cellUpgrades = new ArrayList<>();
   private final JavaPlugin plugin;
   private final CellRepository cellRepository;
+  private final WorldService worldService;
+
+  private final List<CellProject> cellUpgrades = new ArrayList<>();
   private final PlayerCache<Optional<OwnedCell>> ownedCellsCache = new PlayerCache<>(true) {
     @Override
     @SneakyThrows
@@ -85,6 +87,26 @@ public class CellService implements Bean {
   @SneakyThrows
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
     return ownedCellsCache.get(owner);
+  }
+
+  /**
+   * @return the cell within the location
+   */
+  public Optional<OwnedCell> findCellByLocation(Location location) {
+    var position = location.toVector();
+    var margin = worldService.getMargin();
+
+    return ownedCellsCache.values().stream()
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(c -> {
+          var origin = c.getOrigin();
+          if (!origin.getWorld().equals(location.getWorld())) {
+            return false;
+          }
+
+          return position.isInAABB(origin.toVector(), origin.add(margin, margin, margin).toVector());
+        }).findAny();
   }
 
   public Location getSpawnpoint(OwnedCell cell) {

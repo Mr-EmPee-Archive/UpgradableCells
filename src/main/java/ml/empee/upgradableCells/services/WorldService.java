@@ -27,8 +27,9 @@ public class WorldService implements Bean {
 
   @Getter
   private World cellWorld;
-  private WorldState worldState;
+  @Getter
   private Integer margin;
+  private WorldState worldState;
 
   @Override
   @SneakyThrows
