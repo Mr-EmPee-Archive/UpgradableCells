@@ -23,11 +23,15 @@ jobs:
         uses: gradle/gradle-build-action@v2.4.2
 
       - name: Build Project Artifact
-        run: ./gradlew shadowJar -Ptag="${{ github.ref_name }}"
+        env:
+          TAG: ${{ github.ref_name }}
+        run: ./gradlew shadowJar -Ptag=${{ env.TAG }}
 
       - name: Publish Artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@v3
+        env:
+          TAG: ${{ github.ref_name }}
         with:
-          name: Release - ${{ github.ref_name }}
+          name: Tag - ${{ env.TAG }}
           path: build/libs/*.jar

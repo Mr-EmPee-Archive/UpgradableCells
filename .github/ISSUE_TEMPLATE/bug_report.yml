@@ -3,7 +3,7 @@ description: File a bug report
 title: "[Bug]: "
 labels: [ "bug" ]
 assignees:
-  - Travja
+  - mr-empee
 body:
   - type: checkboxes
     attributes:
@@ -48,14 +48,12 @@ body:
       description: |
         examples:
           - **Server Software**: Paper Spigot 1.17.1
-          - **ProSkillAPI Version**: 1.1.7.3-ALPHA
-          - **ProMCCore Version**: 1.0.3.1-ALPHA
+          - **Plugin Version**: 0.0.1
 
         Then run `/plugins` on your server and paste that list for us.
       value: |
         - Server Software:
-        - ProSkillAPI Version:
-        - ProMCCore Version:
+        - Plugin Version:
         - Plugins:
       render: markdown
     validations:

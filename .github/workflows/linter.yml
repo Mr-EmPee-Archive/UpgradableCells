@@ -3,7 +3,10 @@ name: Lint Project
 on:
   push:
     branches:
-      - master
+      - "*"
+  pull_request:
+  schedule:
+    - cron: '48 6 * * *'
 
 jobs:
   lint:
