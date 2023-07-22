@@ -3,6 +3,7 @@ package ml.empee.upgradableCells.services;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
+import ml.empee.upgradableCells.model.content.PlayerCache;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.repositories.CellRepository;
@@ -28,6 +29,13 @@ public class CellService implements Bean {
   private final List<CellProject> cellUpgrades = new ArrayList<>();
   private final JavaPlugin plugin;
   private final CellRepository cellRepository;
+  private final PlayerCache<Optional<OwnedCell>> ownedCellsCache = new PlayerCache<>(true) {
+    @Override
+    @SneakyThrows
+    public Optional<OwnedCell> fetchValue(UUID key) {
+      return cellRepository.findByOwner(key).get();
+    }
+  };
 
   private File schematicFolder;
 
@@ -56,6 +64,10 @@ public class CellService implements Bean {
     Logger.info("Loaded %s cells", cellUpgrades.size());
   }
 
+  public void reload() {
+    ownedCellsCache.reload();
+  }
+
   private List<File> findCellUpgradeSchematics() {
     return Arrays.stream(schematicFolder.listFiles())
         .filter(File::isFile)
@@ -72,7 +84,7 @@ public class CellService implements Bean {
 
   @SneakyThrows
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
-    return cellRepository.findByOwner(owner).get().stream().findAny();
+    return ownedCellsCache.get(owner);
   }
 
   public Location getSpawnpoint(OwnedCell cell) {
@@ -83,6 +95,12 @@ public class CellService implements Bean {
     CellProject cellProject = cellUpgrades.get(level);
     cell.setLevel(level);
     cellProject.paste(cell);
+
+    saveCell(cell);
+  }
+
+  private void saveCell(OwnedCell cell) {
+    ownedCellsCache.put(cell.getOwner(), Optional.of(cell));
     cellRepository.save(cell);
   }
 
