@@ -33,21 +33,25 @@ public class PluginController implements Bean {
 
   @CommandMethod("cell levelup")
   public void levelup(Player player) {
-    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(
-        OwnedCell.of(player.getUniqueId(), -1, worldService.getFreeLocation())
-    );
+    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
+    if (cell == null) {
+      cell = OwnedCell.of(player.getUniqueId(), 0, worldService.getFreeLocation());
+    } else {
+      if (cell.getLevel() + 1 == cellService.getAvailableLevels()) {
+        Logger.log(player, "&cMax level reached!");
+        return;
+      }
 
-    if (cell.getLevel() + 1 == cellService.getAvailableLevels()) {
-      Logger.log(player, "&cMax level reached!");
-      return;
+      cell.setLevel(cell.getLevel() + 1);
     }
 
-    cellService.updateCellLevel(cell, cell.getLevel() + 1);
+    cellService.updateCellLevel(cell, cell.getLevel());
   }
 
   @CommandMethod("cell")
   public void cellHome(Player player) {
-    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);;
+    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
+
     if (cell == null) {
       Logger.log(player, "&cYou haven't a cell");
       return;

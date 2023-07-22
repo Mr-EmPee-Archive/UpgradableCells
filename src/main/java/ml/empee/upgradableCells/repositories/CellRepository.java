@@ -29,8 +29,7 @@ public class CellRepository implements Bean {
     try (var stm = client.getJdbcConnection().createStatement()) {
       stm.executeUpdate("""
           CREATE TABLE IF NOT EXISTS cells (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              owner STRING,
+              owner STRING PRIMARY KEY,
               level INTEGER,
               origin STRING
           );
@@ -40,11 +39,11 @@ public class CellRepository implements Bean {
 
   @SneakyThrows
   private void syncSave(OwnedCell data) {
-    var query = "INSERT INTO cells (owner, level, origin) VALUES (?, ?, ?);";
+    var query = "INSERT OR REPLACE INTO cells (owner, level, origin) VALUES (?, ?, ?);";
     try (var stm = client.getJdbcConnection().prepareStatement(query)) {
-      stm.setString(0, data.getOwner().toString());
-      stm.setInt(1, data.getLevel());
-      stm.setString(2, ObjectConverter.parseLocation(data.getOrigin()));
+      stm.setString(1, data.getOwner().toString());
+      stm.setInt(2, data.getLevel());
+      stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
       stm.executeUpdate();
     }
   }
@@ -57,7 +56,7 @@ public class CellRepository implements Bean {
   private Optional<OwnedCell> syncFindByOwner(UUID owner) {
     var query = "SELECT * FROM cells WHERE owner = ?";
     try (var stm = client.getJdbcConnection().prepareStatement(query)) {
-      stm.setString(0, owner.toString());
+      stm.setString(1, owner.toString());
 
       var result = stm.executeQuery();
       if (!result.next()) {

@@ -55,7 +55,7 @@ public class WorldService implements Bean {
   /**
    * @return the next free location where a cell can be safely pasted
    */
-  public Location getFreeCell() {
+  public Location getFreeLocation() {
     //Cell index based on the sector
     var cellIndex = (worldState.getLastCell() / 4) - (int) Math.pow(worldState.getSize() - 1, 2);
     var sectorIndex = worldState.getLastCell() % 4;

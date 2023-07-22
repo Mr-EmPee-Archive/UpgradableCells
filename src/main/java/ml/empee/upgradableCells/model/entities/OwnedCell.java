@@ -13,13 +13,20 @@ import java.util.UUID;
 public class OwnedCell {
 
   @Getter @Setter
+  private int id;
+
+  @Getter @Setter
   private UUID owner;
 
   @Getter @Setter
   private Integer level;
 
-  @Getter @Setter
+  @Setter
   private Location origin;
+
+  public Location getOrigin() {
+    return origin.clone();
+  }
 
   public static OwnedCell of(UUID owner, Integer level, Location origin) {
     OwnedCell cell = new OwnedCell();
