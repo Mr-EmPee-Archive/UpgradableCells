@@ -57,6 +57,7 @@ public class DbClient implements Bean {
   public Connection getJdbcConnection() {
     if (jdbcConnection == null || jdbcConnection.isClosed()) {
       jdbcConnection = DriverManager.getConnection(dbUrl);
+      jdbcConnection.setAutoCommit(true);
     }
 
     return jdbcConnection;
