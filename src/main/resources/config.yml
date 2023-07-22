@@ -1,1 +1,3 @@
-world: "cells-world"
+world:
+  name: "cells-world"
+  cell-size: 500

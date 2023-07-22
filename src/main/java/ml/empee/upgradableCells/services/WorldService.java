@@ -28,6 +28,7 @@ public class WorldService implements Bean {
   @Getter
   private World cellWorld;
   private WorldState worldState;
+  private Integer margin;
 
   @Override
   @SneakyThrows
@@ -39,6 +40,7 @@ public class WorldService implements Bean {
       Logger.info("Wakey-wakey, world loading finished!");
     }
 
+    margin = pluginConfig.getCellSize();
     worldState = worldStateRepository.findByWorld(cellWorld).get().orElse(
         new WorldState(cellWorld)
     );
@@ -85,7 +87,7 @@ public class WorldService implements Bean {
     }
 
     worldStateRepository.save(worldState);
-    return new Location(cellWorld, x * worldState.getMargin(), 50, z * worldState.getMargin());
+    return new Location(cellWorld, x * margin, 50, z * margin);
   }
 
 }

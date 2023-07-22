@@ -32,7 +32,6 @@ public class WorldStateRepository implements Bean {
           CREATE TABLE IF NOT EXISTS worlds_state (
               world STRING PRIMARY KEY,
               last_cell INTEGER,
-              margin INTEGER,
               size INTEGER
           );
           """);
@@ -44,12 +43,11 @@ public class WorldStateRepository implements Bean {
    */
   public CompletableFuture<Void> save(WorldState data) {
     return CompletableFuture.runAsync(() -> {
-      var query = "INSERT OR REPLACE INTO worlds_state (world, last_cell, margin, size) VALUES (?, ?, ?, ?);";
+      var query = "INSERT OR REPLACE INTO worlds_state (world, last_cell, margin, size) VALUES (?, ?, ?);";
       try (var stm = client.getJdbcConnection().prepareStatement(query)) {
         stm.setString(1, data.getWorld().getName());
         stm.setInt(2, data.getLastCell());
-        stm.setInt(3, data.getMargin());
-        stm.setInt(4, data.getSize());
+        stm.setInt(3, data.getSize());
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -81,7 +79,6 @@ public class WorldStateRepository implements Bean {
   @SneakyThrows
   private WorldState parseResult(ResultSet rs) {
     WorldState cell = new WorldState(Bukkit.getWorld(rs.getString("world")));
-    cell.setMargin(rs.getInt("margin"));
     cell.setSize(rs.getInt("size"));
     cell.setLastCell(rs.getInt("last_cell"));
     return cell;

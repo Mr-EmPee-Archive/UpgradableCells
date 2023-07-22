@@ -19,7 +19,11 @@ public class PluginConfig extends AbstractConfig implements Bean {
   }
 
   public String getCellWorld() {
-    return config.getString("world");
+    return config.getString("world.name", "cell-world");
+  }
+
+  public int getCellSize() {
+    return config.getInt("world.cell-size", 500);
   }
 
 }

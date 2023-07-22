@@ -18,9 +18,6 @@ public class WorldState {
   private final World world;
 
   @Getter @Setter
-  private int margin = 500;
-
-  @Getter @Setter
   private int lastCell = 0;
 
   @Getter @Setter
