@@ -2,8 +2,11 @@ package ml.empee.upgradableCells.services;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.model.entities.WorldState;
+import ml.empee.upgradableCells.repositories.WorldStateRepository;
 import ml.empee.upgradableCells.utils.Logger;
 import ml.empee.upgradableCells.utils.helpers.VoidGenerator;
 import net.kyori.adventure.util.TriState;
@@ -20,11 +23,14 @@ import org.bukkit.WorldCreator;
 public class WorldService implements Bean {
 
   private final PluginConfig pluginConfig;
+  private final WorldStateRepository worldStateRepository;
 
   @Getter
   private World cellWorld;
+  private WorldState worldState;
 
   @Override
+  @SneakyThrows
   public void onStart() {
     cellWorld = Bukkit.getWorld(pluginConfig.getCellWorld());
     if (cellWorld == null) {
@@ -32,6 +38,10 @@ public class WorldService implements Bean {
       loadWorld(pluginConfig.getCellWorld());
       Logger.info("Wakey-wakey, world loading finished!");
     }
+
+    worldState = worldStateRepository.findByWorld(cellWorld).get().orElse(
+        new WorldState(cellWorld)
+    );
   }
 
   public void loadWorld(String name) {
@@ -42,12 +52,40 @@ public class WorldService implements Bean {
         .createWorld();
   }
 
-  public Location getFreeLocation() {
-    return new Location(cellWorld, 0, 50, 0);
-  }
+  /**
+   * @return the next free location where a cell can be safely pasted
+   */
+  public Location getFreeCell() {
+    //Cell index based on the sector
+    var cellIndex = (worldState.getLastCell() / 4) - (int) Math.pow(worldState.getSize() - 1, 2);
+    var sectorIndex = worldState.getLastCell() % 4;
 
-  public void markLocationAsOccupied(Location location) {
+    int x = worldState.getSize();
+    int z = worldState.getSize();
 
+    if (cellIndex < worldState.getSize()) {
+      z = (cellIndex % worldState.getSize()) + 1;
+    } else {
+      x = (cellIndex % worldState.getSize()) + 1;
+    }
+
+    if (sectorIndex == 0 || sectorIndex == 1) {
+      x = -x;
+    }
+
+    if (sectorIndex == 2 || sectorIndex == 1) {
+      z = -z;
+    }
+
+    worldState.incrementCell();
+
+    //Is last cell of the current size?
+    if (sectorIndex == 3 && cellIndex == (worldState.getSize() * 2) - 2) {
+      worldState.incrementSize();
+    }
+
+    worldStateRepository.save(worldState);
+    return new Location(cellWorld, x * worldState.getMargin(), 50, z * worldState.getMargin());
   }
 
 }
