@@ -7,6 +7,7 @@ import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.utils.ObjectConverter;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -37,38 +38,42 @@ public class CellRepository implements Bean {
     }
   }
 
-  @SneakyThrows
-  private void syncSave(OwnedCell data) {
-    var query = "INSERT OR REPLACE INTO cells (owner, level, origin) VALUES (?, ?, ?);";
-    try (var stm = client.getJdbcConnection().prepareStatement(query)) {
-      stm.setString(1, data.getOwner().toString());
-      stm.setInt(2, data.getLevel());
-      stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
-      stm.executeUpdate();
-    }
-  }
-
+  /**
+   * Update or create a cell
+   */
   public CompletableFuture<Void> save(OwnedCell data) {
-    return CompletableFuture.runAsync(() -> syncSave(data), client.getThreadPool());
-  }
-
-  @SneakyThrows
-  private Optional<OwnedCell> syncFindByOwner(UUID owner) {
-    var query = "SELECT * FROM cells WHERE owner = ?";
-    try (var stm = client.getJdbcConnection().prepareStatement(query)) {
-      stm.setString(1, owner.toString());
-
-      var result = stm.executeQuery();
-      if (!result.next()) {
-        return Optional.empty();
+    return CompletableFuture.runAsync(() -> {
+      var query = "INSERT OR REPLACE INTO cells (owner, level, origin) VALUES (?, ?, ?);";
+      try (var stm = client.getJdbcConnection().prepareStatement(query)) {
+        stm.setString(1, data.getOwner().toString());
+        stm.setInt(2, data.getLevel());
+        stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
+        stm.executeUpdate();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
       }
-
-      return Optional.of(parseResult(result));
-    }
+    }, client.getThreadPool());
   }
 
+  /**
+   * Find a cell by his owner
+   */
   public CompletableFuture<Optional<OwnedCell>> findByOwner(UUID owner) {
-    return CompletableFuture.supplyAsync(() -> syncFindByOwner(owner), client.getThreadPool());
+    return CompletableFuture.supplyAsync(() -> {
+      var query = "SELECT * FROM cells WHERE owner = ?";
+      try (var stm = client.getJdbcConnection().prepareStatement(query)) {
+        stm.setString(1, owner.toString());
+
+        var result = stm.executeQuery();
+        if (!result.next()) {
+          return Optional.empty();
+        }
+
+        return Optional.of(parseResult(result));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }, client.getThreadPool());
   }
 
   @SneakyThrows
