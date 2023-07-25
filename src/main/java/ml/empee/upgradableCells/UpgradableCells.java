@@ -5,6 +5,7 @@ import ml.empee.ioc.SimpleIoC;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.utils.Logger;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -25,13 +26,16 @@ public final class UpgradableCells extends JavaPlugin {
     LangConfig langConfig = new LangConfig(this);
     Logger.setPrefix(langConfig.translate("prefix"));
 
+    iocContainer.addBean(getEconomyProvider());
     iocContainer.addBean(langConfig);
     iocContainer.initialize("relocations");
   }
 
-  public void onDisable() {
-    //TODO: execute pending tasks
+  private Economy getEconomyProvider() {
+    return getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+  }
 
+  public void onDisable() {
     iocContainer.getBean(DbClient.class).closeConnections();
     iocContainer.removeAllBeans(true);
   }

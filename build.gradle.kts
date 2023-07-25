@@ -41,6 +41,7 @@ dependencies {
   compileOnly("org.xerial:sqlite-jdbc:3.34.0")
 
   compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
+  compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
   // Core depends
   implementation("com.github.Mr-EmPee:SimpleIoC:1.7.1")
