@@ -2,6 +2,7 @@ package ml.empee.upgradableCells;
 
 import lombok.Getter;
 import ml.empee.ioc.SimpleIoC;
+import ml.empee.simplemenu.SimpleMenu;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.utils.Logger;
@@ -16,6 +17,7 @@ public final class UpgradableCells extends JavaPlugin {
 
   @Getter
   private final SimpleIoC iocContainer = new SimpleIoC(this);
+  private final SimpleMenu simpleMenu = new SimpleMenu();
 
   /**
    * Called when enabling the plugin
@@ -25,6 +27,8 @@ public final class UpgradableCells extends JavaPlugin {
 
     LangConfig langConfig = new LangConfig(this);
     Logger.setPrefix(langConfig.translate("prefix"));
+
+    simpleMenu.init(this);
 
     iocContainer.addBean(getEconomyProvider());
     iocContainer.addBean(langConfig);
@@ -38,5 +42,6 @@ public final class UpgradableCells extends JavaPlugin {
   public void onDisable() {
     iocContainer.getBean(DbClient.class).closeConnections();
     iocContainer.removeAllBeans(true);
+    simpleMenu.unregister(this);
   }
 }

@@ -7,6 +7,8 @@ import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.constants.Permissions;
+import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
+import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.services.WorldService;
@@ -24,34 +26,17 @@ public class PluginController implements Bean {
   private final LangConfig langConfig;
   private final CommandsConfig commandsConfig;
   private final CellService cellService;
-  private final WorldService worldService;
 
   @Override
   public void onStart() {
     commandsConfig.register(this);
   }
 
-  //TODO: Replace with GUI
-  @CommandMethod("cell levelup")
-  @CommandPermission(Permissions.ADMIN)
-  public void levelup(Player player) {
-    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
-    if (cell == null) {
-      cell = OwnedCell.of(player.getUniqueId(), 0, worldService.getFreeLocation());
-    } else {
-      if (cell.getLevel() + 1 == cellService.getAvailableLevels()) {
-        Logger.log(player, "&cMax level reached!");
-        return;
-      }
-
-      cell.setLevel(cell.getLevel() + 1);
-    }
-
-    cellService.updateCellLevel(cell, cell.getLevel());
-  }
-
+  /**
+   * Teleport the player to his cell
+   */
   @CommandMethod("home")
-  public void cellHome(Player player) {
+  public void teleportToHome(Player player) {
     OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
 
     if (cell == null) {
@@ -59,7 +44,22 @@ public class PluginController implements Bean {
       return;
     }
 
+    if (cell.getLevel() == 0 && cell.isPasting()) {
+      Logger.log(player, langConfig.translate("cell.still-building"));
+      return;
+    }
+
     player.teleport(cellService.getSpawnpoint(cell));
+  }
+
+  @CommandMethod("cell")
+  public void openCellMenu(Player player) {
+    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
+    if (cell == null) {
+      ClaimCellMenu.open(player);
+    } else {
+      ManageCellMenu.open(player, cell);
+    }
   }
 
   @CommandMethod("cell reload")

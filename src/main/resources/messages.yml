@@ -8,4 +8,37 @@ cmd:
   unknown-error: "&cAn error has occurred, inform a staff member"
 
 cell:
+  bought-cell: "&7You have bought your cell!"
+  bought-upgrade: "&7You have bought an upgrade for your cell!"
+  max-level: "&cYour cell is at the max level!"
   not-bought: "&cYou haven't bought a cell yet."
+  already-bought: "&cYou have already bought a cell!"
+  still-building: "&cThe cell is still under construction!"
+
+economy:
+  missing-money: "&cYou need to have at least &e%money% $ &cinside the bank!"
+
+menus:
+  claim-cell:
+    title: "Claim your cell"
+    items:
+      buy:
+        name: "&eBuy your cell"
+        lore: |
+          &r
+          &r   &7Cost&8: &c%price%
+          &r
+  manage-cell:
+    title: "Manage your cell"
+    items:
+      close:
+        name: "&cClose"
+      home:
+        name: "&eGo to cell"
+        lore: "&7Click to teleport to the cell"
+      upgrade:
+        name: "&eUpgrade your cell"
+        lore: |
+          &r
+          &r   &7Cost&8: &c%price%
+          &r

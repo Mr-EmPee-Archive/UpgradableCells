@@ -25,7 +25,7 @@ bukkit {
   load = BukkitPluginDescription.PluginLoadOrder.POSTWORLD
   main = "${basePackage}.UpgradableCells"
   apiVersion = "1.13"
-  depend = listOf()
+  depend = listOf("Vault", "WorldEdit")
   authors = listOf("Mr. EmPee")
 }
 
@@ -43,17 +43,19 @@ dependencies {
   compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
   compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
-  // Core depends
   implementation("com.github.Mr-EmPee:SimpleIoC:1.7.1")
+  implementation("com.github.Mr-EmPee:SimpleMenu:0.0.5")
+  implementation("com.github.Mr-EmPee:ItemBuilder:1.1.1")
 
+  implementation("com.github.cryptomorin:XSeries:9.4.0") { isTransitive = false }
+
+  //Commands
   implementation("me.lucko:commodore:2.2") {
     exclude("com.mojang", "brigadier")
   }
 
   implementation("cloud.commandframework:cloud-paper:1.8.3")
   implementation("cloud.commandframework:cloud-annotations:1.8.3")
-
-  implementation("com.github.Mr-EmPee:ItemBuilder:1.0.0")
 }
 
 tasks {

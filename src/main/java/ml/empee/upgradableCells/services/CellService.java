@@ -71,8 +71,8 @@ public class CellService implements Bean {
     ownedCellsCache.reload();
   }
 
-  public int getAvailableLevels() {
-    return cellUpgrades.size();
+  public int getMaxLevel() {
+    return cellUpgrades.size() - 1;
   }
 
   public CellProject getCellProject(int level) {
