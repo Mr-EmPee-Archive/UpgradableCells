@@ -121,14 +121,14 @@ public class Schematic {
   }
 
   private CompletableFuture<Void> pasteRecursively(OwnedCell cell, int sectionIndex, int chunkSize) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-
+    CompletableFuture<Void> stage = new CompletableFuture<>();
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       for (int i = sectionIndex; i < sectionIndex + chunkSize; i++) {
         if (i >= sections.size()) {
           Logger.debug("Finished pasting schematic " + file.getName());
           Bukkit.getPluginManager().callEvent(new CellLevelUpEvent(cell));
-          future.complete(null);
+          stage.complete(null);
+          return;
         }
 
         var section = sections.get(i);
@@ -137,10 +137,10 @@ public class Schematic {
         });
       }
 
-      pasteRecursively(cell, sectionIndex + chunkSize, chunkSize);
+      pasteRecursively(cell, sectionIndex + chunkSize, chunkSize).thenRun(() -> stage.complete(null));
     }, DELAY_BETWEEN_PASTING);
 
-    return future;
+    return stage;
   }
 
 }

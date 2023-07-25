@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Handle cell upgrades
@@ -111,28 +112,26 @@ public class CellService implements Bean {
   /**
    * Create a new cell
    */
-  public OwnedCell createCell(UUID player) {
+  public CompletableFuture<Void> createCell(UUID player) {
     OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
     CellProject project = getCellProject(cell.getLevel());
     cell.setPasting(true);
     saveCell(cell);
 
-    project.paste(cell).thenRun(() -> {
+    return project.paste(cell).thenRun(() -> {
       cell.setPasting(false);
       saveCell(cell);
     });
-
-    return cell;
   }
 
-  public void updateCellLevel(OwnedCell cell, int level) {
+  public CompletableFuture<Void> updateCellLevel(OwnedCell cell, int level) {
     cell.setLevel(level);
 
     CellProject project = getCellProject(cell.getLevel());
     cell.setPasting(true);
     saveCell(cell);
 
-    project.paste(cell).thenRun(() -> {
+    return project.paste(cell).thenRun(() -> {
       cell.setPasting(false);
       saveCell(cell);
     });
