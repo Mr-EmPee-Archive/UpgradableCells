@@ -31,8 +31,9 @@ public class CellRepository implements Bean {
       stm.executeUpdate("""
           CREATE TABLE IF NOT EXISTS cells (
               owner STRING PRIMARY KEY,
-              level INTEGER,
-              origin STRING
+              level INTEGER NOT NULL,
+              origin STRING NOT NULL,
+              pasting INTEGER DEFAULT 0 NOT NULL
           );
           """);
     }
@@ -43,11 +44,12 @@ public class CellRepository implements Bean {
    */
   public CompletableFuture<Void> save(OwnedCell data) {
     return CompletableFuture.runAsync(() -> {
-      var query = "INSERT OR REPLACE INTO cells (owner, level, origin) VALUES (?, ?, ?);";
+      var query = "INSERT OR REPLACE INTO cells (owner, level, origin, pasting) VALUES (?, ?, ?, ?);";
       try (var stm = client.getJdbcConnection().prepareStatement(query)) {
         stm.setString(1, data.getOwner().toString());
         stm.setInt(2, data.getLevel());
         stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
+        stm.setInt(4, data.isPasting() ? 1 : 0);
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -79,6 +81,7 @@ public class CellRepository implements Bean {
   @SneakyThrows
   private OwnedCell parseResult(ResultSet rs) {
     OwnedCell cell = new OwnedCell();
+    cell.setPasting(rs.getInt("pasting") == 1);
     cell.setOwner(UUID.fromString(rs.getString("owner")));
     cell.setLevel(rs.getInt("level"));
     cell.setOrigin(ObjectConverter.parseLocation(rs.getString("origin")));

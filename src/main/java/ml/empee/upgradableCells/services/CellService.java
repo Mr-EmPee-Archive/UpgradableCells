@@ -3,18 +3,17 @@ package ml.empee.upgradableCells.services;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
+import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.content.PlayerCache;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.repositories.CellRepository;
 import ml.empee.upgradableCells.utils.Logger;
-import ml.empee.upgradableCells.model.content.Schematic;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +45,8 @@ public class CellService implements Bean {
   public void onStart() {
     schematicFolder = new File(plugin.getDataFolder(), "levels");
     loadCellUpgrades();
+
+    //TODO: Finish pasting partially pasted cells
   }
 
   /**
@@ -107,12 +108,34 @@ public class CellService implements Bean {
     return cell.getOrigin().add(getCellProject(cell.getLevel()).getSpawnpoint());
   }
 
-  public void updateCellLevel(OwnedCell cell, int level) {
-    CellProject cellProject = cellUpgrades.get(level);
-    cell.setLevel(level);
-    cellProject.paste(cell);
-
+  /**
+   * Create a new cell
+   */
+  public OwnedCell createCell(UUID player) {
+    OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
+    CellProject project = getCellProject(cell.getLevel());
+    cell.setPasting(true);
     saveCell(cell);
+
+    project.paste(cell).thenRun(() -> {
+      cell.setPasting(false);
+      saveCell(cell);
+    });
+
+    return cell;
+  }
+
+  public void updateCellLevel(OwnedCell cell, int level) {
+    cell.setLevel(level);
+
+    CellProject project = getCellProject(cell.getLevel());
+    cell.setPasting(true);
+    saveCell(cell);
+
+    project.paste(cell).thenRun(() -> {
+      cell.setPasting(false);
+      saveCell(cell);
+    });
   }
 
   private void saveCell(OwnedCell cell) {

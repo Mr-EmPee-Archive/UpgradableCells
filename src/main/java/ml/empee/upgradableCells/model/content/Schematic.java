@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A WorldEdit schematic
@@ -114,18 +115,20 @@ public class Schematic {
   /**
    * Paste the level
    */
-  public void paste(OwnedCell cell) {
+  public CompletableFuture<Void> paste(OwnedCell cell) {
     Logger.debug("Starting pasting of schematic " + file.getName());
-    pasteRecursively(cell, 0, 5);
+    return pasteRecursively(cell, 0, 5);
   }
 
-  private void pasteRecursively(OwnedCell cell, int sectionIndex, int chunkSize) {
+  private CompletableFuture<Void> pasteRecursively(OwnedCell cell, int sectionIndex, int chunkSize) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       for (int i = sectionIndex; i < sectionIndex + chunkSize; i++) {
         if (i >= sections.size()) {
           Logger.debug("Finished pasting schematic " + file.getName());
           Bukkit.getPluginManager().callEvent(new CellLevelUpEvent(cell));
-          return;
+          future.complete(null);
         }
 
         var section = sections.get(i);
@@ -136,6 +139,8 @@ public class Schematic {
 
       pasteRecursively(cell, sectionIndex + chunkSize, chunkSize);
     }, DELAY_BETWEEN_PASTING);
+
+    return future;
   }
 
 }

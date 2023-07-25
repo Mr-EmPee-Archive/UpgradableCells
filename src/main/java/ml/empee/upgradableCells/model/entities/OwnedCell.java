@@ -24,6 +24,9 @@ public class OwnedCell {
   @Setter
   private Location origin;
 
+  @Getter @Setter
+  private boolean pasting;
+
   public Location getOrigin() {
     return origin.clone();
   }
