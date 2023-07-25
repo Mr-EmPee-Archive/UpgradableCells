@@ -50,7 +50,6 @@ public class WorldService implements Bean {
   public void loadWorld(String name) {
     cellWorld = WorldCreator.name(name)
         .generateStructures(false)
-        .keepSpawnLoaded(TriState.FALSE)
         .generator(new VoidGenerator())
         .createWorld();
   }
