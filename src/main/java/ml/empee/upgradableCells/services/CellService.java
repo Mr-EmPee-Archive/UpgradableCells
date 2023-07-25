@@ -27,6 +27,7 @@ import java.util.UUID;
 public class CellService implements Bean {
 
   private final JavaPlugin plugin;
+  private final PluginConfig pluginConfig;
   private final CellRepository cellRepository;
   private final WorldService worldService;
 
@@ -56,11 +57,9 @@ public class CellService implements Bean {
 
     Logger.info("Loading cell upgrades...");
 
-    int level = 0;
-    for (File cellFile : findCellUpgradeSchematics()) {
-      var cellLevel = new CellProject(level, new Schematic(cellFile));
-      cellUpgrades.add(cellLevel);
-      level += 1;
+    for (CellProject project : pluginConfig.getCellProjects()) {
+      project.loadSchematic(schematicFolder);
+      cellUpgrades.add(project);
     }
 
     Logger.info("Loaded %s cells", cellUpgrades.size());
@@ -69,12 +68,6 @@ public class CellService implements Bean {
   public void reload() {
     loadCellUpgrades();
     ownedCellsCache.reload();
-  }
-
-  private List<File> findCellUpgradeSchematics() {
-    return Arrays.stream(schematicFolder.listFiles())
-        .filter(File::isFile)
-        .toList();
   }
 
   public int getAvailableLevels() {

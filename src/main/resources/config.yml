@@ -1,3 +1,52 @@
 world:
   name: "cells-world"
   cell-size: 500
+
+cells:
+  upgrades:
+    level-a:
+      schematic: Level-A.schem
+      cost: 0
+      members: 3
+
+    level-b:
+      schematic: Level-B.schem
+      cost: 11000
+      members: 4
+
+    level-c:
+      schematic: Level-C.schem
+      cost: 45000
+      members: 5
+
+    level-d:
+      cost: 146000
+      members: 6
+
+    level-e:
+      cost: 500000
+      members: 7
+
+    level-f:
+      cost: 800000
+      members: 8
+
+    level-p1:
+      cost: 1500000
+      members: 9
+
+    level-p4:
+      cost: 1500000
+      members: 10
+
+    level-p7:
+      cost: 1500000
+      members: 11
+
+    level-p10:
+      cost: 1500000
+      members: 12
+
+    level-p13:
+      cost: 1500000
+      members: 13
