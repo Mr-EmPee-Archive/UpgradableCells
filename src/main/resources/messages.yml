@@ -16,7 +16,7 @@ cell:
   still-building: "&cThe cell is still under construction!"
 
 economy:
-  missing-money: "&cYou need to have at least &e%money% $ &cinside the bank!"
+  missing-money: "&cYou need to have at least &e%.2f $ &cinside the bank!"
 
 menus:
   claim-cell:
@@ -24,10 +24,6 @@ menus:
     items:
       buy:
         name: "&eBuy your cell"
-        lore: |
-          &r
-          &r   &7Cost&8: &c%price%
-          &r
   manage-cell:
     title: "Manage your cell"
     items:
@@ -40,5 +36,5 @@ menus:
         name: "&eUpgrade your cell"
         lore: |
           &r
-          &r   &7Cost&8: &c%price%
+          &r   &7Cost&8: &c%.2f $
           &r

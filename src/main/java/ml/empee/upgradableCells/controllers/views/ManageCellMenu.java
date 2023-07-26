@@ -14,8 +14,6 @@ import ml.empee.upgradableCells.utils.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
 
-import java.util.Map;
-
 /**
  * GUI from where you can manage a cell
  */
@@ -52,7 +50,7 @@ public class ManageCellMenu implements Bean {
   private GItem homeItem() {
     var item = ItemBuilder.from(XMaterial.IRON_DOOR.parseItem())
         .setName(langConfig.translate("menus.manage-cell.items.home.name"))
-        .setLore(langConfig.translateBlock("menus.manage-cell.items.home.lore"))
+        .setLore(langConfig.translate("menus.manage-cell.items.home.lore").split("\n"))
         .build();
 
     return GItem.builder()
@@ -86,14 +84,10 @@ public class ManageCellMenu implements Bean {
 
     var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem())
         .setName(langConfig.translate("menus.manage-cell.items.upgrade.name"))
-        .setLore(
-            langConfig.translateBlock(
-                "menus.manage-cell.items.upgrade.lore", Map.of(
-                    "%cost%", project != null ? project.getCost() : "N/A"
-                )
-            )
-        )
-        .build();
+        .setLore(langConfig.translateBlock(
+                "menus.manage-cell.items.upgrade.lore",
+                project != null ? project.getCost() : "N/A"
+        )).build();
 
     return GItem.builder()
         .itemstack(item)
@@ -118,12 +112,12 @@ public class ManageCellMenu implements Bean {
           }
 
           if (!economy.has(source, project.getCost())) {
-            Logger.log(source, langConfig.translate("economy.missing-money"));
+            Logger.log(source, langConfig.translate("economy.missing-money", project.getCost()));
             return;
           }
 
           economy.withdrawPlayer(source, project.getCost());
-          cellService.updateCellLevel(targetCell, project.getLevel());
+          cellService.upgradeCell(targetCell, project.getLevel());
           Logger.log(source, langConfig.translate("cell.bought-upgrade"));
         }).build();
   }

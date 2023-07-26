@@ -65,7 +65,7 @@ public class CommandsConfig implements Bean {
     });
 
     commandManager.registerExceptionHandler(ArgumentParseException.class, (sender, e) -> {
-      Logger.log(sender, langConfig.translate("cmd.invalid-argument"), e.getCause().getMessage());
+      Logger.log(sender, langConfig.translate("cmd.invalid-argument", e.getCause().getMessage()));
     });
 
     commandManager.registerExceptionHandler(Exception.class, (sender, e) -> {

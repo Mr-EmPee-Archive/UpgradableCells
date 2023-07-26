@@ -48,12 +48,7 @@ public class ClaimCellMenu implements Bean {
   private GItem buyCellItem() {
     var item = ItemBuilder.from(XMaterial.GOLD_INGOT.parseItem())
         .setName(langConfig.translate("menus.claim-cell.items.buy.name"))
-        .setLore(
-            langConfig.translateBlock(
-                "menus.claim-cell.items.buy.lore", Map.of(
-                    "%price%", cellService.getCellProject(0).getCost()
-                )
-            )).build();
+        .build();
 
     return GItem.builder()
         .itemstack(item)
@@ -68,7 +63,7 @@ public class ClaimCellMenu implements Bean {
 
           var project = cellService.getCellProject(0);
           if (!economy.has(player, project.getCost())) {
-            Logger.log(player, langConfig.translate("economy.missing-money"));
+            Logger.log(player, langConfig.translate("economy.missing-money", project.getCost()));
             return;
           }
 

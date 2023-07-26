@@ -5,9 +5,7 @@ import ml.empee.ioc.Bean;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -35,31 +33,17 @@ public class LangConfig extends AbstractConfig implements Bean {
   /**
    * Translate a key to a message
    */
-  public String translate(String key, Map<String, Object> replacements) {
+  public String translate(String key, Object... placeholders) {
     var translation = config.getString(key);
     if (translation == null) {
       throw new IllegalArgumentException("Missing translation key " + key);
     }
 
-    if (replacements != null) {
-      for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
-        translation = translation.replace(replacement.getKey(), replacement.getValue().toString());
-      }
-    }
-
-    return ChatColor.translateAlternateColorCodes('&', translation);
+    return ChatColor.translateAlternateColorCodes('&', translation).formatted(placeholders);
   }
 
-  public String translate(String key) {
-    return translate(key, null);
-  }
-
-  public List<String> translateBlock(String key, Map<String, Object> replacements) {
-    return Arrays.asList(translate(key, replacements).split("\n"));
-  }
-
-  public List<String> translateBlock(String key) {
-    return translateBlock(key, null);
+  public List<String> translateBlock(String key, Object... placeholders) {
+    return List.of(translate(key, placeholders).split("\n"));
   }
 
 }
