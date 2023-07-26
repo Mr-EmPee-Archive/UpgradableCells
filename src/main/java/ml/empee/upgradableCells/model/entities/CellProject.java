@@ -35,15 +35,15 @@ public class CellProject {
   }
 
   public void loadSchematic(File schematicFolder) {
-    if (schematicId == null) {
-      return;
-    }
-
     schematic = new Schematic(new File(schematicFolder, schematicId));
   }
 
   public CompletableFuture<Void> paste(OwnedCell cell) {
     return schematic.paste(cell);
+  }
+
+  public boolean hasSchematic() {
+    return schematicId != null;
   }
 
   public boolean canBuild(OwnedCell ownedCell, Location location) {

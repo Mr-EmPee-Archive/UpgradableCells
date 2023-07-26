@@ -60,8 +60,17 @@ public class CellService implements Bean {
     Logger.info("Loading cell upgrades...");
 
     for (CellProject project : pluginConfig.getCellProjects()) {
-      project.loadSchematic(schematicFolder);
+      if (project.hasSchematic()) {
+        project.loadSchematic(schematicFolder);
+      }
+
       cellUpgrades.add(project);
+    }
+
+    if (cellUpgrades.size() == 0) {
+      throw new IllegalStateException("Add at least a cell!");
+    } else if (!getCellProject(0).hasSchematic()) {
+      throw new IllegalStateException("The first cell must have a schematic!");
     }
 
     Logger.info("Loaded %s cells", cellUpgrades.size());
@@ -124,10 +133,18 @@ public class CellService implements Bean {
     });
   }
 
-  public CompletableFuture<Void> updateCellLevel(OwnedCell cell, int level) {
+  /**
+   * Update a cell level and perform all the related operations like pasting the new cell
+   */
+  public CompletableFuture<Void> upgradeCell(OwnedCell cell, int level) {
     cell.setLevel(level);
-
     CellProject project = getCellProject(cell.getLevel());
+
+    if (!project.hasSchematic()) {
+      saveCell(cell);
+      return CompletableFuture.completedFuture(null);
+    }
+
     cell.setPasting(true);
     saveCell(cell);
 
