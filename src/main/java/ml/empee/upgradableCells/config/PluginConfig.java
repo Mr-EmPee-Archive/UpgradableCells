@@ -30,9 +30,11 @@ public class PluginConfig extends AbstractConfig implements Bean {
   public List<CellProject> getCellProjects() {
     int level = 0;
 
+    CellProject prevProject = null;
     List<CellProject> projects = new ArrayList<>();
     for (ConfigurationSection project : getSections("cells.upgrades")) {
-      projects.add(CellProject.fromConfig(level++, project));
+      prevProject = CellProject.fromConfig(prevProject, level++, project);
+      projects.add(prevProject);
     }
 
     return projects;

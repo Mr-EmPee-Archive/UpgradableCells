@@ -27,11 +27,22 @@ public class CellProject {
   @Getter
   private final int members;
 
+  @Getter
+  private CellProject parent;
+
   private final String schematicId;
   private Schematic schematic;
 
+  private Schematic getSchematic() {
+    if (schematic != null) {
+      return schematic;
+    } else {
+      return parent.getSchematic();
+    }
+  }
+
   public Vector getSpawnpoint() {
-    return schematic.getOrigin();
+    return getSchematic().getOrigin();
   }
 
   public void loadSchematic(File schematicFolder) {
@@ -47,13 +58,17 @@ public class CellProject {
   }
 
   public boolean canBuild(OwnedCell ownedCell, Location location) {
-    var data = schematic.getBlock(location.toVector().subtract(ownedCell.getOrigin().toVector()));
+    var data = getSchematic().getBlock(location.toVector().subtract(ownedCell.getOrigin().toVector()));
     return data == null || data.getMaterial() == Material.AIR;
   }
 
-  public static CellProject fromConfig(int level, ConfigurationSection config) {
+  /**
+   * Parse a cellProject configuration
+   */
+  public static CellProject fromConfig(CellProject parent, Integer level, ConfigurationSection config) {
     return CellProject.builder()
         .level(level)
+        .parent(parent)
         .schematicId(config.getString("schematic"))
         .cost(config.getDouble("cost", 0))
         .members(config.getInt("members", 1))
