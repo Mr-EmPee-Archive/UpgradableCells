@@ -34,7 +34,11 @@ menus:
         lore: "&7Click to teleport to the cell"
       upgrade:
         name: "&eUpgrade your cell"
-        lore: |
+        default-lore: |
           &r
           &r   &7Cost&8: &c%.2f $
+          &r
+        max-level-lore: |
+          &r
+          &r   &cReached max level!
           &r

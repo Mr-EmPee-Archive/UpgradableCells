@@ -33,7 +33,7 @@ public class ManageCellMenu implements Bean {
   }
 
   private ChestMenu createMenu(Player player, OwnedCell cell) {
-    return new ChestMenu(player, 5, langConfig.translate("menus.manage-cell.title")) {
+    return new ChestMenu(player, 6, langConfig.translate("menus.manage-cell.title")) {
       @Override
       public void onOpen() {
         populateMenu(this, cell);
@@ -44,13 +44,13 @@ public class ManageCellMenu implements Bean {
   private void populateMenu(ChestMenu menu, OwnedCell cell) {
     menu.top().setItem(2, 1, homeItem());
     menu.top().setItem(2, 3, upgradeItem(cell));
-    menu.top().setItem(0, 4, closeItem());
+    menu.top().setItem(0, 5, closeItem());
   }
 
   private GItem homeItem() {
     var item = ItemBuilder.from(XMaterial.IRON_DOOR.parseItem())
         .setName(langConfig.translate("menus.manage-cell.items.home.name"))
-        .setLore(langConfig.translate("menus.manage-cell.items.home.lore").split("\n"))
+        .setLore(langConfig.translateBlock("menus.manage-cell.items.home.lore"))
         .build();
 
     return GItem.builder()
@@ -76,32 +76,42 @@ public class ManageCellMenu implements Bean {
 
   private GItem upgradeItem(OwnedCell cell) {
     CellProject project;
-    if (cell.getLevel() != cellService.getMaxLevel()) {
+    if (cell.getLevel() != cellService.getLastProject().getLevel()) {
       project = cellService.getCellProject(cell.getLevel() + 1);
     } else {
       project = null;
     }
 
-    var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem())
-        .setName(langConfig.translate("menus.manage-cell.items.upgrade.name"))
-        .setLore(langConfig.translateBlock(
-                "menus.manage-cell.items.upgrade.lore",
-                project != null ? project.getCost() : "N/A"
-        )).build();
+    var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem());
+    item.setName(langConfig.translate("menus.manage-cell.items.upgrade.name"));
+    if (project != null) {
+      item.setLore(
+          langConfig.translateBlock(
+              "menus.manage-cell.items.upgrade.lore", project.getCost()
+          )
+      );
+    } else {
+      item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.max-level-lore"));
+    }
 
     return GItem.builder()
-        .itemstack(item)
+        .itemstack(item.build())
         .clickHandler(e -> {
           var source = (Player) e.getWhoClicked();
-          var targetCell = cellService.findCellByOwner(source.getUniqueId()).orElse(null);
           source.closeInventory();
 
+          var targetCell = cellService.findCellByOwner(source.getUniqueId()).orElse(null);
           if (targetCell == null) {
             Logger.log(source, langConfig.translate("cell.not-bought"));
             return;
           }
 
-          if (project == null) {
+          if (cellService.getLastProject().getLevel() == targetCell.getLevel()) {
+            return;
+          }
+
+          var targetProject = cellService.getCellProject(cell.getLevel() + 1);
+          if (targetProject == null) {
             Logger.log(source, langConfig.translate("cell.max-level"));
             return;
           }
@@ -111,13 +121,13 @@ public class ManageCellMenu implements Bean {
             return;
           }
 
-          if (!economy.has(source, project.getCost())) {
-            Logger.log(source, langConfig.translate("economy.missing-money", project.getCost()));
+          if (!economy.has(source, targetProject.getCost())) {
+            Logger.log(source, langConfig.translate("economy.missing-money", targetProject.getCost()));
             return;
           }
 
-          economy.withdrawPlayer(source, project.getCost());
-          cellService.upgradeCell(targetCell, project.getLevel());
+          economy.withdrawPlayer(source, targetProject.getCost());
+          cellService.upgradeCell(targetCell, targetProject.getLevel());
           Logger.log(source, langConfig.translate("cell.bought-upgrade"));
         }).build();
   }
