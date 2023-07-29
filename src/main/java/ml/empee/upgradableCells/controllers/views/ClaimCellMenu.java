@@ -7,12 +7,8 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.services.CellService;
-import ml.empee.upgradableCells.utils.Logger;
-import net.milkbowl.vault.economy.Economy;
+import ml.empee.upgradableCells.controllers.CellController;
 import org.bukkit.entity.Player;
-
-import java.util.Map;
 
 /**
  * Menu to claim a cell
@@ -23,9 +19,8 @@ public class ClaimCellMenu implements Bean {
 
   private static ClaimCellMenu instance;
 
-  private final CellService cellService;
+  private final CellController cellController;
   private final LangConfig langConfig;
-  private final Economy economy;
 
   @Override
   public void onStart() {
@@ -55,21 +50,7 @@ public class ClaimCellMenu implements Bean {
         .clickHandler(e -> {
           var player = (Player) e.getWhoClicked();
           player.closeInventory();
-
-          if (cellService.findCellByOwner(player.getUniqueId()).isPresent()) {
-            Logger.log(player, langConfig.translate("cell.already-bought"));
-            return;
-          }
-
-          var project = cellService.getCellProject(0);
-          if (!economy.has(player, project.getCost())) {
-            Logger.log(player, langConfig.translate("economy.missing-money", project.getCost()));
-            return;
-          }
-
-          economy.withdrawPlayer(player, project.getCost());
-          cellService.createCell(player.getUniqueId());
-          Logger.log(player, langConfig.translate("cell.bought-cell"));
+          cellController.createCell(player);
         }).build();
   }
 

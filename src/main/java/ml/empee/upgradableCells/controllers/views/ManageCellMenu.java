@@ -7,11 +7,10 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
-import ml.empee.upgradableCells.utils.Logger;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
 
 /**
@@ -24,8 +23,8 @@ public class ManageCellMenu implements Bean {
   private static ManageCellMenu instance;
 
   private final LangConfig langConfig;
+  private final CellController cellController;
   private final CellService cellService;
-  private final Economy economy;
 
   @Override
   public void onStart() {
@@ -57,39 +56,22 @@ public class ManageCellMenu implements Bean {
         .itemstack(item)
         .clickHandler(e -> {
           var player = (Player) e.getWhoClicked();
-          var cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
           player.closeInventory();
 
-          if (cell == null) {
-            Logger.log(player, langConfig.translate("cell.not-bought"));
-            return;
-          }
-
-          if (cell.getLevel() == 0 && cell.isPasting()) {
-            Logger.log(player, langConfig.translate("cell.still-building"));
-            return;
-          }
-
-          player.teleport(cellService.getSpawnpoint(cell));
+          cellController.teleportToCell(player);
         }).build();
   }
 
   private GItem upgradeItem(OwnedCell cell) {
-    CellProject project;
+    CellProject project = null;
     if (cell.getLevel() != cellService.getLastProject().getLevel()) {
       project = cellService.getCellProject(cell.getLevel() + 1);
-    } else {
-      project = null;
     }
 
     var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem());
     item.setName(langConfig.translate("menus.manage-cell.items.upgrade.name"));
     if (project != null) {
-      item.setLore(
-          langConfig.translateBlock(
-              "menus.manage-cell.items.upgrade.lore", project.getCost()
-          )
-      );
+      item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.lore", project.getCost()));
     } else {
       item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.max-level-lore"));
     }
@@ -98,37 +80,8 @@ public class ManageCellMenu implements Bean {
         .itemstack(item.build())
         .clickHandler(e -> {
           var source = (Player) e.getWhoClicked();
-          source.closeInventory();
-
-          var targetCell = cellService.findCellByOwner(source.getUniqueId()).orElse(null);
-          if (targetCell == null) {
-            Logger.log(source, langConfig.translate("cell.not-bought"));
-            return;
-          }
-
-          if (cellService.getLastProject().getLevel() == targetCell.getLevel()) {
-            return;
-          }
-
-          var targetProject = cellService.getCellProject(cell.getLevel() + 1);
-          if (targetProject == null) {
-            Logger.log(source, langConfig.translate("cell.max-level"));
-            return;
-          }
-
-          if (targetCell.isPasting()) {
-            Logger.log(source, langConfig.translate("cell.still-building"));
-            return;
-          }
-
-          if (!economy.has(source, targetProject.getCost())) {
-            Logger.log(source, langConfig.translate("economy.missing-money", targetProject.getCost()));
-            return;
-          }
-
-          economy.withdrawPlayer(source, targetProject.getCost());
-          cellService.upgradeCell(targetCell, targetProject.getLevel());
-          Logger.log(source, langConfig.translate("cell.bought-upgrade"));
+          e.getWhoClicked().closeInventory();
+          cellController.upgradeCell(source);
         }).build();
   }
 
