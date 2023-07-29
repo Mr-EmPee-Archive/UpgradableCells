@@ -32,11 +32,21 @@ public class CellService implements Bean {
   private final WorldService worldService;
 
   private final List<CellProject> cellUpgrades = new ArrayList<>();
-  private final PlayerCache<Optional<OwnedCell>> ownedCellsCache = new PlayerCache<>(true) {
+  private final PlayerCache<Optional<OwnedCell>> cells = new PlayerCache<>() {
     @Override
     @SneakyThrows
     public Optional<OwnedCell> fetchValue(UUID key) {
       return cellRepository.findByOwner(key).get();
+    }
+
+    @Override
+    @SneakyThrows
+    public void saveValue(UUID key, Optional<OwnedCell> value) {
+      if (value.isEmpty()) {
+        return;
+      }
+
+      cellRepository.save(value.get()).get();
     }
   };
 
@@ -78,7 +88,7 @@ public class CellService implements Bean {
 
   public void reload() {
     loadCellUpgrades();
-    ownedCellsCache.reload();
+    cells.reload();
   }
 
   public CellProject getLastProject() {
@@ -91,7 +101,7 @@ public class CellService implements Bean {
 
   @SneakyThrows
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
-    return ownedCellsCache.get(owner);
+    return cells.get(owner);
   }
 
   /**
@@ -101,7 +111,7 @@ public class CellService implements Bean {
     var position = location.toVector();
     var margin = worldService.getMargin();
 
-    return ownedCellsCache.values().stream()
+    return cells.values().stream()
         .filter(Optional::isPresent)
         .map(Optional::get)
         .filter(c -> {
@@ -119,44 +129,45 @@ public class CellService implements Bean {
   }
 
   /**
-   * Create a new cell
+   * Create a new cell and its structure
    */
   public CompletableFuture<Void> createCell(UUID player) {
     OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
-    CellProject project = getCellProject(cell.getLevel());
-    cell.setPasting(true);
-    saveCell(cell);
+    cells.put(player, Optional.of(cell));
 
-    return project.paste(cell).thenRun(() -> {
-      cell.setPasting(false);
-      saveCell(cell);
-    });
+    return pasteStructure(cell);
   }
 
   /**
-   * Update a cell level and perform all the related operations like pasting the new cell
+   * Update a cell level and its structure
    */
   public CompletableFuture<Void> upgradeCell(OwnedCell cell, int level) {
     cell.setLevel(level);
-    CellProject project = getCellProject(cell.getLevel());
+    cells.setDirty(cell.getOwner());
 
+    CellProject project = getCellProject(cell.getLevel());
     if (!project.hasSchematic()) {
-      saveCell(cell);
       return CompletableFuture.completedFuture(null);
     }
 
+    return pasteStructure(cell);
+  }
+
+  private CompletableFuture<Void> pasteStructure(OwnedCell cell) {
+    CellProject project = getCellProject(cell.getLevel());
     cell.setPasting(true);
-    saveCell(cell);
+
+    cells.setDirty(cell.getOwner());
 
     return project.paste(cell).thenRun(() -> {
       cell.setPasting(false);
-      saveCell(cell);
+      cells.setDirty(cell.getOwner());
     });
   }
 
-  private void saveCell(OwnedCell cell) {
-    ownedCellsCache.put(cell.getOwner(), Optional.of(cell));
-    cellRepository.save(cell);
+  private void setMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
+    cell.getMembers().put(member, rank);
+    cells.setDirty(member);
   }
 
 }

@@ -16,53 +16,41 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
- * Cache that fetch data when a player joins and prune it when the player leaves
+ * Cache that fetch asynchronously data when a player joins and prune it when the player leaves.
+ * This cache automatically saves every 14seconds the dirty data.
  */
 
 public abstract class PlayerCache<K> implements Map<UUID, K>, Listener {
 
-  private final ExecutorService executor;
-  private final Map<UUID, K> cache;
+  private static final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(PlayerCache.class);
+  private Map<UUID, K> cache = Collections.synchronizedMap(new HashMap<>());
+  private Map<UUID, K> dirtyCache = Collections.synchronizedMap(new HashMap<>());
 
-  /**
-   * @param async if the cache should fetch data using another thread
-   */
-  public PlayerCache(@Nullable JavaPlugin plugin, boolean async) {
-    if (async) {
-      executor = Executors.newSingleThreadExecutor();
-      cache = Collections.synchronizedMap(new HashMap<>());
-    } else {
-      executor = null;
-      cache = new HashMap<>();
-    }
+  public PlayerCache() {
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-    plugin.getServer().getPluginManager().registerEvents(
-        this, plugin
-    );
-  }
-
-  /**
-   * @param async if the cache should fetch the data asynchronously
-   */
-  public PlayerCache(boolean async) {
-    this(JavaPlugin.getProvidingPlugin(PlayerCache.class), async);
+    //10 - 12s
+    int syncPeriod = (20 * 10) + (int) (Math.random() * 40);
+    Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveDirtyValues, 0, syncPeriod);
   }
 
   public void reload() {
-    if (executor == null) {
-      refreshCache();
-    } else {
-      executor.submit(this::refreshCache);
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, this::refreshCache);
+  }
+
+  private void saveDirtyValues() {
+    if (dirtyCache.isEmpty()) {
+      return;
     }
+
+    dirtyCache.forEach(this::saveValue);
+    dirtyCache.clear();
   }
 
   private void refreshCache() {
-    cache.clear();
+    clear();
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       cache.put(player.getUniqueId(), fetchValue(player.getUniqueId()));
@@ -71,22 +59,27 @@ public abstract class PlayerCache<K> implements Map<UUID, K>, Listener {
 
   public abstract K fetchValue(UUID key);
 
+  public abstract void saveValue(UUID key, K value);
+
   @EventHandler(ignoreCancelled = true)
   public void onPlayerJoin(PlayerJoinEvent event) {
     UUID key = event.getPlayer().getUniqueId();
 
-    if (executor != null) {
-      CompletableFuture.supplyAsync(() -> fetchValue(key), executor).thenAccept(
-          v -> cache.put(key, v)
-      );
-    } else {
+    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
       cache.put(key, fetchValue(key));
-    }
+    });
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerQuit(PlayerQuitEvent event) {
     cache.remove(event.getPlayer().getUniqueId());
+  }
+
+  /**
+   * Mark an object as dirty its value on the next cycle will be saved
+   */
+  public void setDirty(UUID uuid) {
+    dirtyCache.put(uuid, cache.get(uuid));
   }
 
   @Override
@@ -117,6 +110,7 @@ public abstract class PlayerCache<K> implements Map<UUID, K>, Listener {
   @Nullable
   @Override
   public K put(UUID key, K value) {
+    dirtyCache.put(key, value);
     return cache.put(key, value);
   }
 
@@ -127,6 +121,7 @@ public abstract class PlayerCache<K> implements Map<UUID, K>, Listener {
 
   @Override
   public void putAll(@NotNull Map<? extends UUID, ? extends K> m) {
+    dirtyCache.putAll(m);
     cache.putAll(m);
   }
 
