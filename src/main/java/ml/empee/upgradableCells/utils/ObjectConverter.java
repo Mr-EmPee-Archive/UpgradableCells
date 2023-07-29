@@ -16,7 +16,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Converts complex objects into raw one
@@ -28,6 +36,60 @@ public class ObjectConverter {
   private static final Pattern LOCATION_PATTERN = Pattern.compile(
       ".+:-?\\d+(\\.\\d+)?:-?\\d+(\\.\\d+)?:-?\\d+(\\.\\d+)?"
   );
+
+  /**
+   * Parse a collection to a string
+   */
+  public static <T> String parseCollection(Collection<T> collection, Function<T, String> mapper) {
+    var encoder = Base64.getEncoder();
+    return collection.stream()
+        .map(s -> encoder.encodeToString(mapper.apply(s).getBytes()))
+        .reduce((first, second) -> first + "," + second)
+        .orElse("");
+  }
+
+  /**
+   * Parse a string to a collection
+   */
+  public static <T> ArrayList<T> parseCollection(String raw, Function<String, T> mapper) {
+    var decoder = Base64.getDecoder();
+    return Arrays.stream(raw.split(","))
+        .map(s -> new String(decoder.decode(s.getBytes())))
+        .map(mapper)
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  /**
+   * Parse a map to a string
+   */
+  public static <T, K> String parseMap(Map<T, K> map, Function<T, String> keyMapper, Function<K, String> valueMapper) {
+    var encoder = Base64.getEncoder();
+    StringBuilder builder = new StringBuilder();
+    map.forEach((key, value) -> {
+      var encodedKey = encoder.encodeToString(keyMapper.apply(key).getBytes());
+      var encodedValue = encoder.encodeToString(valueMapper.apply(value).getBytes());
+      builder.append(",").append(encodedKey).append("->").append(encodedValue);
+    });
+
+    return builder.toString();
+  }
+
+  /**
+   * Parse a map from a string
+   */
+  public static <T, K> Map<T, K> parseMap(String raw, Function<String, T> keyMapper, Function<String, K> valueMapper) {
+    var decoder = Base64.getDecoder();
+    Map<T, K> map = new HashMap<>();
+    for (String entry : raw.split(",")) {
+      String[] items = entry.split("->");
+      map.put(
+          keyMapper.apply(new String(decoder.decode(items[0]))),
+          valueMapper.apply(new String(decoder.decode(items[0])))
+      );
+    }
+
+    return map;
+  }
 
   /**
    * Parse a location from a string

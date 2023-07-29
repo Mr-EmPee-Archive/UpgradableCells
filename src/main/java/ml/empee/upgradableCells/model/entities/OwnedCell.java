@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -17,6 +20,9 @@ public class OwnedCell {
 
   @Getter @Setter
   private UUID owner;
+
+  @Getter @Setter
+  private Map<UUID, Rank> members = new HashMap<>();
 
   @Getter @Setter
   private Integer level;
@@ -37,6 +43,13 @@ public class OwnedCell {
     cell.setLevel(level);
     cell.setOrigin(origin);
     return cell;
+  }
+
+  /**
+   * Cell ranks
+   */
+  public enum Rank {
+    MEMBER, GUARD, MANAGER
   }
 
 }

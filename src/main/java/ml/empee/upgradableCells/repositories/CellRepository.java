@@ -33,7 +33,8 @@ public class CellRepository implements Bean {
               owner STRING PRIMARY KEY,
               level INTEGER NOT NULL,
               origin STRING NOT NULL,
-              pasting INTEGER DEFAULT 0 NOT NULL
+              pasting INTEGER DEFAULT 0 NOT NULL,
+              members STRING DEFAULT "" NOT NULL
           );
           """);
     }
@@ -44,12 +45,18 @@ public class CellRepository implements Bean {
    */
   public CompletableFuture<Void> save(OwnedCell data) {
     return CompletableFuture.runAsync(() -> {
-      var query = "INSERT OR REPLACE INTO cells (owner, level, origin, pasting) VALUES (?, ?, ?, ?);";
+      var query = """
+          INSERT OR REPLACE INTO cells (
+            owner, level, origin, pasting, members
+          ) VALUES (?, ?, ?, ?, ?);
+          """;
+
       try (var stm = client.getJdbcConnection().prepareStatement(query)) {
         stm.setString(1, data.getOwner().toString());
         stm.setInt(2, data.getLevel());
         stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
         stm.setInt(4, data.isPasting() ? 1 : 0);
+        stm.setString(5, ObjectConverter.parseMap(data.getMembers(), UUID::toString, Enum::name));
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -85,6 +92,10 @@ public class CellRepository implements Bean {
     cell.setOwner(UUID.fromString(rs.getString("owner")));
     cell.setLevel(rs.getInt("level"));
     cell.setOrigin(ObjectConverter.parseLocation(rs.getString("origin")));
+    cell.setMembers(ObjectConverter.parseMap(
+        rs.getString("members"), UUID::fromString, OwnedCell.Rank::valueOf
+    ));
+
     return cell;
   }
 
