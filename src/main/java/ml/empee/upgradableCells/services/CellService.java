@@ -4,17 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
-import ml.empee.upgradableCells.model.content.PlayerCache;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.repositories.CellRepository;
 import ml.empee.upgradableCells.utils.Logger;
+import ml.empee.upgradableCells.utils.helpers.cache.PlayerCache;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +35,7 @@ public class CellService implements Bean {
   private final WorldService worldService;
 
   private final List<CellProject> cellUpgrades = new ArrayList<>();
-  private final PlayerCache<Optional<OwnedCell>> cells = new PlayerCache<>() {
+  private final PlayerCache<Optional<OwnedCell>> cells = new PlayerCache<>(Duration.of(5, ChronoUnit.SECONDS)) {
     @Override
     @SneakyThrows
     public Optional<OwnedCell> fetchValue(UUID key) {
@@ -41,12 +44,14 @@ public class CellService implements Bean {
 
     @Override
     @SneakyThrows
-    public void saveValue(UUID key, Optional<OwnedCell> value) {
-      if (value.isEmpty()) {
-        return;
-      }
+    public void saveValues(Map<UUID, Optional<OwnedCell>> map) {
+      for (Optional<OwnedCell> cell : map.values()) {
+        if (cell.isEmpty()) {
+          continue;
+        }
 
-      cellRepository.save(value.get()).get();
+        cellRepository.save(cell.get()).get();
+      }
     }
   };
 

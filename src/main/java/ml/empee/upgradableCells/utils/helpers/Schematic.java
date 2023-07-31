@@ -1,4 +1,4 @@
-package ml.empee.upgradableCells.model.content;
+package ml.empee.upgradableCells.utils.helpers;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -7,14 +7,12 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
-import lombok.Getter;
 import lombok.SneakyThrows;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.model.events.CellLevelUpEvent;
 import ml.empee.upgradableCells.utils.Logger;
 import ml.empee.upgradableCells.utils.NmsUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;

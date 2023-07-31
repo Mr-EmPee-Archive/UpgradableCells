@@ -2,7 +2,7 @@ package ml.empee.upgradableCells.model.entities;
 
 import lombok.Builder;
 import lombok.Getter;
-import ml.empee.upgradableCells.model.content.Schematic;
+import ml.empee.upgradableCells.utils.helpers.Schematic;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
