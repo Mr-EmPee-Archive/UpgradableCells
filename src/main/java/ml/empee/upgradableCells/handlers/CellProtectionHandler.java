@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.ioc.RegisteredListener;
 import ml.empee.upgradableCells.constants.Permissions;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -45,7 +47,10 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
       return true;
     }
 
-    //TODO: Check authorization
+    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
+    if (member == null || member.canBuild()) {
+      return false;
+    }
 
     var project = cellService.getCellProject(cell.getLevel());
     return project.canBuild(cell, target);
@@ -53,11 +58,26 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerInteract(PlayerInteractEvent event) {
-    if (event.getPlayer().hasPermission(Permissions.ADMIN)) {
+    var player = event.getPlayer();
+    if (player.hasPermission(Permissions.ADMIN)) {
       return;
     }
 
-    //TODO: Check authorization
+    var clickedBlock = event.getClickedBlock();
+    var cell = cellService.findCellByLocation(clickedBlock.getLocation()).orElse(null);
+    if (cell == null) {
+      return;
+    }
+
+    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
+    if (member == null) {
+      event.setCancelled(true);
+      return;
+    }
+
+    if (clickedBlock.getType() == Material.CHEST && !member.canAccessChests()) {
+      event.setCancelled(true);
+    }
   }
 
 }

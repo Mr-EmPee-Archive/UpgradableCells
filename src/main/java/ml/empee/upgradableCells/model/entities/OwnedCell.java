@@ -1,7 +1,9 @@
 package ml.empee.upgradableCells.model.entities;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.bukkit.Location;
 
 import java.util.Collections;
@@ -21,7 +23,7 @@ public class OwnedCell {
   @Getter @Setter
   private UUID owner;
 
-  @Getter @Setter
+  @Setter
   private Map<UUID, Rank> members = new HashMap<>();
 
   @Getter @Setter
@@ -45,11 +47,29 @@ public class OwnedCell {
     return cell;
   }
 
+  public Map<UUID, Rank> getMembers() {
+    if (!members.containsValue(Rank.OWNER)) {
+      members.put(owner, Rank.OWNER);
+    }
+
+    return members;
+  }
+
   /**
    * Cell ranks
    */
+  @RequiredArgsConstructor
   public enum Rank {
-    MEMBER, GUARD, MANAGER
+    MEMBER(false, false),
+    GUARD(true, true),
+    MANAGER(true, true),
+    OWNER(true, true);
+
+    @Getter @Accessors(fluent = true)
+    private final boolean canBuild;
+
+    @Getter @Accessors(fluent = true)
+    private final boolean canAccessChests;
   }
 
 }
