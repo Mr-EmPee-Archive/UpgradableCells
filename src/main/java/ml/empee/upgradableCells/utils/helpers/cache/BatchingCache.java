@@ -58,8 +58,8 @@ public abstract class BatchingCache<K, T> implements Map<K, T> {
   /**
    * Mark an object as dirty its value on the next batching cycle it will be saved
    */
-  public void setDirty(K uuid) {
-    dirtyCache.put(uuid, cache.get(uuid));
+  public void setDirty(K key) {
+    dirtyCache.put(key, cache.get(key));
   }
 
   @Override
