@@ -18,7 +18,7 @@ import java.util.Set;
 
 public abstract class BatchingCache<K, T> implements Map<K, T> {
 
-  protected static final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(PlayerCache.class);
+  protected static final JavaPlugin plugin = JavaPlugin.getProvidingPlugin(BatchingCache.class);
   private final Map<K, T> cache = Collections.synchronizedMap(new HashMap<>());
   private final Map<K, T> dirtyCache = Collections.synchronizedMap(new HashMap<>());
 
@@ -27,13 +27,11 @@ public abstract class BatchingCache<K, T> implements Map<K, T> {
     tickPeriod += (int) (Math.random() * 40);
 
     Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveDirtyValues, 0, tickPeriod);
-    reload();
   }
 
   public void reload() {
     clear();
-
-    Bukkit.getScheduler().runTaskAsynchronously(plugin, this::preloadCache);
+    preloadCache();
   }
 
   private void saveDirtyValues() {
@@ -47,12 +45,10 @@ public abstract class BatchingCache<K, T> implements Map<K, T> {
 
   protected abstract void preloadCache();
 
-  public abstract T fetchValue(K key);
-
   public abstract void saveValues(Map<K, T> dirtyCache);
 
-  protected void loadValue(K key) {
-    cache.put(key, fetchValue(key));
+  protected void loadValue(K key, T value) {
+    cache.put(key, value);
   }
 
   /**
@@ -83,6 +79,7 @@ public abstract class BatchingCache<K, T> implements Map<K, T> {
   }
 
   @Override
+  @Nullable
   public T get(Object key) {
     return cache.get(key);
   }

@@ -8,6 +8,8 @@ import ml.empee.upgradableCells.utils.ObjectConverter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -30,11 +32,11 @@ public class CellRepository implements Bean {
     try (var stm = client.getJdbcConnection().createStatement()) {
       stm.executeUpdate("""
           CREATE TABLE IF NOT EXISTS cells (
-              owner STRING PRIMARY KEY,
+              owner TEXT PRIMARY KEY,
               level INTEGER NOT NULL,
-              origin STRING NOT NULL,
+              origin TEXT NOT NULL,
               pasting INTEGER DEFAULT 0 NOT NULL,
-              members STRING DEFAULT "" NOT NULL
+              members TEXT DEFAULT "" NOT NULL
           );
           """);
     }
@@ -83,6 +85,28 @@ public class CellRepository implements Bean {
         throw new RuntimeException(e);
       }
     }, client.getThreadPool());
+  }
+
+  public CompletableFuture<List<OwnedCell>> findByMember(UUID member) {
+    return CompletableFuture.supplyAsync(() -> {
+      var query = "SELECT * FROM cells WHERE members LIKE ?";
+      try (var stm = client.getJdbcConnection().prepareStatement(query)) {
+        stm.setString(1, "\"" + member + "\":");
+        return parseList(stm.executeQuery());
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }, client.getThreadPool());
+  }
+
+  @SneakyThrows
+  private List<OwnedCell> parseList(ResultSet rs) {
+    List<OwnedCell> cells = new ArrayList<>();
+    while (rs.next()) {
+      cells.add(parseResult(rs));
+    }
+
+    return cells;
   }
 
   @SneakyThrows

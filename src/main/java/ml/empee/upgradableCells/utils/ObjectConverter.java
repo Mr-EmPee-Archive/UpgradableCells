@@ -1,6 +1,8 @@
 package ml.empee.upgradableCells.utils;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ObjectConverter {
 
+  private static final Gson gson = new GsonBuilder().create();
   private static final Pattern LOCATION_PATTERN = Pattern.compile(
       ".+:-?\\d+(\\.\\d+)?:-?\\d+(\\.\\d+)?:-?\\d+(\\.\\d+)?"
   );
@@ -41,20 +44,18 @@ public class ObjectConverter {
    * Parse a collection to a string
    */
   public static <T> String parseCollection(Collection<T> collection, Function<T, String> mapper) {
-    var encoder = Base64.getEncoder();
-    return collection.stream()
-        .map(s -> encoder.encodeToString(mapper.apply(s).getBytes()))
-        .reduce((first, second) -> first + "," + second)
-        .orElse("");
+    return gson.toJson(
+        collection.stream()
+            .map(mapper)
+            .toList()
+    );
   }
 
   /**
    * Parse a string to a collection
    */
   public static <T> ArrayList<T> parseCollection(String raw, Function<String, T> mapper) {
-    var decoder = Base64.getDecoder();
-    return Arrays.stream(raw.split(","))
-        .map(s -> new String(decoder.decode(s.getBytes())))
+    return Arrays.stream(gson.fromJson(raw, String[].class))
         .map(mapper)
         .collect(Collectors.toCollection(ArrayList::new));
   }
@@ -63,30 +64,23 @@ public class ObjectConverter {
    * Parse a map to a string
    */
   public static <T, K> String parseMap(Map<T, K> map, Function<T, String> keyMapper, Function<K, String> valueMapper) {
-    var encoder = Base64.getEncoder();
-    StringBuilder builder = new StringBuilder();
+    Map<String, String> encodedMap = new HashMap<>();
     map.forEach((key, value) -> {
-      var encodedKey = encoder.encodeToString(keyMapper.apply(key).getBytes());
-      var encodedValue = encoder.encodeToString(valueMapper.apply(value).getBytes());
-      builder.append(",").append(encodedKey).append("->").append(encodedValue);
+      encodedMap.put(keyMapper.apply(key), valueMapper.apply(value));
     });
 
-    return builder.toString();
+    return gson.toJson(encodedMap);
   }
 
   /**
    * Parse a map from a string
    */
   public static <T, K> Map<T, K> parseMap(String raw, Function<String, T> keyMapper, Function<String, K> valueMapper) {
-    var decoder = Base64.getDecoder();
+    Map<String, String> encodedMap = gson.fromJson(raw, Map.class);
     Map<T, K> map = new HashMap<>();
-    for (String entry : raw.split(",")) {
-      String[] items = entry.split("->");
-      map.put(
-          keyMapper.apply(new String(decoder.decode(items[0]))),
-          valueMapper.apply(new String(decoder.decode(items[0])))
-      );
-    }
+    encodedMap.forEach((key, value) -> {
+      map.put(keyMapper.apply(key), valueMapper.apply(value));
+    });
 
     return map;
   }

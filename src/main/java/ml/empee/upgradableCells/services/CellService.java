@@ -3,23 +3,19 @@ package ml.empee.upgradableCells.services;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.services.cache.CellsCache;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.repositories.CellRepository;
 import ml.empee.upgradableCells.utils.Logger;
-import ml.empee.upgradableCells.utils.helpers.cache.PlayerCache;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -34,34 +30,13 @@ public class CellService implements Bean {
 
   private final JavaPlugin plugin;
   private final PluginConfig pluginConfig;
-  private final CellRepository cellRepository;
+  private final CellsCache cells;
   private final WorldService worldService;
 
   private final List<CellProject> cellUpgrades = new ArrayList<>();
-
   private final Cache<String, OwnedCell> invitations = CacheBuilder.newBuilder()
       .expireAfterWrite(2, TimeUnit.MINUTES)
       .build();
-
-  private final PlayerCache<Optional<OwnedCell>> cells = new PlayerCache<>(Duration.of(5, ChronoUnit.SECONDS)) {
-    @Override
-    @SneakyThrows
-    public Optional<OwnedCell> fetchValue(UUID key) {
-      return cellRepository.findByOwner(key).get();
-    }
-
-    @Override
-    @SneakyThrows
-    public void saveValues(Map<UUID, Optional<OwnedCell>> map) {
-      for (Optional<OwnedCell> cell : map.values()) {
-        if (cell.isEmpty()) {
-          continue;
-        }
-
-        cellRepository.save(cell.get()).get();
-      }
-    }
-  };
 
   private File schematicFolder;
 
@@ -112,9 +87,16 @@ public class CellService implements Bean {
     return cellUpgrades.get(level);
   }
 
-  @SneakyThrows
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
     return cells.get(owner);
+  }
+
+  public List<OwnedCell> findCellsByMember(UUID member) {
+    return cells.values().stream()
+        .map(c -> c.orElse(null))
+        .filter(Objects::nonNull)
+        .filter(c -> c.getMembers().containsKey(member))
+        .toList();
   }
 
   /**
