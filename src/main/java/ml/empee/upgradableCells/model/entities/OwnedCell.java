@@ -6,10 +6,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,23 +21,31 @@ import java.util.UUID;
 
 public class OwnedCell {
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private int id;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private UUID owner;
 
   @Setter
   private Map<UUID, Rank> members = new HashMap<>();
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private Integer level;
 
   @Setter
   private Location origin;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private boolean pasting;
+
+  public OfflinePlayer getOwnerPlayer() {
+    return Bukkit.getOfflinePlayer(owner);
+  }
 
   public Location getOrigin() {
     return origin.clone();
@@ -72,16 +79,26 @@ public class OwnedCell {
    */
   @RequiredArgsConstructor
   public enum Rank {
-    MEMBER(false, false),
-    GUARD(true, true),
-    MANAGER(true, true),
-    OWNER(true, true);
+    MEMBER(false, false, false, false),
+    GUARD(true, true, false, false),
+    MANAGER(true, true, true, false),
+    OWNER(true, true, true, true);
 
-    @Getter @Accessors(fluent = true)
+    @Getter
+    @Accessors(fluent = true)
     private final boolean canBuild;
 
-    @Getter @Accessors(fluent = true)
+    @Getter
+    @Accessors(fluent = true)
     private final boolean canAccessChests;
+
+    @Getter
+    @Accessors(fluent = true)
+    private final boolean canInvite;
+
+    @Getter
+    @Accessors(fluent = true)
+    private final boolean canUpgrade;
   }
 
 }

@@ -41,12 +41,12 @@ public class ManageCellMenu implements Bean {
   }
 
   private void populateMenu(ChestMenu menu, OwnedCell cell) {
-    menu.top().setItem(2, 1, homeItem());
-    menu.top().setItem(2, 3, upgradeItem(cell));
+    menu.top().setItem(2, 1, homeItem(cell));
+    menu.top().setItem(2, 3, upgradeItem(cell, menu.getPlayer()));
     menu.top().setItem(0, 5, closeItem());
   }
 
-  private GItem homeItem() {
+  private GItem homeItem(OwnedCell cell) {
     var item = ItemBuilder.from(XMaterial.IRON_DOOR.parseItem())
         .setName(langConfig.translate("menus.manage-cell.items.home.name"))
         .setLore(langConfig.translateBlock("menus.manage-cell.items.home.lore"))
@@ -58,11 +58,11 @@ public class ManageCellMenu implements Bean {
           var player = (Player) e.getWhoClicked();
           player.closeInventory();
 
-          cellController.teleportToCell(player);
+          cellController.teleportToCell(player, cell);
         }).build();
   }
 
-  private GItem upgradeItem(OwnedCell cell) {
+  private GItem upgradeItem(OwnedCell cell, Player player) {
     CellProject project = null;
     if (cell.getLevel() != cellService.getLastProject().getLevel()) {
       project = cellService.getCellProject(cell.getLevel() + 1);
@@ -78,10 +78,11 @@ public class ManageCellMenu implements Bean {
 
     return GItem.builder()
         .itemstack(item.build())
+        .visibilityHandler(() -> cell.getMembers().get(player.getUniqueId()).canUpgrade())
         .clickHandler(e -> {
           var source = (Player) e.getWhoClicked();
           e.getWhoClicked().closeInventory();
-          cellController.upgradeCell(source);
+          cellController.upgradeCell(source, cell);
         }).build();
   }
 

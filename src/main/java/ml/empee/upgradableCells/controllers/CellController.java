@@ -6,13 +6,13 @@ import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
+import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-
-import java.util.UUID;
 
 /**
  * Controller use to manage cell operations
@@ -25,13 +25,24 @@ public class CellController implements Bean {
   private final Economy economy;
   private final LangConfig langConfig;
 
+  /**
+   * Open the cell management menu
+   */
   @CommandMethod("cell")
-  public void openCell(Player player) {
-    OwnedCell cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
-    if (cell == null) {
-      ClaimCellMenu.open(player);
+  public void openCell(Player sender) {
+    var cells = cellService.findCellsByMember(sender.getUniqueId());
+
+    if (cells.isEmpty()) {
+      ClaimCellMenu.open(sender);
+      return;
+    }
+
+    if (cells.size() == 1) {
+      ManageCellMenu.open(sender, cells.get(0));
     } else {
-      ManageCellMenu.open(player, cell);
+      SelectCellMenu.selectCell(sender, cells).thenAccept(
+          c -> ManageCellMenu.open(sender, c)
+      );
     }
   }
 
@@ -39,23 +50,82 @@ public class CellController implements Bean {
    * Teleport a player to his cell
    */
   @CommandMethod("home")
-  public void teleportToCell(Player player) {
-    var cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
+  public void teleportToCell(Player sender) {
+    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
 
     if (cell == null) {
-      Logger.log(player, langConfig.translate("cell.not-bought"));
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
       return;
     }
 
-    teleportToCell(player, cell);
+    teleportToCell(sender, cell);
+  }
+
+  @CommandMethod("cell join <target>")
+  public void joinCell(Player sender, Player target) {
+    OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(sender, langConfig.translate("cell.not-existing"));
+      return;
+    }
+
+    joinCell(sender, cell);
+  }
+
+  /**
+   * Invite a player to a specific cell
+   */
+  @CommandMethod("cell invite <target>")
+  public void inviteToCell(Player sender, Player target) {
+    var cells = cellService.findCellsByMember(sender.getUniqueId());
+
+    if (cells.isEmpty()) {
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    if (cells.size() == 1) {
+      invitePlayer(cells.get(0), sender, target);
+    } else {
+      SelectCellMenu.selectCell(sender, cells).thenAccept(
+          c -> invitePlayer(c, sender, target)
+      );
+    }
+  }
+
+  /**
+   * Leave a cell
+   */
+  @CommandMethod("cell leave")
+  public void leaveCell(Player sender) {
+    var cells = cellService.findCellsByMember(sender.getUniqueId());
+
+    if (cells.isEmpty()) {
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    if (cells.size() == 1) {
+      leaveCell(sender, cells.get(0));
+    } else {
+      SelectCellMenu.selectCell(sender, cells).thenAccept(
+          c -> leaveCell(sender, c)
+      );
+    }
   }
 
   /**
    * Invite a player to a cell
    */
   public void invitePlayer(OwnedCell cell, Player source, Player target) {
+    if (!cell.getMembers().get(source.getUniqueId()).canInvite()) {
+      Logger.log(source, langConfig.translate("cell.invitation.missing-perm"));
+      return;
+    }
+
     if (cell.getMembers().containsKey(target.getUniqueId())) {
-      Logger.log(source, langConfig.translate("cell.invitation.already-member"));
+      Logger.log(source, langConfig.translate("cell.invitation.already-joined"));
       return;
     }
 
@@ -66,13 +136,18 @@ public class CellController implements Bean {
 
     cellService.invite(cell, target.getUniqueId());
     Logger.log(source, langConfig.translate("cell.invitation.sent", target.getName()));
-    Logger.log(target, langConfig.translate("cell.invitation.received", source.getName()));
+    Logger.log(target, langConfig.translate("cell.invitation.received", cell.getOwnerPlayer().getName()));
   }
 
   /**
    * Join a cell if invited
    */
   public void joinCell(Player player, OwnedCell cell) {
+    if (cell.getMembers().containsKey(player.getUniqueId())) {
+      Logger.log(player, langConfig.translate("cell.invitation.already-joined"));
+      return;
+    }
+
     if (!cellService.hasInvitation(cell, player.getUniqueId())) {
       Logger.log(player, langConfig.translate("cell.invitation.missing"));
       return;
@@ -81,9 +156,9 @@ public class CellController implements Bean {
     cellService.addMember(cell, player.getUniqueId(), OwnedCell.Rank.MEMBER);
     cellService.removeInvitation(cell, player.getUniqueId());
 
-    Logger.log(player, langConfig.translate("cell.joined"));
+    Logger.log(player, langConfig.translate("cell.members.joined"));
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.has-joined", player.getName()));
+      Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -91,14 +166,20 @@ public class CellController implements Bean {
    * Leave a cell
    */
   public void leaveCell(Player player, OwnedCell cell) {
-    if (cell.getMembers().containsKey(player.getUniqueId())) {
-      Logger.log(player, langConfig.translate("cell.not-member"));
+    if (!cell.getMembers().containsKey(player.getUniqueId())) {
+      Logger.log(player, langConfig.translate("cell.members.not-member"));
+      return;
+    }
+
+    if (cell.getMembers().get(player.getUniqueId()) == OwnedCell.Rank.OWNER) {
+      Logger.log(player, langConfig.translate("cell.owner-leave"));
+      return;
     }
 
     cellService.removeMember(cell, player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.left"));
+    Logger.log(player, langConfig.translate("cell.members.left"));
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.has-left", player.getName()));
+      Logger.log(member, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -145,20 +226,6 @@ public class CellController implements Bean {
     economy.withdrawPlayer(player, project.getCost());
     cellService.upgradeCell(cell, project.getLevel());
     Logger.log(player, langConfig.translate("cell.bought-upgrade"));
-  }
-
-  /**
-   * Level-up his cell
-   */
-  public void upgradeCell(Player player) {
-    var cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
-
-    if (cell == null) {
-      Logger.log(player, langConfig.translate("cell.not-bought"));
-      return;
-    }
-
-    upgradeCell(player, cell);
   }
 
   /**

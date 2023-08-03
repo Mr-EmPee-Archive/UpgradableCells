@@ -7,10 +7,29 @@ cmd:
   invalid-argument: "&cInvalid argument, %s"
   unknown-error: "&cAn error has occurred, inform a staff member"
 
+navigation:
+  next: "&eNext"
+  previous: "&ePrevious"
+
 cell:
+  invitation:
+    missing: "&cYou haven't been invited to the cell"
+    missing-perm: "&cYou haven't permission to invite players"
+    already-joined: "&cThe player is already a member of the cell"
+    already-invited: "&cThe player has been already invited"
+    sent: "&7Invited &e%s&7 to join"
+    received: "&7You have received an invitation to the cell of &e%s"
+  members:
+    left: "&7You have left the cell"
+    has-left: "&7The player &e%s &7has left the cell of &e%s"
+    joined: "&7You have joined the cell"
+    has-joined: "&7The player &e%s &7has joined the cell of &e%s"
+    not-member: "&cYou aren't a member of the cell"
+  owner-leave: "&cYou can't leave your own cell!"
   bought-cell: "&7You have bought your cell!"
   bought-upgrade: "&7You have bought an upgrade for your cell!"
   max-level: "&cYour cell is at the max level!"
+  not-existing: "&cThe specified cell doesn't exists"
   not-bought: "&cYou haven't bought a cell yet."
   already-bought: "&cYou have already bought a cell!"
   still-building: "&cThe cell is still under construction!"
@@ -42,3 +61,6 @@ menus:
           &r
           &r   &cReached max level!
           &r
+
+  select-cell:
+    title: "Select cell"
