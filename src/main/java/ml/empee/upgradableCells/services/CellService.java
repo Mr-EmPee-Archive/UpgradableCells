@@ -1,5 +1,7 @@
 package ml.empee.upgradableCells.services;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
@@ -21,9 +23,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Handle cell upgrades
+ * Handle cell management
  */
 
 @RequiredArgsConstructor
@@ -35,6 +38,11 @@ public class CellService implements Bean {
   private final WorldService worldService;
 
   private final List<CellProject> cellUpgrades = new ArrayList<>();
+
+  private final Cache<String, OwnedCell> invitations = CacheBuilder.newBuilder()
+      .expireAfterWrite(2, TimeUnit.MINUTES)
+      .build();
+
   private final PlayerCache<Optional<OwnedCell>> cells = new PlayerCache<>(Duration.of(5, ChronoUnit.SECONDS)) {
     @Override
     @SneakyThrows
@@ -140,7 +148,7 @@ public class CellService implements Bean {
     OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
     cells.put(player, Optional.of(cell));
 
-    return pasteStructure(cell);
+    return pasteCellStructure(cell);
   }
 
   /**
@@ -155,10 +163,10 @@ public class CellService implements Bean {
       return CompletableFuture.completedFuture(null);
     }
 
-    return pasteStructure(cell);
+    return pasteCellStructure(cell);
   }
 
-  private CompletableFuture<Void> pasteStructure(OwnedCell cell) {
+  private CompletableFuture<Void> pasteCellStructure(OwnedCell cell) {
     CellProject project = getCellProject(cell.getLevel());
     cell.setPasting(true);
 
@@ -170,9 +178,27 @@ public class CellService implements Bean {
     });
   }
 
-  private void setMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
+  public void addMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
     cell.getMembers().put(member, rank);
-    cells.setDirty(member);
+    cells.setDirty(cell.getOwner());
+  }
+
+  public void removeMember(OwnedCell cell, UUID member) {
+    cell.getMembers().remove(member);
+    cells.setDirty(cell.getOwner());
+  }
+
+  public void invite(OwnedCell cell, UUID player) {
+    var invitationId = cell.getOwner() + "->" + player;
+    invitations.put(invitationId, cell);
+  }
+
+  public boolean hasInvitation(OwnedCell cell, UUID player) {
+    return invitations.getIfPresent(cell.getOwner() + "->" + player) != null;
+  }
+
+  public void removeInvitation(OwnedCell cell, UUID player) {
+    invitations.invalidate(cell.getOwner() + "->" + player);
   }
 
 }

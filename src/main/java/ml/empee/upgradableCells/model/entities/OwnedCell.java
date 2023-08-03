@@ -4,11 +4,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -53,6 +58,13 @@ public class OwnedCell {
     }
 
     return members;
+  }
+
+  public List<Player> getOnlineMembers() {
+    return members.keySet().stream()
+        .map(Bukkit::getPlayer)
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   /**

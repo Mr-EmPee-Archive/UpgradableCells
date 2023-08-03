@@ -51,31 +51,62 @@ public class CellController implements Bean {
   }
 
   /**
-   * Buy a cell
+   * Invite a player to a cell
    */
-  public void createCell(Player player) {
-    createCell(player, player.getUniqueId());
-  }
-
-  /**
-   * Level-up his cell
-   */
-  public void upgradeCell(Player player) {
-    var cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
-
-    if (cell == null) {
-      Logger.log(player, langConfig.translate("cell.not-bought"));
+  public void invitePlayer(OwnedCell cell, Player source, Player target) {
+    if (cell.getMembers().containsKey(target.getUniqueId())) {
+      Logger.log(source, langConfig.translate("cell.invitation.already-member"));
       return;
     }
 
-    upgradeCell(player, cell);
+    if (cellService.hasInvitation(cell, target.getUniqueId())) {
+      Logger.log(source, langConfig.translate("cell.invitation.already-invited"));
+      return;
+    }
+
+    cellService.invite(cell, target.getUniqueId());
+    Logger.log(source, langConfig.translate("cell.invitation.sent", target.getName()));
+    Logger.log(target, langConfig.translate("cell.invitation.received", source.getName()));
   }
 
   /**
-   * Create a cell for the targeted uuid
+   * Join a cell if invited
    */
-  public void createCell(Player player, UUID target) {
-    if (cellService.findCellByOwner(target).isPresent()) {
+  public void joinCell(Player player, OwnedCell cell) {
+    if (!cellService.hasInvitation(cell, player.getUniqueId())) {
+      Logger.log(player, langConfig.translate("cell.invitation.missing"));
+      return;
+    }
+
+    cellService.addMember(cell, player.getUniqueId(), OwnedCell.Rank.MEMBER);
+    cellService.removeInvitation(cell, player.getUniqueId());
+
+    Logger.log(player, langConfig.translate("cell.joined"));
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.has-joined", player.getName()));
+    }
+  }
+
+  /**
+   * Leave a cell
+   */
+  public void leaveCell(Player player, OwnedCell cell) {
+    if (cell.getMembers().containsKey(player.getUniqueId())) {
+      Logger.log(player, langConfig.translate("cell.not-member"));
+    }
+
+    cellService.removeMember(cell, player.getUniqueId());
+    Logger.log(player, langConfig.translate("cell.left"));
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.has-left", player.getName()));
+    }
+  }
+
+  /**
+   * Create a cell
+   */
+  public void createCell(Player player) {
+    if (cellService.findCellByOwner(player.getUniqueId()).isPresent()) {
       Logger.log(player, langConfig.translate("cell.already-bought"));
       return;
     }
@@ -114,6 +145,20 @@ public class CellController implements Bean {
     economy.withdrawPlayer(player, project.getCost());
     cellService.upgradeCell(cell, project.getLevel());
     Logger.log(player, langConfig.translate("cell.bought-upgrade"));
+  }
+
+  /**
+   * Level-up his cell
+   */
+  public void upgradeCell(Player player) {
+    var cell = cellService.findCellByOwner(player.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(player, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    upgradeCell(player, cell);
   }
 
   /**
