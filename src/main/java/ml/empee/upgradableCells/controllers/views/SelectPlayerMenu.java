@@ -42,7 +42,7 @@ public class SelectPlayerMenu implements Bean {
   }
 
   private ChestMenu createMenu(Player player, List<OfflinePlayer> cells, CompletableFuture<OfflinePlayer> future) {
-    return new ChestMenu(player, 3, langConfig.translate("menus.select-player.title")) {
+    return new ChestMenu(player, 6, langConfig.translate("menus.select-player.title")) {
       @Override
       public void onOpen() {
         populateMenu(this, cells, future);
