@@ -20,6 +20,7 @@ cell:
     sent: "&7Invited &e%s&7 to join"
     received: "&7You have received an invitation to the cell of &e%s"
   members:
+    no-members: "&cUnable to find any manageable member"
     has-left: "&7&e%s &7has left the cell of &e%s"
     has-joined: "&7&e%s &7has joined the cell of &e%s"
     not-member: "&cYou aren't a member of the cell"
@@ -57,6 +58,9 @@ menus:
     items:
       close:
         name: "&cClose"
+      members:
+        name: "&eMembers"
+        lore: "&7View the members of this cell"
       home:
         name: "&eGo to cell"
         lore: "&7Click to teleport to the cell"

@@ -11,6 +11,8 @@ import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
+import ml.empee.upgradableCells.utils.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -42,7 +44,8 @@ public class ManageCellMenu implements Bean {
 
   private void populateMenu(ChestMenu menu, OwnedCell cell) {
     menu.top().setItem(2, 1, homeItem(cell));
-    menu.top().setItem(2, 3, upgradeItem(cell, menu.getPlayer()));
+    menu.top().setItem(2, 3, upgradeItem(cell));
+    menu.top().setItem(4, 3, manageMembersItem(cell));
     menu.top().setItem(0, 5, closeItem());
   }
 
@@ -62,7 +65,36 @@ public class ManageCellMenu implements Bean {
         }).build();
   }
 
-  private GItem upgradeItem(OwnedCell cell, Player player) {
+  private GItem manageMembersItem(OwnedCell cell) {
+    var item = ItemBuilder.from(XMaterial.PLAYER_HEAD.parseItem())
+        .setName(langConfig.translate("menus.manage-cell.items.members.name"))
+        .setLore(langConfig.translateBlock("menus.manage-cell.items.members.lore"))
+        .build();
+
+    return GItem.builder()
+        .itemstack(item)
+        .clickHandler(e -> {
+          var player = (Player) e.getWhoClicked();
+          var playerRank = cell.getMembers().get(player.getUniqueId());
+          var players = cell.getMembers().entrySet().stream()
+              .filter(p -> playerRank.canCommand(p.getValue()))
+              .filter(p -> !p.getKey().equals(player.getUniqueId()))
+              .map(p -> Bukkit.getOfflinePlayer(p.getKey()))
+              .toList();
+
+          if (players.isEmpty()) {
+            Logger.log(player, langConfig.translate("cell.members.no-members"));
+            player.closeInventory();
+            return;
+          }
+
+          SelectPlayerMenu.selectPlayer(player, players).thenAccept(
+              target -> ManageMemberMenu.open(cell, player, target)
+          );
+        }).build();
+  }
+
+  private GItem upgradeItem(OwnedCell cell) {
     CellProject project = null;
     if (cell.getLevel() != cellService.getLastProject().getLevel()) {
       project = cellService.getCellProject(cell.getLevel() + 1);
@@ -71,17 +103,16 @@ public class ManageCellMenu implements Bean {
     var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem());
     item.setName(langConfig.translate("menus.manage-cell.items.upgrade.name"));
     if (project != null) {
-      item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.lore", project.getCost()));
+      item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.default-lore", project.getCost()));
     } else {
       item.setLore(langConfig.translateBlock("menus.manage-cell.items.upgrade.max-level-lore"));
     }
 
     return GItem.builder()
         .itemstack(item.build())
-        .visibilityHandler(() -> cell.getMembers().get(player.getUniqueId()).canUpgrade())
         .clickHandler(e -> {
           var source = (Player) e.getWhoClicked();
-          e.getWhoClicked().closeInventory();
+          source.closeInventory();
           cellController.upgradeCell(source, cell);
         }).build();
   }
