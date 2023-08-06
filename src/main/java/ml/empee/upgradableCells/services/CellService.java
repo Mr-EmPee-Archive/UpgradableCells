@@ -160,7 +160,7 @@ public class CellService implements Bean {
     });
   }
 
-  public void addMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
+  public void setMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
     cell.getMembers().put(member, rank);
     cells.setDirty(cell.getOwner());
   }

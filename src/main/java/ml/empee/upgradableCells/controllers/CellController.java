@@ -11,7 +11,7 @@ import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 /**
@@ -116,6 +116,28 @@ public class CellController implements Bean {
   }
 
   /**
+   * Change the rank of a cell member
+   */
+  public void setRank(OwnedCell cell, Player source, OfflinePlayer target, OwnedCell.Rank rank) {
+    var sourceRank = cell.getMembers().get(source.getUniqueId());
+    if (!sourceRank.canPromote()) {
+      Logger.log(source, langConfig.translate("cmd.missing-permission"));
+      return;
+    }
+
+    var targetRank = cell.getMembers().get(target.getUniqueId());
+    if (!sourceRank.canCommand(targetRank) || !sourceRank.canCommand(rank)) {
+      Logger.log(source, langConfig.translate("cell.members.set-rank-failed"));
+      return;
+    }
+
+    cellService.setMember(cell, target.getUniqueId(), rank);
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.members.set-rank", target.getName(), rank, cell.getOwnerPlayer().getName()));
+    }
+  }
+
+  /**
    * Invite a player to a cell
    */
   public void invitePlayer(OwnedCell cell, Player source, Player target) {
@@ -153,10 +175,9 @@ public class CellController implements Bean {
       return;
     }
 
-    cellService.addMember(cell, player.getUniqueId(), OwnedCell.Rank.MEMBER);
+    cellService.setMember(cell, player.getUniqueId(), OwnedCell.Rank.MEMBER);
     cellService.removeInvitation(cell, player.getUniqueId());
 
-    Logger.log(player, langConfig.translate("cell.members.joined"));
     for (Player member : cell.getOnlineMembers()) {
       Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerPlayer().getName()));
     }
@@ -178,7 +199,7 @@ public class CellController implements Bean {
     }
 
     cellService.removeMember(cell, player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.members.left"));
+    Logger.log(player, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     for (Player m : cell.getOnlineMembers()) {
       Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     }

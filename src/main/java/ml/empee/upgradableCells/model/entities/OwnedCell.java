@@ -79,10 +79,10 @@ public class OwnedCell {
    */
   @RequiredArgsConstructor
   public enum Rank {
-    MEMBER(false, false, false, false),
-    GUARD(true, true, false, false),
-    MANAGER(true, true, true, false),
-    OWNER(true, true, true, true);
+    MEMBER(false, false, false, false, false),
+    GUARD(true, true, false, false, false),
+    MANAGER(true, true, true, false, true),
+    OWNER(true, true, true, true, true);
 
     @Getter
     @Accessors(fluent = true)
@@ -99,6 +99,14 @@ public class OwnedCell {
     @Getter
     @Accessors(fluent = true)
     private final boolean canUpgrade;
+
+    @Getter
+    @Accessors(fluent = true)
+    private final boolean canPromote;
+
+    public boolean canCommand(OwnedCell.Rank rank) {
+      return rank.ordinal() < ordinal();
+    }
   }
 
 }
