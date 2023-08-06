@@ -1,8 +1,10 @@
 package ml.empee.upgradableCells.controllers;
 
+import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
+import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
@@ -21,9 +23,15 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public class CellController implements Bean {
 
+  private final CommandsConfig commandsConfig;
   private final CellService cellService;
   private final Economy economy;
   private final LangConfig langConfig;
+
+  @Override
+  public void onStart() {
+    commandsConfig.register(this);
+  }
 
   /**
    * Open the cell management menu
@@ -62,7 +70,7 @@ public class CellController implements Bean {
   }
 
   @CommandMethod("cell join <target>")
-  public void joinCell(Player sender, Player target) {
+  public void joinCell(Player sender, @Argument Player target) {
     OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
 
     if (cell == null) {
@@ -77,7 +85,7 @@ public class CellController implements Bean {
    * Invite a player to a specific cell
    */
   @CommandMethod("cell invite <target>")
-  public void inviteToCell(Player sender, Player target) {
+  public void inviteToCell(Player sender, @Argument Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId());
 
     if (cells.isEmpty()) {

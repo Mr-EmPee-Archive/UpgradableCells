@@ -65,7 +65,8 @@ tasks {
   }
 
   shadowJar {
-    isEnableRelocation = false
+    archiveFileName.set("${project.name}.jar")
+    isEnableRelocation = project.version != "develop"
     relocationPrefix = "$basePackage.relocations"
   }
 
@@ -79,6 +80,7 @@ tasks {
 
   compileJava {
     options.encoding = Charsets.UTF_8.name()
+    options.compilerArgs.add("-parameters")
     options.release.set(17)
   }
 }
