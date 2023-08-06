@@ -166,20 +166,21 @@ public class CellController implements Bean {
    * Leave a cell
    */
   public void leaveCell(Player player, OwnedCell cell) {
-    if (!cell.getMembers().containsKey(player.getUniqueId())) {
+    var member = cell.getMembers().get(player.getUniqueId());
+    if (member == null) {
       Logger.log(player, langConfig.translate("cell.members.not-member"));
       return;
     }
 
-    if (cell.getMembers().get(player.getUniqueId()) == OwnedCell.Rank.OWNER) {
+    if (member == OwnedCell.Rank.OWNER) {
       Logger.log(player, langConfig.translate("cell.owner-leave"));
       return;
     }
 
     cellService.removeMember(cell, player.getUniqueId());
     Logger.log(player, langConfig.translate("cell.members.left"));
-    for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
+    for (Player m : cell.getOnlineMembers()) {
+      Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -207,6 +208,11 @@ public class CellController implements Bean {
    * Upgrade a cell to the next-level
    */
   public void upgradeCell(Player player, OwnedCell cell) {
+    if (!cell.getMembers().get(player.getUniqueId()).canUpgrade()) {
+      Logger.log(player, langConfig.translate("cmd.missing-permission"));
+      return;
+    }
+
     if (cellService.getLastProject().getLevel() == cell.getLevel()) {
       Logger.log(player, langConfig.translate("cell.max-level"));
       return;
@@ -234,6 +240,12 @@ public class CellController implements Bean {
   public void teleportToCell(Player player, OwnedCell cell) {
     if (cell.getLevel() == 0 && cell.isPasting()) {
       Logger.log(player, langConfig.translate("cell.still-building"));
+      return;
+    }
+
+    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
+    if (member == null) {
+      Logger.log(player, langConfig.translate("cmd.missing-permission"));
       return;
     }
 
