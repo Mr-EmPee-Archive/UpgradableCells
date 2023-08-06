@@ -34,9 +34,9 @@ public class ManageMemberMenu implements Bean {
   }
 
   private void populateMenu(ChestMenu menu, OwnedCell cell, OfflinePlayer target) {
-    menu.top().setItem(2, 1, setRankMemberItem(cell, menu.getPlayer(), target));
-    menu.top().setItem(4, 1, setRankGuardItem(cell, menu.getPlayer(), target));
-    menu.top().setItem(6, 1, setRankManagerItem(cell, menu.getPlayer(), target));
+    menu.top().setItem(2, 1, setRankMemberItem(cell, target));
+    menu.top().setItem(4, 1, setRankGuardItem(cell, target));
+    menu.top().setItem(6, 1, setRankManagerItem(cell, target));
 
     menu.top().setItem(0, 5, closeItem(cell));
   }
@@ -53,7 +53,7 @@ public class ManageMemberMenu implements Bean {
         }).build();
   }
 
-  private GItem setRankMemberItem(OwnedCell cell, Player source, OfflinePlayer target) {
+  private GItem setRankMemberItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.COBBLESTONE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-member.name"))
         .build();
@@ -61,11 +61,14 @@ public class ManageMemberMenu implements Bean {
     return GItem.builder()
         .itemstack(item)
         .clickHandler(e -> {
-          cellController.setRank(cell, source, target, OwnedCell.Rank.MEMBER);
+          var player = (Player) e.getWhoClicked();
+          player.closeInventory();
+
+          cellController.setRank(cell, (Player) e.getWhoClicked(), target, OwnedCell.Rank.MEMBER);
         }).build();
   }
 
-  private GItem setRankGuardItem(OwnedCell cell, Player source, OfflinePlayer target) {
+  private GItem setRankGuardItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.LAPIS_ORE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-guard.name"))
         .build();
@@ -73,11 +76,14 @@ public class ManageMemberMenu implements Bean {
     return GItem.builder()
         .itemstack(item)
         .clickHandler(e -> {
-          cellController.setRank(cell, source, target, OwnedCell.Rank.GUARD);
+          var player = (Player) e.getWhoClicked();
+          player.closeInventory();
+
+          cellController.setRank(cell, (Player) e.getWhoClicked(), target, OwnedCell.Rank.GUARD);
         }).build();
   }
 
-  private GItem setRankManagerItem(OwnedCell cell, Player source, OfflinePlayer target) {
+  private GItem setRankManagerItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.GOLD_ORE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-manager.name"))
         .build();
@@ -85,7 +91,10 @@ public class ManageMemberMenu implements Bean {
     return GItem.builder()
         .itemstack(item)
         .clickHandler(e -> {
-          cellController.setRank(cell, source, target, OwnedCell.Rank.MANAGER);
+          var player = (Player) e.getWhoClicked();
+          player.closeInventory();
+
+          cellController.setRank(cell, player, target, OwnedCell.Rank.MANAGER);
         }).build();
   }
 
