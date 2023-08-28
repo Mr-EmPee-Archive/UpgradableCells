@@ -99,6 +99,17 @@ public class CellRepository implements Bean {
     }, client.getThreadPool());
   }
 
+  public CompletableFuture<List<OwnedCell>> findAll() {
+    return CompletableFuture.supplyAsync(() -> {
+      String query = "SELECT * FROM cells";
+      try (var stm = client.getJdbcConnection().createStatement()) {
+        return parseList(stm.executeQuery(query));
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @SneakyThrows
   private List<OwnedCell> parseList(ResultSet rs) {
     List<OwnedCell> cells = new ArrayList<>();

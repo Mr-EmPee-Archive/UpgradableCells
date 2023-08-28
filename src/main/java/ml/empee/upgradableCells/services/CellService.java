@@ -5,9 +5,9 @@ import com.google.common.cache.CacheBuilder;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
-import ml.empee.upgradableCells.services.cache.CellsCache;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.services.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -88,13 +87,11 @@ public class CellService implements Bean {
   }
 
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
-    return cells.get(owner);
+    return Optional.ofNullable(cells.get(owner).getNow(null));
   }
 
   public List<OwnedCell> findCellsByMember(UUID member) {
-    return cells.values().stream()
-        .map(c -> c.orElse(null))
-        .filter(Objects::nonNull)
+    return cells.getLoadedContent().stream()
         .filter(c -> c.getMembers().containsKey(member))
         .toList();
   }
@@ -106,9 +103,7 @@ public class CellService implements Bean {
     var position = location.toVector();
     var margin = worldService.getMargin();
 
-    return cells.values().stream()
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+    return cells.getLoadedContent().stream()
         .filter(c -> {
           var origin = c.getOrigin();
           if (!origin.getWorld().equals(location.getWorld())) {
@@ -128,7 +123,7 @@ public class CellService implements Bean {
    */
   public CompletableFuture<Void> createCell(UUID player) {
     OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
-    cells.put(player, Optional.of(cell));
+    cells.put(player, cell);
 
     return pasteCellStructure(cell);
   }
@@ -138,7 +133,7 @@ public class CellService implements Bean {
    */
   public CompletableFuture<Void> upgradeCell(OwnedCell cell, int level) {
     cell.setLevel(level);
-    cells.setDirty(cell.getOwner());
+    cells.markDirty(cell.getOwner());
 
     CellProject project = getCellProject(cell.getLevel());
     if (!project.hasSchematic()) {
@@ -152,22 +147,22 @@ public class CellService implements Bean {
     CellProject project = getCellProject(cell.getLevel());
     cell.setPasting(true);
 
-    cells.setDirty(cell.getOwner());
+    cells.markDirty(cell.getOwner());
 
     return project.paste(cell).thenRun(() -> {
       cell.setPasting(false);
-      cells.setDirty(cell.getOwner());
+      cells.markDirty(cell.getOwner());
     });
   }
 
   public void setMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
     cell.getMembers().put(member, rank);
-    cells.setDirty(cell.getOwner());
+    cells.markDirty(cell.getOwner());
   }
 
   public void removeMember(OwnedCell cell, UUID member) {
     cell.getMembers().remove(member);
-    cells.setDirty(cell.getOwner());
+    cells.markDirty(cell.getOwner());
   }
 
   public void invite(OwnedCell cell, UUID player) {
