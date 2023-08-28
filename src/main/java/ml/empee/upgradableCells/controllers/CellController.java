@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
@@ -71,7 +70,8 @@ public class CellController implements Bean {
   }
 
   @CommandMethod("cell join <target>")
-  public void joinCell(Player sender, @Argument Player target) {
+  public void joinCell(Player sender, @Argument OfflinePlayer target) {
+    //TODO: Get invites and show GUI
     OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
 
     if (cell == null) {
