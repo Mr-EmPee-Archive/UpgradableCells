@@ -44,10 +44,19 @@ menus:
     items:
       set-member:
         name: "&eMember"
+        lore: |
+          &7Permissions:
+             &8- &eP1
       set-guard:
         name: "&eGuard"
+        lore: |
+          &7Permissions:
+             &8- &eP1
       set-manager:
         name: "&eManager"
+        lore: |
+          &7Permissions:
+             &8- &eP1
   claim-cell:
     title: "Claim your cell"
     items:

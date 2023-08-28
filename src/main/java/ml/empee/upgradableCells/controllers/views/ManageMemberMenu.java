@@ -56,6 +56,7 @@ public class ManageMemberMenu implements Bean {
   private GItem setRankMemberItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.COBBLESTONE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-member.name"))
+        .setLore(langConfig.translateBlock("menus.manage-members.items.set-member.lore"))
         .build();
 
     return GItem.builder()
@@ -71,6 +72,7 @@ public class ManageMemberMenu implements Bean {
   private GItem setRankGuardItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.LAPIS_ORE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-guard.name"))
+        .setLore(langConfig.translateBlock("menus.manage-members.items.set-guard.lore"))
         .build();
 
     return GItem.builder()
@@ -86,6 +88,7 @@ public class ManageMemberMenu implements Bean {
   private GItem setRankManagerItem(OwnedCell cell, OfflinePlayer target) {
     var item = ItemBuilder.from(XMaterial.GOLD_ORE.parseItem())
         .setName(langConfig.translate("menus.manage-members.items.set-manager.name"))
+        .setLore(langConfig.translateBlock("menus.manage-members.items.set-manager.lore"))
         .build();
 
     return GItem.builder()
