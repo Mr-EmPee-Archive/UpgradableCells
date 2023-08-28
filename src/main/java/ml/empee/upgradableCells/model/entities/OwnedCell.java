@@ -19,28 +19,17 @@ import java.util.UUID;
  * A cell
  */
 
+//TODO Name & Description
+
+@Getter
+@Setter
 public class OwnedCell {
 
-  @Getter
-  @Setter
   private int id;
-
-  @Getter
-  @Setter
   private UUID owner;
-
-  @Setter
   private Map<UUID, Rank> members = new HashMap<>();
-
-  @Getter
-  @Setter
   private Integer level;
-
-  @Setter
   private Location origin;
-
-  @Getter
-  @Setter
   private boolean pasting;
 
   public OfflinePlayer getOwnerPlayer() {
@@ -74,9 +63,17 @@ public class OwnedCell {
         .toList();
   }
 
+  public List<OfflinePlayer> getMemberPlayers() {
+    return members.keySet().stream()
+        .map(Bukkit::getOfflinePlayer)
+        .toList();
+  }
+
   /**
    * Cell ranks
    */
+  @Getter
+  @Accessors(fluent = true)
   @RequiredArgsConstructor
   public enum Rank {
     MEMBER(false, false, false, false, false),
@@ -84,24 +81,10 @@ public class OwnedCell {
     MANAGER(true, true, true, false, true),
     OWNER(true, true, true, true, true);
 
-    @Getter
-    @Accessors(fluent = true)
     private final boolean canBuild;
-
-    @Getter
-    @Accessors(fluent = true)
     private final boolean canAccessChests;
-
-    @Getter
-    @Accessors(fluent = true)
     private final boolean canInvite;
-
-    @Getter
-    @Accessors(fluent = true)
     private final boolean canUpgrade;
-
-    @Getter
-    @Accessors(fluent = true)
     private final boolean canPromote;
 
     public boolean canCommand(OwnedCell.Rank rank) {
