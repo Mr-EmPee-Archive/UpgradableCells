@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
@@ -86,7 +87,9 @@ public class CellController implements Bean {
    */
   @CommandMethod("cell invite <target>")
   public void inviteToCell(Player sender, @Argument Player target) {
-    var cells = cellService.findCellsByMember(sender.getUniqueId());
+    var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
+        .filter(c -> c.getMembers().get(target.getUniqueId()).canInvite())
+        .toList();
 
     if (cells.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
