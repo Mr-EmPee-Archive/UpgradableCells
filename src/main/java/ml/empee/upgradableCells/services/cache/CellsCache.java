@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
  * Cache that holds loaded cells
  */
 
-public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean, RegisteredListener {
+public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean {
 
   private final CellRepository cellRepository;
 
