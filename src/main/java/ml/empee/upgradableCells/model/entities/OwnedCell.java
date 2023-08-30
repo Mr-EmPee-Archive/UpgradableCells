@@ -39,6 +39,8 @@ public class OwnedCell {
 
   public static OwnedCell of(UUID owner, Integer level, Location origin) {
     OwnedCell cell = new OwnedCell();
+    cell.addMember(Member.create(owner, Member.Rank.OWNER));
+
     cell.setOwner(owner);
     cell.setLevel(level);
     cell.setOrigin(origin);
