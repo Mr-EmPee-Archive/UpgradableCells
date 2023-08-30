@@ -48,7 +48,7 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
     }
 
     Member member = cell.getMember(player.getUniqueId());
-    if (member == null || member.getRank().canBuild()) {
+    if (member == null || !member.getRank().canBuild()) {
       return false;
     }
 
@@ -75,6 +75,7 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
       return;
     }
 
+    //TODO: ASK client only chest?
     if (clickedBlock.getType() == Material.CHEST && !member.getRank().canAccessChests()) {
       event.setCancelled(true);
     }

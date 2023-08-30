@@ -21,6 +21,8 @@ import org.bukkit.entity.Player;
  * Controller use to manage cell operations
  */
 
+//TODO: Validation of member existence (Null check)
+
 @RequiredArgsConstructor
 public class CellController implements Bean {
 
@@ -89,7 +91,7 @@ public class CellController implements Bean {
   @CommandMethod("cell invite <target>")
   public void inviteToCell(Player sender, @Argument Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
-        .filter(c -> c.getMember(target.getUniqueId()).getRank().canInvite())
+        .filter(c -> c.getMember(sender.getUniqueId()).getRank().canInvite())
         .toList();
 
     if (cells.isEmpty()) {

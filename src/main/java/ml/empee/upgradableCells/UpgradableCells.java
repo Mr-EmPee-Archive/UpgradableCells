@@ -36,7 +36,12 @@ public final class UpgradableCells extends JavaPlugin {
   }
 
   private Economy getEconomyProvider() {
-    return getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+    var provider = getServer().getServicesManager().getRegistration(Economy.class);
+    if (provider == null) {
+      throw new IllegalStateException("Economy provider not found! Load an economy plugin!");
+    }
+
+    return provider.getProvider();
   }
 
   public void onDisable() {

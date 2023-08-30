@@ -15,7 +15,7 @@ cell:
   invitation:
     missing: "&cYou haven't been invited to the cell"
     missing-perm: "&cYou haven't permission to invite players"
-    already-joined: "&cThe player is already a member of the cell"
+    already-joined: "&cAlready a member of the cell"
     already-invited: "&cThe player has been already invited"
     sent: "&7Invited &e%s&7 to join"
     received: "&7You have received an invitation to the cell of &e%s"
@@ -42,21 +42,32 @@ menus:
   manage-members:
     title: "Manage members"
     items:
+      close:
+        name: "&cBack"
       set-member:
-        name: "&eMember"
+        name: "&bMember"
         lore: |
           &7Permissions:
-             &8- &eP1
+             &8- &eCan interact with restrictions
       set-guard:
-        name: "&eGuard"
+        name: "&bGuard"
         lore: |
           &7Permissions:
-             &8- &eP1
+             &8- &eCan build without any restrictions
+             &8- &eCan break without any restrictions
+             &8- &eCan interact without any restrictions
       set-manager:
-        name: "&eManager"
+        name: "&bManager"
         lore: |
           &7Permissions:
-             &8- &eP1
+             &8- &eCan build without any restrictions
+             &8- &eCan break without any restrictions
+             &8- &eCan interact without any restrictions
+             &8- &eCan invite other members to the cell
+             &8- &eCan promote other members
+             &8- &eCan change cell privacy
+             &8- &eCan ban other members
+             &8- &eCan kick other members from the cell
   claim-cell:
     title: "Claim your cell"
     items:

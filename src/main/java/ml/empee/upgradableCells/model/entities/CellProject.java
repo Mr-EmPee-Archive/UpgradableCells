@@ -50,7 +50,10 @@ public class CellProject {
   }
 
   public CompletableFuture<Void> paste(OwnedCell cell) {
-    return schematic.paste(cell);
+    return schematic.paste(cell.getOrigin(), l -> {
+      var data = getSchematic().getBlock(l);
+      return data == null || data.getMaterial() == Material.AIR;
+    });
   }
 
   public boolean hasSchematic() {

@@ -8,11 +8,10 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import lombok.SneakyThrows;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellLevelUpEvent;
 import ml.empee.upgradableCells.utils.Logger;
 import ml.empee.upgradableCells.utils.NmsUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
@@ -26,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * A WorldEdit schematic
@@ -111,31 +111,35 @@ public class Schematic {
   }
 
   /**
-   * Paste the level
+   * Paste the schematic
+   * @param mask a function that returns true if the block <b>can't</b> be pasted
    */
-  public CompletableFuture<Void> paste(OwnedCell cell) {
+  public CompletableFuture<Void> paste(Location origin, Function<Vector, Boolean> mask) {
     Logger.debug("Starting pasting of schematic " + file.getName());
-    return pasteRecursively(cell, 0, 5);
+    return pasteRecursively(origin, mask, 0, 5);
   }
 
-  private CompletableFuture<Void> pasteRecursively(OwnedCell cell, int sectionIndex, int chunkSize) {
+  private CompletableFuture<Void> pasteRecursively(Location origin, Function<Vector, Boolean> mask, int sectionIndex, int chunkSize) {
     CompletableFuture<Void> stage = new CompletableFuture<>();
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       for (int i = sectionIndex; i < sectionIndex + chunkSize; i++) {
         if (i >= sections.size()) {
           Logger.debug("Finished pasting schematic " + file.getName());
-          Bukkit.getPluginManager().callEvent(new CellLevelUpEvent(cell));
           stage.complete(null);
           return;
         }
 
         var section = sections.get(i);
         section.forEach((position, block) -> {
-          NmsUtils.setBlockFast(cell.getOrigin().add(position), block);
+          if (mask.apply(position.clone())) {
+            return;
+          }
+
+          NmsUtils.setBlockFast(origin.clone().add(position), block);
         });
       }
 
-      pasteRecursively(cell, sectionIndex + chunkSize, chunkSize).thenRun(() -> stage.complete(null));
+      pasteRecursively(origin, mask, sectionIndex + chunkSize, chunkSize).thenRun(() -> stage.complete(null));
     }, DELAY_BETWEEN_PASTING);
 
     return stage;

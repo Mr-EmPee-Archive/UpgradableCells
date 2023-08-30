@@ -39,12 +39,12 @@ public class ManageMemberMenu implements Bean {
     menu.top().setItem(4, 1, setRankGuardItem(cell, target));
     menu.top().setItem(6, 1, setRankManagerItem(cell, target));
 
-    menu.top().setItem(0, 5, closeItem(cell));
+    menu.top().setItem(0, 4, closeItem(cell));
   }
 
   private GItem closeItem(OwnedCell cell) {
     var item = ItemBuilder.from(XMaterial.WHITE_BED.parseItem())
-        .setName(langConfig.translate("menus.manage-cell.items.close.name"))
+        .setName(langConfig.translate("menus.manage-members.items.close.name"))
         .build();
 
     return GItem.builder()
@@ -103,7 +103,7 @@ public class ManageMemberMenu implements Bean {
   }
 
   private ChestMenu getInventory(OwnedCell cell, Player player, OfflinePlayer target) {
-    return new ChestMenu(player, 6, langConfig.translate("menus.manage-members.title")) {
+    return new ChestMenu(player, 5, langConfig.translate("menus.manage-members.title")) {
       @Override
       public void onOpen() {
         populateMenu(this, cell, target);
