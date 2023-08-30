@@ -108,7 +108,7 @@ public class CellRepository implements Bean {
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, client.getThreadPool());
   }
 
   @SneakyThrows
