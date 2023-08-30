@@ -3,9 +3,11 @@ package ml.empee.upgradableCells.handlers;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.ioc.RegisteredListener;
+import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.services.CellService;
+import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -22,19 +24,26 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class CellProtectionHandler implements Bean, RegisteredListener {
 
   private final CellService cellService;
+  private final LangConfig langConfig;
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {
-    if (!canBuild(event.getPlayer(), event.getBlock().getLocation())) {
-      event.setCancelled(true);
+    if (canBuild(event.getPlayer(), event.getBlock().getLocation())) {
+      return;
     }
+
+    event.setCancelled(true);
+    Logger.log(event.getPlayer(), langConfig.translate("cell.cant-build"));
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockBreak(BlockBreakEvent event) {
-    if (!canBuild(event.getPlayer(), event.getBlock().getLocation())) {
-      event.setCancelled(true);
+    if (canBuild(event.getPlayer(), event.getBlock().getLocation())) {
+      return;
     }
+
+    event.setCancelled(true);
+    Logger.log(event.getPlayer(), langConfig.translate("cell.cant-build"));
   }
 
   private boolean canBuild(Player player, Location target) {
@@ -70,15 +79,12 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
     }
 
     Member member = cell.getMember(player.getUniqueId());
-    if (member == null) {
-      event.setCancelled(true);
+    if (member != null && (clickedBlock.getType() != Material.CHEST || member.getRank().canAccessChests())) {
       return;
     }
 
-    //TODO: ASK client only chest?
-    if (clickedBlock.getType() == Material.CHEST && !member.getRank().canAccessChests()) {
-      event.setCancelled(true);
-    }
+    event.setCancelled(true);
+    Logger.log(event.getPlayer(), langConfig.translate("cell.cant-interact"));
   }
 
 }
