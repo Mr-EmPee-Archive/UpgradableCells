@@ -1,8 +1,6 @@
 package ml.empee.upgradableCells.services.cache;
 
-import lombok.SneakyThrows;
-import ml.empee.upgradableCells.utils.Logger;
-import org.checkerframework.checker.units.qual.K;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -24,7 +22,7 @@ public class MemoryCache<KEY, VALUE> {
   private static final long DEFAULT_CLEANING_PERIOD_MILLIS = 10000;
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-  private final Map<KEY, CompletableFuture<VALUE>> cache = Collections.synchronizedMap(new HashMap<>());
+  private final Map<KEY, VALUE> cache = Collections.synchronizedMap(new HashMap<>());
   private final Map<KEY, VALUE> dirtyCache = Collections.synchronizedMap(new HashMap<>());
   private final long autoSaveMillis;
 
@@ -42,9 +40,9 @@ public class MemoryCache<KEY, VALUE> {
    */
   private void start() {
     executor.submit(() -> {
-          removeExpiredEntries();
-
+          cache.entrySet().removeIf(entry -> hasExpired(entry.getKey(), entry.getValue()));
           saveDirtyValues(Collections.unmodifiableMap(dirtyCache));
+
           dirtyCache.clear();
 
           try {
@@ -73,21 +71,6 @@ public class MemoryCache<KEY, VALUE> {
     executor.shutdown();
   }
 
-  @SneakyThrows
-  private void removeExpiredEntries() {
-    var iterator = cache.entrySet().iterator();
-    while (iterator.hasNext()) {
-      var entry = iterator.next();
-      if (!entry.getValue().isDone()) {
-        continue;
-      }
-
-      if (hasExpired(entry.getKey(), entry.getValue().get())) {
-        iterator.remove();
-      }
-    }
-  }
-
   public void clear() {
     cache.clear();
   }
@@ -107,52 +90,37 @@ public class MemoryCache<KEY, VALUE> {
    *
    * @return null if not loading anything
    */
-  protected CompletableFuture<VALUE> lazyLoad(KEY key) {
+  protected VALUE lazyLoad(KEY key) {
     return null;
   }
 
-  public final void load(KEY key, CompletableFuture<VALUE> value) {
-    cache.put(key, value);
-  }
-
   public final void load(KEY key, VALUE value) {
-    load(key, CompletableFuture.completedFuture(value));
+    cache.put(key, value);
   }
 
   public final boolean containsKey(KEY key) {
     return cache.containsKey(key);
   }
 
-  public final void put(KEY key, CompletableFuture<VALUE> value) {
-    value.thenAccept(v -> dirtyCache.put(key, v));
+  public final void put(KEY key, VALUE value) {
     cache.put(key, value);
   }
 
-  public final void put(KEY key, VALUE value) {
-    put(key, CompletableFuture.completedFuture(value));
-  }
-
-  public final CompletableFuture<VALUE> get(KEY key) {
+  @Nullable
+  public final VALUE get(KEY key) {
     return cache.computeIfAbsent(key, this::lazyLoad);
   }
 
   public final void markDirty(KEY key) {
     var value = cache.get(key);
-    if (value.isDone()) {
-      dirtyCache.put(key, value.getNow(null));
+    if (value != null) {
+      dirtyCache.put(key, value);
     } else {
-      Logger.debug("Marking as dirty unloaded value! Cache: " + getClass());
+      throw new IllegalStateException("Cannot mark dirty a non-cached key");
     }
   }
 
-  public final List<VALUE> getLoadedContent() {
-    return cache.values().stream()
-        .map(f -> f.getNow(null))
-        .filter(Objects::nonNull)
-        .toList();
-  }
-
-  public final Collection<CompletableFuture<VALUE>> getContent() {
+  public final Collection<VALUE> getContent() {
     return cache.values();
   }
 

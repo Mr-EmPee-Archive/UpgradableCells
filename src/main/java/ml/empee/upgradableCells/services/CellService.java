@@ -88,11 +88,11 @@ public class CellService implements Bean {
   }
 
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
-    return Optional.ofNullable(cells.get(owner).getNow(null));
+    return Optional.ofNullable(cells.get(owner));
   }
 
   public List<OwnedCell> findCellsByMember(UUID member) {
-    return cells.getLoadedContent().stream()
+    return cells.getContent().stream()
         .filter(c -> c.hasMember(member))
         .toList();
   }
@@ -104,7 +104,7 @@ public class CellService implements Bean {
     var position = location.toVector();
     var margin = worldService.getMargin();
 
-    return cells.getLoadedContent().stream()
+    return cells.getContent().stream()
         .filter(c -> {
           var origin = c.getOrigin();
           if (!origin.getWorld().equals(location.getWorld())) {
