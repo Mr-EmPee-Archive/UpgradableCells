@@ -5,6 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 /**
@@ -26,6 +30,10 @@ public class Member {
     member.setUuid(uuid);
 
     return member;
+  }
+
+  public LocalDateTime getMemberSince() {
+    return Instant.ofEpochMilli(memberSince).atZone(ZoneId.systemDefault()).toLocalDateTime();
   }
 
   /**

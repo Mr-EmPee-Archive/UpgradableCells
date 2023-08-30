@@ -88,3 +88,6 @@ menus:
     title: "Select cell"
   select-player:
     title: "Select player"
+    player-lore: |
+      &7Rank: &6%s
+      &7Member since: &6%s
