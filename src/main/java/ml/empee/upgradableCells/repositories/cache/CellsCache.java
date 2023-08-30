@@ -1,22 +1,17 @@
-package ml.empee.upgradableCells.services.cache;
+package ml.empee.upgradableCells.repositories.cache;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import ml.empee.ioc.Bean;
-import ml.empee.ioc.RegisteredListener;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.repositories.CellRepository;
+import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Cache that holds loaded cells
@@ -25,9 +20,12 @@ import java.util.concurrent.CompletableFuture;
 public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean {
 
   private final CellRepository cellRepository;
+  private final JavaPlugin plugin;
 
-  public CellsCache(CellRepository cellRepository) {
+  public CellsCache(CellRepository cellRepository, JavaPlugin plugin) {
     super(Duration.of(5, ChronoUnit.SECONDS));
+
+    this.plugin = plugin;
     this.cellRepository = cellRepository;
   }
 
@@ -38,7 +36,7 @@ public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean {
 
   @Override
   public void onStart() {
-    loadCache();
+    Bukkit.getScheduler().runTask(plugin, this::loadCache);
   }
 
   @Override
@@ -49,6 +47,7 @@ public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean {
 
   @SneakyThrows
   protected void loadCache() {
+    Logger.info("Loading cell player data");
     var cells = cellRepository.findAll().get();
     for (OwnedCell cell : cells) {
       load(cell.getOwner(), cell);

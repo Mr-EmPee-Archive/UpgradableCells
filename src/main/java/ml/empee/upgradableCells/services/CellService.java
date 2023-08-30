@@ -8,7 +8,7 @@ import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.services.cache.CellsCache;
+import ml.empee.upgradableCells.repositories.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
