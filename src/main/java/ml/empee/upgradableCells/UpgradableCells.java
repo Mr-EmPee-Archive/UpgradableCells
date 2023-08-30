@@ -40,8 +40,9 @@ public final class UpgradableCells extends JavaPlugin {
   }
 
   public void onDisable() {
-    iocContainer.getBean(DbClient.class).closeConnections();
-    iocContainer.removeAllBeans(true);
     simpleMenu.unregister(this);
+    iocContainer.getBean(DbClient.class).closeConnections();
+
+    iocContainer.removeAllBeans(true);
   }
 }
