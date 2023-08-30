@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.ioc.RegisteredListener;
 import ml.empee.upgradableCells.constants.Permissions;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -47,8 +47,8 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
       return true;
     }
 
-    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
-    if (member == null || member.canBuild()) {
+    Member member = cell.getMember(player.getUniqueId());
+    if (member == null || member.getRank().canBuild()) {
       return false;
     }
 
@@ -69,13 +69,13 @@ public class CellProtectionHandler implements Bean, RegisteredListener {
       return;
     }
 
-    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
+    Member member = cell.getMember(player.getUniqueId());
     if (member == null) {
       event.setCancelled(true);
       return;
     }
 
-    if (clickedBlock.getType() == Material.CHEST && !member.canAccessChests()) {
+    if (clickedBlock.getType() == Material.CHEST && !member.getRank().canAccessChests()) {
       event.setCancelled(true);
     }
   }

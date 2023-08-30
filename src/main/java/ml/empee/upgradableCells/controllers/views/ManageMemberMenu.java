@@ -9,6 +9,7 @@ import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -65,7 +66,7 @@ public class ManageMemberMenu implements Bean {
           var player = (Player) e.getWhoClicked();
           player.closeInventory();
 
-          cellController.setRank(cell, (Player) e.getWhoClicked(), target, OwnedCell.Rank.MEMBER);
+          cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
         }).build();
   }
 
@@ -81,7 +82,7 @@ public class ManageMemberMenu implements Bean {
           var player = (Player) e.getWhoClicked();
           player.closeInventory();
 
-          cellController.setRank(cell, (Player) e.getWhoClicked(), target, OwnedCell.Rank.GUARD);
+          cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
         }).build();
   }
 
@@ -97,7 +98,7 @@ public class ManageMemberMenu implements Bean {
           var player = (Player) e.getWhoClicked();
           player.closeInventory();
 
-          cellController.setRank(cell, player, target, OwnedCell.Rank.MANAGER);
+          cellController.setRank(cell, player, target, Member.Rank.MANAGER);
         }).build();
   }
 

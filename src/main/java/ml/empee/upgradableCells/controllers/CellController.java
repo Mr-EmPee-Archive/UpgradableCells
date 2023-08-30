@@ -9,6 +9,7 @@ import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
+import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
@@ -88,7 +89,7 @@ public class CellController implements Bean {
   @CommandMethod("cell invite <target>")
   public void inviteToCell(Player sender, @Argument Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
-        .filter(c -> c.getMembers().get(target.getUniqueId()).canInvite())
+        .filter(c -> c.getMember(target.getUniqueId()).getRank().canInvite())
         .toList();
 
     if (cells.isEmpty()) {
@@ -129,14 +130,14 @@ public class CellController implements Bean {
   /**
    * Change the rank of a cell member
    */
-  public void setRank(OwnedCell cell, Player source, OfflinePlayer target, OwnedCell.Rank rank) {
-    var sourceRank = cell.getMembers().get(source.getUniqueId());
+  public void setRank(OwnedCell cell, Player source, OfflinePlayer target, Member.Rank rank) {
+    var sourceRank = cell.getMember(source.getUniqueId()).getRank();
     if (!sourceRank.canPromote()) {
       Logger.log(source, langConfig.translate("cmd.missing-permission"));
       return;
     }
 
-    var targetRank = cell.getMembers().get(target.getUniqueId());
+    var targetRank = cell.getMember(target.getUniqueId()).getRank();
     if (!sourceRank.canCommand(targetRank) || !sourceRank.canCommand(rank)) {
       Logger.log(source, langConfig.translate("cell.members.set-rank-failed"));
       return;
@@ -152,12 +153,12 @@ public class CellController implements Bean {
    * Invite a player to a cell
    */
   public void invitePlayer(OwnedCell cell, Player source, Player target) {
-    if (!cell.getMembers().get(source.getUniqueId()).canInvite()) {
+    if (!cell.getMember(source.getUniqueId()).getRank().canInvite()) {
       Logger.log(source, langConfig.translate("cell.invitation.missing-perm"));
       return;
     }
 
-    if (cell.getMembers().containsKey(target.getUniqueId())) {
+    if (cell.hasMember(target.getUniqueId())) {
       Logger.log(source, langConfig.translate("cell.invitation.already-joined"));
       return;
     }
@@ -176,7 +177,7 @@ public class CellController implements Bean {
    * Join a cell if invited
    */
   public void joinCell(Player player, OwnedCell cell) {
-    if (cell.getMembers().containsKey(player.getUniqueId())) {
+    if (cell.hasMember(player.getUniqueId())) {
       Logger.log(player, langConfig.translate("cell.invitation.already-joined"));
       return;
     }
@@ -186,7 +187,7 @@ public class CellController implements Bean {
       return;
     }
 
-    cellService.setMember(cell, player.getUniqueId(), OwnedCell.Rank.MEMBER);
+    cellService.setMember(cell, player.getUniqueId(), Member.Rank.MEMBER);
     cellService.removeInvitation(cell, player.getUniqueId());
 
     for (Player member : cell.getOnlineMembers()) {
@@ -198,13 +199,13 @@ public class CellController implements Bean {
    * Leave a cell
    */
   public void leaveCell(Player player, OwnedCell cell) {
-    var member = cell.getMembers().get(player.getUniqueId());
+    var member = cell.getMember(player.getUniqueId());
     if (member == null) {
       Logger.log(player, langConfig.translate("cell.members.not-member"));
       return;
     }
 
-    if (member == OwnedCell.Rank.OWNER) {
+    if (member.getRank() == Member.Rank.OWNER) {
       Logger.log(player, langConfig.translate("cell.owner-leave"));
       return;
     }
@@ -240,7 +241,7 @@ public class CellController implements Bean {
    * Upgrade a cell to the next-level
    */
   public void upgradeCell(Player player, OwnedCell cell) {
-    if (!cell.getMembers().get(player.getUniqueId()).canUpgrade()) {
+    if (!cell.getMember(player.getUniqueId()).getRank().canUpgrade()) {
       Logger.log(player, langConfig.translate("cmd.missing-permission"));
       return;
     }
@@ -275,7 +276,7 @@ public class CellController implements Bean {
       return;
     }
 
-    OwnedCell.Rank member = cell.getMembers().get(player.getUniqueId());
+    Member member = cell.getMember(player.getUniqueId());
     if (member == null) {
       Logger.log(player, langConfig.translate("cmd.missing-permission"));
       return;

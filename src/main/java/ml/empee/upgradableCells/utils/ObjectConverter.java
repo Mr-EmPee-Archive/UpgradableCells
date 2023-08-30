@@ -3,6 +3,7 @@ package ml.empee.upgradableCells.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.leangen.geantyref.TypeToken;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
@@ -17,13 +18,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutput;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -61,28 +60,24 @@ public class ObjectConverter {
   }
 
   /**
-   * Parse a map to a string
+   * Parse a map to json
    */
-  public static <T, K> String parseMap(Map<T, K> map, Function<T, String> keyMapper, Function<K, String> valueMapper) {
-    Map<String, String> encodedMap = new HashMap<>();
-    map.forEach((key, value) -> {
-      encodedMap.put(keyMapper.apply(key), valueMapper.apply(value));
-    });
-
-    return gson.toJson(encodedMap);
+  public static <T> String parse(T object) {
+    return gson.toJson(object);
   }
 
   /**
-   * Parse a map from a string
+   * Parse json into an object
    */
-  public static <T, K> Map<T, K> parseMap(String raw, Function<String, T> keyMapper, Function<String, K> valueMapper) {
-    Map<String, String> encodedMap = gson.fromJson(raw, Map.class);
-    Map<T, K> map = new HashMap<>();
-    encodedMap.forEach((key, value) -> {
-      map.put(keyMapper.apply(key), valueMapper.apply(value));
-    });
+  public static <T> T parse(String json, TypeToken<T> target) {
+    return gson.fromJson(json, target.getType());
+  }
 
-    return map;
+  /**
+   * Parse json into an object
+   */
+  public static <T> T parse(String json, Class<T> target) {
+    return gson.fromJson(json, target);
   }
 
   /**

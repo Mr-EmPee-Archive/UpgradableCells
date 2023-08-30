@@ -1,17 +1,14 @@
 package ml.empee.upgradableCells.model.entities;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,7 +24,7 @@ public class OwnedCell {
 
   private int id;
   private UUID owner;
-  private Map<UUID, Rank> members = new HashMap<>();
+  private List<Member> members = new ArrayList<>();
   private Integer level;
   private Location origin;
   private boolean pasting;
@@ -48,48 +45,35 @@ public class OwnedCell {
     return cell;
   }
 
-  public Map<UUID, Rank> getMembers() {
-    if (!members.containsValue(Rank.OWNER)) {
-      members.put(owner, Rank.OWNER);
-    }
-
-    return members;
-  }
-
   public List<Player> getOnlineMembers() {
-    return members.keySet().stream()
-        .map(Bukkit::getPlayer)
+    return members.stream()
+        .map(m -> Bukkit.getPlayer(m.getUuid()))
         .filter(Objects::nonNull)
         .toList();
   }
 
-  public List<OfflinePlayer> getMemberPlayers() {
-    return members.keySet().stream()
-        .map(Bukkit::getOfflinePlayer)
+  public List<OfflinePlayer> getAllMembers() {
+    return members.stream()
+        .map(m -> Bukkit.getOfflinePlayer(m.getUuid()))
         .toList();
   }
 
-  /**
-   * Cell ranks
-   */
-  @Getter
-  @Accessors(fluent = true)
-  @RequiredArgsConstructor
-  public enum Rank {
-    MEMBER(false, false, false, false, false),
-    GUARD(true, true, false, false, false),
-    MANAGER(true, true, true, false, true),
-    OWNER(true, true, true, true, true);
+  public Member getMember(UUID uuid) {
+    return members.stream()
+        .filter(m -> m.getUuid().equals(uuid))
+        .findFirst().orElse(null);
+  }
 
-    private final boolean canBuild;
-    private final boolean canAccessChests;
-    private final boolean canInvite;
-    private final boolean canUpgrade;
-    private final boolean canPromote;
+  public void addMember(Member member) {
+    members.add(member);
+  }
 
-    public boolean canCommand(OwnedCell.Rank rank) {
-      return rank.ordinal() < ordinal();
-    }
+  public void removeMember(UUID uuid) {
+    members.removeIf(m -> m.getUuid().equals(uuid));
+  }
+
+  public boolean hasMember(UUID uuid) {
+    return getMember(uuid) != null;
   }
 
 }

@@ -1,5 +1,6 @@
 package ml.empee.upgradableCells.repositories;
 
+import io.leangen.geantyref.TypeToken;
 import lombok.SneakyThrows;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.client.DbClient;
@@ -58,7 +59,7 @@ public class CellRepository implements Bean {
         stm.setInt(2, data.getLevel());
         stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
         stm.setInt(4, data.isPasting() ? 1 : 0);
-        stm.setString(5, ObjectConverter.parseMap(data.getMembers(), UUID::toString, Enum::name));
+        stm.setString(5, ObjectConverter.parse(data.getMembers()));
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -127,8 +128,8 @@ public class CellRepository implements Bean {
     cell.setOwner(UUID.fromString(rs.getString("owner")));
     cell.setLevel(rs.getInt("level"));
     cell.setOrigin(ObjectConverter.parseLocation(rs.getString("origin")));
-    cell.setMembers(ObjectConverter.parseMap(
-        rs.getString("members"), UUID::fromString, OwnedCell.Rank::valueOf
+    cell.setMembers(ObjectConverter.parse(
+        rs.getString("members"), new TypeToken<>() {}
     ));
 
     return cell;

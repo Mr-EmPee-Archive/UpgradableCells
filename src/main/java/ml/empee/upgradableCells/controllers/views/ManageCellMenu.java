@@ -75,11 +75,11 @@ public class ManageCellMenu implements Bean {
         .itemstack(item)
         .clickHandler(e -> {
           var player = (Player) e.getWhoClicked();
-          var playerRank = cell.getMembers().get(player.getUniqueId());
-          var players = cell.getMembers().entrySet().stream()
-              .filter(p -> playerRank.canCommand(p.getValue()))
-              .filter(p -> !p.getKey().equals(player.getUniqueId()))
-              .map(p -> Bukkit.getOfflinePlayer(p.getKey()))
+          var playerRank = cell.getMember(player.getUniqueId()).getRank();
+          var players = cell.getMembers().stream()
+              .filter(p -> playerRank.canCommand(p.getRank()))
+              .filter(p -> !p.getUuid().equals(player.getUniqueId()))
+              .map(p -> Bukkit.getOfflinePlayer(p.getUuid()))
               .toList();
 
           if (players.isEmpty()) {
@@ -88,7 +88,7 @@ public class ManageCellMenu implements Bean {
             return;
           }
 
-          SelectPlayerMenu.selectPlayer(player, players).thenAccept(
+          SelectPlayerMenu.selectPlayer(player, cell, players).thenAccept(
               target -> ManageMemberMenu.open(cell, player, target)
           );
         }).build();

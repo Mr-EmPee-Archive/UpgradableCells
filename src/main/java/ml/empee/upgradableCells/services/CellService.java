@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
+import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
@@ -92,7 +93,7 @@ public class CellService implements Bean {
 
   public List<OwnedCell> findCellsByMember(UUID member) {
     return cells.getLoadedContent().stream()
-        .filter(c -> c.getMembers().containsKey(member))
+        .filter(c -> c.hasMember(member))
         .toList();
   }
 
@@ -155,13 +156,19 @@ public class CellService implements Bean {
     });
   }
 
-  public void setMember(OwnedCell cell, UUID member, OwnedCell.Rank rank) {
-    cell.getMembers().put(member, rank);
+  public void setMember(OwnedCell cell, UUID uuid, Member.Rank rank) {
+    var member = cell.getMember(uuid);
+    if (member == null) {
+      cell.addMember(Member.create(uuid, rank));
+    } else {
+      member.setRank(rank);
+    }
+
     cells.markDirty(cell.getOwner());
   }
 
   public void removeMember(OwnedCell cell, UUID member) {
-    cell.getMembers().remove(member);
+    cell.removeMember(member);
     cells.markDirty(cell.getOwner());
   }
 
