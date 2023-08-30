@@ -41,9 +41,7 @@ public class MemoryCache<KEY, VALUE> {
   private void start() {
     executor.submit(() -> {
           cache.entrySet().removeIf(entry -> hasExpired(entry.getKey(), entry.getValue()));
-          saveDirtyValues(Collections.unmodifiableMap(dirtyCache));
-
-          dirtyCache.clear();
+          dump();
 
           try {
             long randomTick = (long) (Math.random() * 100);
@@ -65,14 +63,21 @@ public class MemoryCache<KEY, VALUE> {
    * Stop the auto cleaning and saving features of the cache
    */
   protected void stop() {
-    saveDirtyValues(dirtyCache);
-    dirtyCache.clear();
+    dump();
 
     executor.shutdown();
   }
 
   public void clear() {
     cache.clear();
+  }
+
+  /**
+   * Save all dirty values
+   */
+  public void dump() {
+    saveDirtyValues(Collections.unmodifiableMap(dirtyCache));
+    dirtyCache.clear();
   }
 
   /**
