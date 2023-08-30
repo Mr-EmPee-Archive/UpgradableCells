@@ -26,6 +26,7 @@ bukkit {
   main = "${basePackage}.UpgradableCells"
   apiVersion = "1.13"
   depend = listOf("Vault", "WorldEdit")
+  softDepend = listOf("Multiverse-Core")
   authors = listOf("Mr. EmPee")
 }
 
