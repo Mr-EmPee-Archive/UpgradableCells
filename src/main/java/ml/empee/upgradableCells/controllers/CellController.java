@@ -36,6 +36,17 @@ public class CellController implements Bean {
     commandsConfig.register(this);
   }
 
+  @CommandMethod("claim")
+  public void claimCell(Player sender) {
+    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      ClaimCellMenu.open(sender);
+    } else {
+      Logger.log(sender, langConfig.translate("cell.already-bought"));
+    }
+  }
+
   /**
    * Open the cell management menu
    */
