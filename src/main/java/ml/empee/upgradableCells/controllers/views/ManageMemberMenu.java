@@ -29,90 +29,98 @@ public class ManageMemberMenu implements Bean {
   private final CellController cellController;
   private final LangConfig langConfig;
 
+  public static void open(Player viewer, OwnedCell cell, OfflinePlayer target) {
+    instance.create(viewer, cell, target).open();
+  }
+
   @Override
   public void onStart() {
     instance = this;
   }
 
-  private void populateMenu(ChestMenu menu, OwnedCell cell, OfflinePlayer target) {
-    menu.top().setItem(2, 1, setRankMemberItem(cell, target));
-    menu.top().setItem(4, 1, setRankGuardItem(cell, target));
-    menu.top().setItem(6, 1, setRankManagerItem(cell, target));
-
-    menu.top().setItem(0, 4, closeItem(cell));
+  private Menu create(Player viewer, OwnedCell cell, OfflinePlayer target) {
+    return new Menu(viewer, cell, target);
   }
 
-  private GItem closeItem(OwnedCell cell) {
-    var item = ItemBuilder.from(XMaterial.WHITE_BED.parseItem())
-        .setName(langConfig.translate("menus.manage-members.items.close.name"))
-        .build();
+  private class Menu extends ChestMenu {
+    private final OwnedCell cell;
+    private final OfflinePlayer target;
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          ManageCellMenu.open((Player) e.getWhoClicked(), cell);
-        }).build();
-  }
+    public Menu(Player viewer, OwnedCell cell, OfflinePlayer target) {
+      super(viewer, 5, langConfig.translate("menus.manage-members.title"));
 
-  private GItem setRankMemberItem(OwnedCell cell, OfflinePlayer target) {
-    var item = ItemBuilder.from(XMaterial.COBBLESTONE.parseItem())
-        .setName(langConfig.translate("menus.manage-members.items.set-member.name"))
-        .setLore(langConfig.translateBlock("menus.manage-members.items.set-member.lore"))
-        .build();
+      this.cell = cell;
+      this.target = target;
+    }
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          var player = (Player) e.getWhoClicked();
-          player.closeInventory();
+    @Override
+    public void onOpen() {
+      top().setItem(2, 1, setRankMemberItem());
+      top().setItem(4, 1, setRankGuardItem());
+      top().setItem(6, 1, setRankManagerItem());
 
-          cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
-        }).build();
-  }
+      top().setItem(0, 4, closeItem(cell));
+    }
 
-  private GItem setRankGuardItem(OwnedCell cell, OfflinePlayer target) {
-    var item = ItemBuilder.from(XMaterial.LAPIS_ORE.parseItem())
-        .setName(langConfig.translate("menus.manage-members.items.set-guard.name"))
-        .setLore(langConfig.translateBlock("menus.manage-members.items.set-guard.lore"))
-        .build();
+    private GItem closeItem(OwnedCell cell) {
+      var item = ItemBuilder.from(XMaterial.WHITE_BED.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.close.name"))
+          .build();
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          var player = (Player) e.getWhoClicked();
-          player.closeInventory();
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            ManageCellMenu.open((Player) e.getWhoClicked(), cell);
+          }).build();
+    }
 
-          cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
-        }).build();
-  }
+    private GItem setRankMemberItem() {
+      var item = ItemBuilder.from(XMaterial.COBBLESTONE.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.set-member.name"))
+          .setLore(langConfig.translateBlock("menus.manage-members.items.set-member.lore"))
+          .build();
 
-  private GItem setRankManagerItem(OwnedCell cell, OfflinePlayer target) {
-    var item = ItemBuilder.from(XMaterial.GOLD_ORE.parseItem())
-        .setName(langConfig.translate("menus.manage-members.items.set-manager.name"))
-        .setLore(langConfig.translateBlock("menus.manage-members.items.set-manager.lore"))
-        .build();
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          var player = (Player) e.getWhoClicked();
-          player.closeInventory();
+            cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
+          }).build();
+    }
 
-          cellController.setRank(cell, player, target, Member.Rank.MANAGER);
-        }).build();
-  }
+    private GItem setRankGuardItem() {
+      var item = ItemBuilder.from(XMaterial.LAPIS_ORE.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.set-guard.name"))
+          .setLore(langConfig.translateBlock("menus.manage-members.items.set-guard.lore"))
+          .build();
 
-  private ChestMenu getInventory(OwnedCell cell, Player player, OfflinePlayer target) {
-    return new ChestMenu(player, 5, langConfig.translate("menus.manage-members.title")) {
-      @Override
-      public void onOpen() {
-        populateMenu(this, cell, target);
-      }
-    };
-  }
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
 
-  public static void open(OwnedCell cell, Player player, OfflinePlayer target) {
-    instance.getInventory(cell, player, target).open();
+            cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
+          }).build();
+    }
+
+    private GItem setRankManagerItem() {
+      var item = ItemBuilder.from(XMaterial.GOLD_ORE.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.set-manager.name"))
+          .setLore(langConfig.translateBlock("menus.manage-members.items.set-manager.lore"))
+          .build();
+
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
+
+            cellController.setRank(cell, player, target, Member.Rank.MANAGER);
+          }).build();
+    }
   }
 
 }

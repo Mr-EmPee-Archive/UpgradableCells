@@ -22,40 +22,42 @@ public class ClaimCellMenu implements Bean {
   private final CellController cellController;
   private final LangConfig langConfig;
 
+  public static void open(Player player) {
+    instance.create(player).open();
+  }
+
   @Override
   public void onStart() {
     instance = this;
   }
 
-  private void populateMenu(ChestMenu menu) {
-    menu.top().setItem(4, 1, buyCellItem());
+  private Menu create(Player player) {
+    return new Menu(player);
   }
 
-  private ChestMenu createMenu(Player player) {
-    return new ChestMenu(player, 3, langConfig.translate("menus.claim-cell.title")) {
-      @Override
-      public void onOpen() {
-        populateMenu(this);
-      }
-    };
-  }
+  private class Menu extends ChestMenu {
+    public Menu(Player player) {
+      super(player, 3, langConfig.translate("menus.claim-cell.title"));
+    }
 
-  private GItem buyCellItem() {
-    var item = ItemBuilder.from(XMaterial.GOLD_INGOT.parseItem())
-        .setName(langConfig.translate("menus.claim-cell.items.buy.name"))
-        .build();
+    @Override
+    public void onOpen() {
+      top().setItem(4, 1, buyCellItem());
+    }
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          var player = (Player) e.getWhoClicked();
-          player.closeInventory();
-          cellController.createCell(player);
-        }).build();
-  }
+    private GItem buyCellItem() {
+      var item = ItemBuilder.from(XMaterial.GOLD_INGOT.parseItem())
+          .setName(langConfig.translate("menus.claim-cell.items.buy.name"))
+          .build();
 
-  public static void open(Player player) {
-    instance.createMenu(player).open();
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
+            cellController.createCell(player);
+          }).build();
+    }
   }
 
 }

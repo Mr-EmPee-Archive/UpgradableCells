@@ -34,6 +34,12 @@ public class SelectPlayerMenu implements Bean, RegisteredListener {
   private final List<Menu> openedMenus = new ArrayList<>();
   private final LangConfig langConfig;
 
+  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, OwnedCell cell, List<OfflinePlayer> players) {
+    var action = new CompletableFuture<OfflinePlayer>();
+    instance.create(player, cell, players, action).open();
+    return action;
+  }
+
   @Override
   public void onStart() {
     instance = this;
@@ -59,12 +65,6 @@ public class SelectPlayerMenu implements Bean, RegisteredListener {
 
   private Menu create(Player player, OwnedCell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> future) {
     return new Menu(player, cell, players, future);
-  }
-
-  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, OwnedCell cell, List<OfflinePlayer> players) {
-    var action = new CompletableFuture<OfflinePlayer>();
-    instance.create(player, cell, players, action).open();
-    return action;
   }
 
   private class Menu extends ChestMenu {

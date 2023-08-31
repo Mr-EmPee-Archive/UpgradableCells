@@ -26,62 +26,69 @@ public class SelectCellMenu implements Bean {
   private final LangConfig langConfig;
   private final ViewUtils viewUtils;
 
+  public static CompletableFuture<OwnedCell> selectCell(Player player, List<OwnedCell> cells) {
+    CompletableFuture<OwnedCell> future = new CompletableFuture<>();
+    instance.create(player, cells, future).open();
+    return future;
+  }
+
   @Override
   public void onStart() {
     instance = this;
   }
 
-  private void populateMenu(ChestMenu menu, List<OwnedCell> cells, CompletableFuture<OwnedCell> future) {
-    var pane = new ScrollPane(3, 1);
-    pane.setCols(
-        cells.stream()
-            .map(c -> cellItem(c, future))
-            .toList()
-    );
-
-    menu.top().addPane(3, 1, pane);
-    menu.top().setItem(1, 1, GItem.builder()
-        .itemstack(viewUtils.previousButton())
-        .visibilityHandler(pane::hasPreviousCol)
-        .clickHandler(e -> pane.previousCol())
-        .build()
-    );
-
-    menu.top().setItem(7, 1, GItem.builder()
-        .itemstack(viewUtils.nextButton())
-        .visibilityHandler(pane::hasNextCol)
-        .clickHandler(e -> pane.nextCol())
-        .build()
-    );
+  private Menu create(Player player, List<OwnedCell> cells, CompletableFuture<OwnedCell> future) {
+    return new Menu(player, cells, future);
   }
 
-  private ChestMenu createMenu(Player player, List<OwnedCell> cells, CompletableFuture<OwnedCell> future) {
-    return new ChestMenu(player, 3, langConfig.translate("menus.select-cell.title")) {
-      @Override
-      public void onOpen() {
-        populateMenu(this, cells, future);
-      }
-    };
-  }
+  private class Menu extends ChestMenu {
+    private final List<OwnedCell> cells;
+    private final CompletableFuture<OwnedCell> action;
 
-  private GItem cellItem(OwnedCell cell, CompletableFuture<OwnedCell> future) {
-    OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
-    var item = ItemBuilder.skull()
-        .setName("&e" + owner.getName())
-        .owner(owner)
-        .build();
+    public Menu(Player viewer, List<OwnedCell> cells, CompletableFuture<OwnedCell> action) {
+      super(viewer, 3, langConfig.translate("menus.select-cell.title"));
 
-    return GItem.builder()
-        .itemstack(item)
-        .clickHandler(e -> {
-          future.complete(cell);
-        }).build();
-  }
+      this.cells = cells;
+      this.action = action;
+    }
 
-  public static CompletableFuture<OwnedCell> selectCell(Player player, List<OwnedCell> cells) {
-    CompletableFuture<OwnedCell> future = new CompletableFuture<>();
-    instance.createMenu(player, cells, future).open();
-    return future;
+    @Override
+    public void onOpen() {
+      var pane = new ScrollPane(3, 1);
+      pane.setCols(
+          cells.stream()
+              .map(this::cellItem)
+              .toList()
+      );
+
+      top().addPane(3, 1, pane);
+      top().setItem(1, 1, GItem.builder()
+          .itemstack(viewUtils.previousButton())
+          .visibilityHandler(pane::hasPreviousCol)
+          .clickHandler(e -> pane.previousCol())
+          .build()
+      );
+
+      top().setItem(7, 1, GItem.builder()
+          .itemstack(viewUtils.nextButton())
+          .visibilityHandler(pane::hasNextCol)
+          .clickHandler(e -> pane.nextCol())
+          .build()
+      );
+    }
+
+    private GItem cellItem(OwnedCell cell) {
+      OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
+      var item = ItemBuilder.skull()
+          .setName("&e" + owner.getName())
+          .owner(owner)
+          .build();
+
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> action.complete(cell))
+          .build();
+    }
   }
 
 }
