@@ -70,8 +70,15 @@ public class OwnedCell {
     members.add(member);
   }
 
-  public void removeMember(UUID uuid) {
-    members.removeIf(m -> m.getUuid().equals(uuid));
+  public Member removeMember(UUID uuid) {
+    for (Member member : members) {
+      if (member.getUuid().equals(uuid)) {
+        members.remove(member);
+        return member;
+      }
+    }
+
+    return null;
   }
 
   public boolean hasMember(UUID uuid) {

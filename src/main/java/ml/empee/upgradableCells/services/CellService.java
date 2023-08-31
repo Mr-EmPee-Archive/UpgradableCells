@@ -8,8 +8,11 @@ import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.repositories.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -156,10 +159,16 @@ public class CellService implements Bean {
     });
   }
 
+  /**
+   * Add a member to the cell or change the rank of an existing member
+   */
   public void setMember(OwnedCell cell, UUID uuid, Member.Rank rank) {
     var member = cell.getMember(uuid);
     if (member == null) {
-      cell.addMember(Member.create(uuid, rank));
+      member = Member.create(uuid, rank);
+      cell.addMember(member);
+
+      Bukkit.getPluginManager().callEvent(new CellMemberJoinEvent(cell, member));
     } else {
       member.setRank(rank);
     }
@@ -167,8 +176,13 @@ public class CellService implements Bean {
     cells.markDirty(cell.getOwner());
   }
 
-  public void removeMember(OwnedCell cell, UUID member) {
-    cell.removeMember(member);
+  public void removeMember(OwnedCell cell, UUID uuid) {
+    Member member = cell.removeMember(uuid);
+    if (member == null) {
+      return;
+    }
+
+    Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member));
     cells.markDirty(cell.getOwner());
   }
 
