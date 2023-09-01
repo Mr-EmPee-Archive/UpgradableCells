@@ -183,32 +183,62 @@ public class CellController implements Bean {
     Logger.log(sender, langConfig.translate("cell.description-updated"));
   }
 
-  public void pardonMember(OwnedCell cell, OfflinePlayer target) {
+  /**
+   * Pardon a banned member
+   */
+  public void pardonMember(OwnedCell cell, Player source, OfflinePlayer target) {
+    var member = cell.getMember(source.getUniqueId());
+    var targetMember = cell.getBannedMember(target.getUniqueId());
+    if (!member.getRank().canManage(targetMember.getRank())) {
+      Logger.log(source, langConfig.translate("cell.members.un-manageable"));
+      return;
+    }
+
     cellService.pardonMember(cell, target.getUniqueId());
-    for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.unbanned", target.getName(), cell.getOwnerPlayer().getName()));
+    for (Player p : cell.getOnlineMembers()) {
+      Logger.log(p, langConfig.translate("cell.members.unbanned", target.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
-  public void banMember(OwnedCell cell, OfflinePlayer target) {
+  /**
+   * Ban a member
+   */
+  public void banMember(OwnedCell cell, Player source, OfflinePlayer target) {
+    var member = cell.getMember(source.getUniqueId());
+    var targetMember = cell.getBannedMember(target.getUniqueId());
+    if (!member.getRank().canManage(targetMember.getRank())) {
+      Logger.log(source, langConfig.translate("cell.members.un-manageable"));
+      return;
+    }
+
     cellService.banMember(cell, target.getUniqueId());
     if (target.isOnline()) {
       Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
     }
 
-    for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
+    for (Player p : cell.getOnlineMembers()) {
+      Logger.log(p, langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
-  public void kickMember(OwnedCell cell, OfflinePlayer target) {
+  /**
+   * Kick a member
+   */
+  public void kickMember(OwnedCell cell, Player source, OfflinePlayer target) {
+    var member = cell.getMember(source.getUniqueId());
+    var targetMember = cell.getBannedMember(target.getUniqueId());
+    if (!member.getRank().canManage(targetMember.getRank())) {
+      Logger.log(source, langConfig.translate("cell.members.un-manageable"));
+      return;
+    }
+
     cellService.removeMember(cell, target.getUniqueId());
     if (target.isOnline()) {
       Logger.log(target.getPlayer(), langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
     }
 
-    for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
+    for (Player p : cell.getOnlineMembers()) {
+      Logger.log(p, langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -217,14 +247,9 @@ public class CellController implements Bean {
    */
   public void setRank(OwnedCell cell, Player source, OfflinePlayer target, Member.Rank rank) {
     var sourceRank = cell.getMember(source.getUniqueId()).getRank();
-    if (!sourceRank.canManageMembers()) {
-      Logger.log(source, langConfig.translate("cmd.missing-permission"));
-      return;
-    }
-
     var targetRank = cell.getMember(target.getUniqueId()).getRank();
     if (!sourceRank.canManage(targetRank) || !sourceRank.canManage(rank)) {
-      Logger.log(source, langConfig.translate("cell.members.set-rank-failed"));
+      Logger.log(source, langConfig.translate("cell.members.un-manageable"));
       return;
     }
 

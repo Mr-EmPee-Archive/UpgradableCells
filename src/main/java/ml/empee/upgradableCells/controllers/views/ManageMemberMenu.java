@@ -140,7 +140,7 @@ public class ManageMemberMenu implements Bean {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.kickMember(cell, target);
+            cellController.kickMember(cell, player, target);
           }).build();
     }
 
@@ -156,7 +156,7 @@ public class ManageMemberMenu implements Bean {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.banMember(cell, target);
+            cellController.banMember(cell, player, target);
           }).build();
     }
 

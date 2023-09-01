@@ -29,7 +29,7 @@ cell:
     has-joined: "&7&e%s &7has joined the cell of &e%s"
     not-member: "&cYou aren't a member of the cell"
     set-rank: "&7&e%s &7is now &6%s&7 of &e%s&7's cell"
-    set-rank-failed: "&cYou can't set this rank to this player!"
+    un-manageable: "&cYou can't perform actions on this player!"
   cant-build: "&cYou can't build here!"
   cant-interact: "&cYou can't interact here!"
   illegal-name: "&cThe cell name can't exceed 32 characters"

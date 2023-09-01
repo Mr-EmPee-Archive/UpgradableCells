@@ -75,8 +75,12 @@ public class Member {
     private final boolean canUpgrade;
     private final boolean canManageMembers;
 
-    public boolean canManage(Rank rank) {
-      return rank.ordinal() < ordinal();
+    public boolean canManage(@Nullable Rank rank) {
+      if (rank == null) {
+        return canManageMembers;
+      }
+
+      return canManageMembers && rank.ordinal() < ordinal();
     }
   }
 

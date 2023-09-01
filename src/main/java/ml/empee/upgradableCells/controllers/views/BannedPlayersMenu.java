@@ -119,23 +119,22 @@ public class BannedPlayersMenu implements Bean, RegisteredListener {
     }
 
     private GItem playerItem(Member member) {
-      var player = Bukkit.getOfflinePlayer(member.getUuid());
-
+      var target = Bukkit.getOfflinePlayer(member.getUuid());
       var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
       var item = ItemBuilder.skull()
-          .setName("&e" + player.getName())
+          .setName("&e" + target.getName())
           .setLore(
               langConfig.translateBlock(
                   "menus.banned-players.player-lore",
                   member.getBannedSince().format(formatter)
               )
           )
-          .owner(player)
+          .owner(target)
           .build();
 
       return GItem.builder()
           .itemstack(item)
-          .clickHandler(e -> cellController.pardonMember(cell, player))
+          .clickHandler(e -> cellController.pardonMember(cell, player, target))
           .build();
     }
   }

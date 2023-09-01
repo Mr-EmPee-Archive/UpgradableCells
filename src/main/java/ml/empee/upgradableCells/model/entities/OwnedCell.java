@@ -82,6 +82,12 @@ public class OwnedCell {
     return null;
   }
 
+  public Member getBannedMember(UUID uuid) {
+    return bannedMembers.stream()
+        .filter(m -> m.getUuid().equals(uuid))
+        .findFirst().orElse(null);
+  }
+
   public void banMember(Member member) {
     bannedMembers.add(member);
   }
