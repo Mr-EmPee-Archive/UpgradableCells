@@ -15,6 +15,7 @@ import org.bukkit.event.HandlerList;
 @RequiredArgsConstructor
 public class CellMemberJoinEvent extends Event {
 
+  @Getter
   private static final HandlerList handlerList = new HandlerList();
 
   private final OwnedCell cell;
