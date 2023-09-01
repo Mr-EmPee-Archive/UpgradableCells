@@ -37,7 +37,8 @@ public class CellRepository implements Bean {
               level INTEGER NOT NULL,
               origin TEXT NOT NULL,
               pasting INTEGER DEFAULT 0 NOT NULL,
-              members TEXT DEFAULT "" NOT NULL
+              members TEXT DEFAULT "" NOT NULL,
+              banned_members TEXT DEFAULT "" NOT NULL
           );
           """);
     }
@@ -50,7 +51,7 @@ public class CellRepository implements Bean {
     return CompletableFuture.runAsync(() -> {
       var query = """
           INSERT OR REPLACE INTO cells (
-            owner, level, origin, pasting, members
+            owner, level, origin, pasting, members, banned_members
           ) VALUES (?, ?, ?, ?, ?);
           """;
 
@@ -60,6 +61,7 @@ public class CellRepository implements Bean {
         stm.setString(3, ObjectConverter.parseLocation(data.getOrigin()));
         stm.setInt(4, data.isPasting() ? 1 : 0);
         stm.setString(5, ObjectConverter.parse(data.getMembers()));
+        stm.setString(6, ObjectConverter.parse(data.getBannedMembers()));
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -128,8 +130,13 @@ public class CellRepository implements Bean {
     cell.setOwner(UUID.fromString(rs.getString("owner")));
     cell.setLevel(rs.getInt("level"));
     cell.setOrigin(ObjectConverter.parseLocation(rs.getString("origin")));
+
     cell.setMembers(ObjectConverter.parse(
         rs.getString("members"), new TypeToken<>() {}
+    ));
+
+    cell.setBannedMembers(ObjectConverter.parse(
+        rs.getString("banned_members"), new TypeToken<>() {}
     ));
 
     return cell;

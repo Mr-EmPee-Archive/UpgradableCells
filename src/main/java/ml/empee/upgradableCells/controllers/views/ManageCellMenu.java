@@ -45,7 +45,7 @@ public class ManageCellMenu implements Bean {
     private final OwnedCell cell;
 
     public Menu(Player player, OwnedCell cell) {
-      super(player, 6, langConfig.translate("menus.manage-cell.title"));
+      super(player, 6, langConfig.translate("menus.manage-cell.title", cell.getOwnerPlayer().getName()));
 
       this.cell = cell;
     }
@@ -55,6 +55,7 @@ public class ManageCellMenu implements Bean {
       top().setItem(2, 1, homeItem());
       top().setItem(2, 3, upgradeItem());
       top().setItem(4, 3, manageMembersItem());
+      top().setItem(6, 3, bannedPlayersItem());
       top().setItem(0, 5, closeItem());
     }
 
@@ -86,7 +87,7 @@ public class ManageCellMenu implements Bean {
             var player = (Player) e.getWhoClicked();
             var playerRank = cell.getMember(player.getUniqueId()).getRank();
             var players = cell.getMembers().stream()
-                .filter(p -> playerRank.canCommand(p.getRank()))
+                .filter(p -> playerRank.canManage(p.getRank()))
                 .filter(p -> !p.getUuid().equals(player.getUniqueId()))
                 .map(p -> Bukkit.getOfflinePlayer(p.getUuid()))
                 .toList();
@@ -123,6 +124,25 @@ public class ManageCellMenu implements Bean {
             var source = (Player) e.getWhoClicked();
             source.closeInventory();
             cellController.upgradeCell(source, cell);
+          }).build();
+    }
+
+    private GItem bannedPlayersItem() {
+      var item = ItemBuilder.from(XMaterial.BARRIER.parseItem());
+      item.setName(langConfig.translate("menus.manage-cell.items.banned-players.name"));
+      item.setLore(langConfig.translateBlock("menus.manage-cell.items.banned-players.lore"));
+
+      return GItem.builder()
+          .itemstack(item.build())
+          .clickHandler(e -> {
+            var source = (Player) e.getWhoClicked();
+            if (!cell.getMember(source.getUniqueId()).getRank().canManageMembers()) {
+              Logger.log(player, langConfig.translate("cell.members.no-members"));
+              player.closeInventory();
+              return;
+            }
+
+            BannedPlayersMenu.open(source, cell);
           }).build();
     }
 

@@ -21,8 +21,6 @@ import org.bukkit.entity.Player;
  * Controller use to manage cell operations
  */
 
-//TODO: Validation of member existence (Null check)
-
 @RequiredArgsConstructor
 public class CellController implements Bean {
 
@@ -140,18 +138,47 @@ public class CellController implements Bean {
     }
   }
 
+  public void pardonMember(OwnedCell cell, OfflinePlayer target) {
+    cellService.pardonMember(cell, target.getUniqueId());
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.members.unbanned", target.getName(), cell.getOwnerPlayer().getName()));
+    }
+  }
+
+  public void banMember(OwnedCell cell, OfflinePlayer target) {
+    cellService.banMember(cell, target.getUniqueId());
+    if (target.isOnline()) {
+      Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
+    }
+
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
+    }
+  }
+
+  public void kickMember(OwnedCell cell, OfflinePlayer target) {
+    cellService.removeMember(cell, target.getUniqueId());
+    if (target.isOnline()) {
+      Logger.log(target.getPlayer(), langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
+    }
+
+    for (Player member : cell.getOnlineMembers()) {
+      Logger.log(member, langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
+    }
+  }
+
   /**
    * Change the rank of a cell member
    */
   public void setRank(OwnedCell cell, Player source, OfflinePlayer target, Member.Rank rank) {
     var sourceRank = cell.getMember(source.getUniqueId()).getRank();
-    if (!sourceRank.canPromote()) {
+    if (!sourceRank.canManageMembers()) {
       Logger.log(source, langConfig.translate("cmd.missing-permission"));
       return;
     }
 
     var targetRank = cell.getMember(target.getUniqueId()).getRank();
-    if (!sourceRank.canCommand(targetRank) || !sourceRank.canCommand(rank)) {
+    if (!sourceRank.canManage(targetRank) || !sourceRank.canManage(rank)) {
       Logger.log(source, langConfig.translate("cell.members.set-rank-failed"));
       return;
     }
@@ -168,6 +195,11 @@ public class CellController implements Bean {
   public void invitePlayer(OwnedCell cell, Player source, Player target) {
     if (!cell.getMember(source.getUniqueId()).getRank().canInvite()) {
       Logger.log(source, langConfig.translate("cell.invitation.missing-perm"));
+      return;
+    }
+
+    if (cell.isBannedMember(target.getUniqueId())) {
+      Logger.log(source, langConfig.translate("cell.invitation.banned"));
       return;
     }
 
@@ -197,6 +229,10 @@ public class CellController implements Bean {
 
     if (!cellService.hasInvitation(cell, player.getUniqueId())) {
       Logger.log(player, langConfig.translate("cell.invitation.missing"));
+      return;
+    }
+
+    if (cell.isBannedMember(player.getUniqueId())) {
       return;
     }
 

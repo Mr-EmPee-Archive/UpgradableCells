@@ -47,20 +47,16 @@ public class SelectPlayerMenu implements Bean, RegisteredListener {
 
   @EventHandler
   public void onCellMemberLeave(CellMemberLeaveEvent event) {
-    for (Menu menu : openedMenus) {
-      if (menu.cell.equals(event.getCell())) {
-        menu.removeSelectablePlayer(event.getMember().getUuid());
-      }
-    }
+    openedMenus.stream()
+        .filter(menu -> menu.cell.equals(event.getCell()))
+        .forEach(menu -> menu.removeSelectablePlayer(event.getMember().getUuid()));
   }
 
   @EventHandler
   public void onCellMemberJoin(CellMemberJoinEvent event) {
-    for (Menu menu : openedMenus) {
-      if (menu.cell.equals(event.getCell())) {
-        menu.addSelectablePlayer(event.getMember().getUuid());
-      }
-    }
+    openedMenus.stream()
+        .filter(menu -> menu.cell.equals(event.getCell()))
+        .forEach(menu -> menu.addSelectablePlayer(event.getMember().getUuid()));
   }
 
   private Menu create(Player player, OwnedCell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> future) {
@@ -71,12 +67,12 @@ public class SelectPlayerMenu implements Bean, RegisteredListener {
 
     private final OwnedCell cell;
     private final CompletableFuture<OfflinePlayer> action;
-    private final ScrollPane pane = new ScrollPane(7, 4);
+    private final ScrollPane pane = new ScrollPane(7, 3);
 
     private final List<OfflinePlayer> players;
 
     public Menu(Player viewer, OwnedCell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> action) {
-      super(viewer, 6, langConfig.translate("menus.select-player.title"));
+      super(viewer, 5, langConfig.translate("menus.select-player.title"));
 
       this.cell = cell;
       this.action = action;

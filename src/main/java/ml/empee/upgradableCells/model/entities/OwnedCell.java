@@ -25,6 +25,7 @@ public class OwnedCell {
   private int id;
   private UUID owner;
   private List<Member> members = new ArrayList<>();
+  private List<Member> bannedMembers = new ArrayList<>();
   private Integer level;
   private Location origin;
   private boolean pasting;
@@ -81,8 +82,35 @@ public class OwnedCell {
     return null;
   }
 
+  public void banMember(Member member) {
+    bannedMembers.add(member);
+  }
+
+  public Member pardonMember(UUID uuid) {
+    for (Member member : bannedMembers) {
+      if (member.getUuid().equals(uuid)) {
+        bannedMembers.remove(member);
+        return member;
+      }
+    }
+
+    return null;
+  }
+
+  public boolean isBannedMember(UUID uuid) {
+    return bannedMembers.stream().anyMatch(m -> m.getUuid().equals(uuid));
+  }
+
   public boolean hasMember(UUID uuid) {
     return getMember(uuid) != null;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof OwnedCell)) {
+      return false;
+    }
+
+    return ((OwnedCell) obj).id == id;
+  }
 }

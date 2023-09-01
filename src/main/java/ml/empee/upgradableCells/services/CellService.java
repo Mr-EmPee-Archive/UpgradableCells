@@ -8,8 +8,10 @@ import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
 import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
 import ml.empee.upgradableCells.repositories.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
 import org.bukkit.Bukkit;
@@ -161,8 +163,13 @@ public class CellService implements Bean {
 
   /**
    * Add a member to the cell or change the rank of an existing member
+   * @throws IllegalArgumentException if the member is banned
    */
   public void setMember(OwnedCell cell, UUID uuid, Member.Rank rank) {
+    if (cell.isBannedMember(uuid)) {
+      throw new IllegalArgumentException("Unable to add a banned member!");
+    }
+
     var member = cell.getMember(uuid);
     if (member == null) {
       member = Member.create(uuid, rank);
@@ -183,6 +190,23 @@ public class CellService implements Bean {
     }
 
     Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member));
+    cells.markDirty(cell.getOwner());
+  }
+
+  public void banMember(OwnedCell cell, UUID uuid) {
+    var member = cell.getMember(uuid);
+    member.setBannedSince(System.currentTimeMillis());
+
+    cell.banMember(member);
+    removeMember(cell, uuid);
+
+    Bukkit.getPluginManager().callEvent(new CellMemberBanEvent(cell, uuid));
+    cells.markDirty(cell.getOwner());
+  }
+
+  public void pardonMember(OwnedCell cell, UUID uuid) {
+    cell.pardonMember(uuid);
+    Bukkit.getPluginManager().callEvent(new CellMemberPardonEvent(cell, uuid));
     cells.markDirty(cell.getOwner());
   }
 

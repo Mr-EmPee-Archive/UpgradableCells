@@ -11,8 +11,10 @@ import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
+import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 
 /**
  * Menu that allows you to manage cell members
@@ -58,6 +60,9 @@ public class ManageMemberMenu implements Bean {
       top().setItem(2, 1, setRankMemberItem());
       top().setItem(4, 1, setRankGuardItem());
       top().setItem(6, 1, setRankManagerItem());
+
+      top().setItem(3, 3, kickItem());
+      top().setItem(5, 3, banItem());
 
       top().setItem(0, 4, closeItem(cell));
     }
@@ -121,6 +126,40 @@ public class ManageMemberMenu implements Bean {
             cellController.setRank(cell, player, target, Member.Rank.MANAGER);
           }).build();
     }
+
+    private GItem kickItem() {
+      var item = ItemBuilder.from(XMaterial.LEATHER_BOOTS.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.kick.name"))
+          .setLore(langConfig.translateBlock("menus.manage-members.items.kick.lore"))
+          .color(Color.RED).flags(ItemFlag.values())
+          .build();
+
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
+
+            cellController.kickMember(cell, target);
+          }).build();
+    }
+
+    private GItem banItem() {
+      var item = ItemBuilder.from(XMaterial.BARRIER.parseItem())
+          .setName(langConfig.translate("menus.manage-members.items.ban.name"))
+          .setLore(langConfig.translateBlock("menus.manage-members.items.ban.lore"))
+          .build();
+
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
+
+            cellController.banMember(cell, target);
+          }).build();
+    }
+
   }
 
 }

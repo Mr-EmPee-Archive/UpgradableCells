@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
@@ -20,7 +20,8 @@ import java.util.UUID;
 public class Member {
 
   private UUID uuid;
-  private long memberSince;
+  private Long memberSince;
+  private Long bannedSince;
   private Rank rank;
 
   public static Member create(UUID uuid, Rank rank) {
@@ -32,8 +33,28 @@ public class Member {
     return member;
   }
 
+  public static Member banned(UUID uuid) {
+    Member member = new Member();
+    member.setUuid(uuid);
+    member.setBannedSince(System.currentTimeMillis());
+    return member;
+  }
+
   public LocalDateTime getMemberSince() {
     return Instant.ofEpochMilli(memberSince).atZone(ZoneId.systemDefault()).toLocalDateTime();
+  }
+
+  @Nullable
+  public LocalDateTime getBannedSince() {
+    if (bannedSince == null) {
+      return null;
+    }
+
+    return Instant.ofEpochMilli(bannedSince).atZone(ZoneId.systemDefault()).toLocalDateTime();
+  }
+
+  public boolean isBanned() {
+    return bannedSince != null;
   }
 
   /**
@@ -52,9 +73,9 @@ public class Member {
     private final boolean canAccessChests;
     private final boolean canInvite;
     private final boolean canUpgrade;
-    private final boolean canPromote;
+    private final boolean canManageMembers;
 
-    public boolean canCommand(Rank rank) {
+    public boolean canManage(Rank rank) {
       return rank.ordinal() < ordinal();
     }
   }
