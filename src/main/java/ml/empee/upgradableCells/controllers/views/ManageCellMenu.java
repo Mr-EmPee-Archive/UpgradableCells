@@ -12,6 +12,7 @@ import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -53,10 +54,33 @@ public class ManageCellMenu implements Bean {
     @Override
     public void onOpen() {
       top().setItem(2, 1, homeItem());
+      top().setItem(4, 1, cellInfoItem());
       top().setItem(2, 3, upgradeItem());
       top().setItem(4, 3, manageMembersItem());
       top().setItem(6, 3, bannedPlayersItem());
       top().setItem(0, 5, closeItem());
+    }
+
+    private GItem cellInfoItem() {
+      String name = cell.getName();
+      if (name == null) {
+        name = "Cell Of " + player.getName();
+      }
+
+      var item = ItemBuilder.from(XMaterial.OAK_SIGN.parseItem());
+      item.setName("&e" + name);
+
+      if (cell.getDescription() != null) {
+        item.setLore(
+            WordUtils.wrap(
+                "&7" + cell.getDescription(), 32, "\n&7", false
+            ).split("\n")
+        );
+      }
+
+      return GItem.builder()
+          .itemstack(item.build())
+          .build();
     }
 
     private GItem homeItem() {

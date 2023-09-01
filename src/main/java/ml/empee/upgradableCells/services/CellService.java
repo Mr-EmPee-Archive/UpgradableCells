@@ -161,8 +161,19 @@ public class CellService implements Bean {
     });
   }
 
+  public void setName(OwnedCell cell, String name) {
+    cell.setName(name);
+    cells.markDirty(cell.getOwner());
+  }
+
+  public void setDescription(OwnedCell cell, String description) {
+    cell.setDescription(description);
+    cells.markDirty(cell.getOwner());
+  }
+
   /**
    * Add a member to the cell or change the rank of an existing member
+   *
    * @throws IllegalArgumentException if the member is banned
    */
   public void setMember(OwnedCell cell, UUID uuid, Member.Rank rank) {

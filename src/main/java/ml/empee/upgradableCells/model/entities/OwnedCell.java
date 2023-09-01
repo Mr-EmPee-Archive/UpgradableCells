@@ -16,14 +16,14 @@ import java.util.UUID;
  * A cell
  */
 
-//TODO Name & Description
-
 @Getter
 @Setter
 public class OwnedCell {
 
   private int id;
   private UUID owner;
+  private String name;
+  private String description;
   private List<Member> members = new ArrayList<>();
   private List<Member> bannedMembers = new ArrayList<>();
   private Integer level;

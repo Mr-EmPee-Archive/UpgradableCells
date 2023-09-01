@@ -2,6 +2,7 @@ package ml.empee.upgradableCells.controllers;
 
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.specifier.Greedy;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
@@ -136,6 +137,50 @@ public class CellController implements Bean {
           c -> leaveCell(sender, c)
       );
     }
+  }
+
+  @CommandMethod("cell name <name>")
+  public void setCellName(Player sender, @Argument @Greedy String name) {
+    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    setCellName(sender, cell, name);
+  }
+
+  @CommandMethod("cell description <description>")
+  public void setCellDescription(Player sender, @Argument @Greedy String description) {
+    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    setCellDescription(sender, cell, description);
+  }
+
+  public void setCellName(Player sender, OwnedCell cell, String name) {
+    if (name.length() > 32) {
+      Logger.log(sender, langConfig.translate("cell.illegal-name"));
+      return;
+    }
+
+    cellService.setName(cell, name);
+    Logger.log(sender, langConfig.translate("cell.name-updated"));
+  }
+
+  public void setCellDescription(Player sender, OwnedCell cell, String description) {
+    if (description.length() > 132) {
+      Logger.log(sender, langConfig.translate("cell.illegal-description"));
+      return;
+    }
+
+    cellService.setDescription(cell, description);
+    Logger.log(sender, langConfig.translate("cell.description-updated"));
   }
 
   public void pardonMember(OwnedCell cell, OfflinePlayer target) {
