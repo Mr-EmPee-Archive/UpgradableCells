@@ -1,5 +1,6 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.ioc.RegisteredListener;
@@ -93,8 +94,23 @@ public class BannedPlayersMenu implements Bean, RegisteredListener {
     @Override
     public void onOpen() {
       openedMenus.add(this);
+
+      top().setItem(0, 4, closeItem());
+
       updateBannedPlayerList();
       top().addPane(1, 1, pane);
+    }
+
+    private GItem closeItem() {
+      var item = ItemBuilder.from(XMaterial.WHITE_BED.parseItem())
+          .setName(langConfig.translate("menus.banned-players.items.close.name"))
+          .build();
+
+      return GItem.builder()
+          .itemstack(item)
+          .clickHandler(e -> {
+            ManageCellMenu.open((Player) e.getWhoClicked(), cell);
+          }).build();
     }
 
     @Override

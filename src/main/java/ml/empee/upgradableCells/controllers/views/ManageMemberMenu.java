@@ -64,10 +64,10 @@ public class ManageMemberMenu implements Bean {
       top().setItem(3, 3, kickItem());
       top().setItem(5, 3, banItem());
 
-      top().setItem(0, 4, closeItem(cell));
+      top().setItem(0, 4, closeItem());
     }
 
-    private GItem closeItem(OwnedCell cell) {
+    private GItem closeItem() {
       var item = ItemBuilder.from(XMaterial.WHITE_BED.parseItem())
           .setName(langConfig.translate("menus.manage-members.items.close.name"))
           .build();

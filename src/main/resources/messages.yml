@@ -55,6 +55,9 @@ menus:
       &7Banned on: &6%s
       &r
       &eClick to unban
+    items:
+      close:
+        name: "&cBack"
   manage-members:
     title: "Manage members"
     items:
