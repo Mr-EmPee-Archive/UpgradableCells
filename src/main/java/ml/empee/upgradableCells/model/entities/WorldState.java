@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.World;
 
-import javax.xml.stream.Location;
-
 /**
  * Keep track of free cell slots inside the world
  */
