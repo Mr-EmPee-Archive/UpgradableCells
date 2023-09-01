@@ -18,6 +18,10 @@ import org.bukkit.craftbukkit.v1_19_R2.block.data.CraftBlockData;
 public class NmsUtils {
 
   public static void setBlockFast(Location location, BlockData blockData) {
+    if (location.getBlock().getBlockData().equals(blockData)) {
+      return;
+    }
+
     ((CraftWorld) location.getWorld()).getHandle()
         .setBlock(
             new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()),
