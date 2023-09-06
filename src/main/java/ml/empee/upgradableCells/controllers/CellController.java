@@ -84,7 +84,6 @@ public class CellController implements Bean {
 
   @CommandMethod("cell join <target>")
   public void joinCell(Player sender, @Argument OfflinePlayer target) {
-    //TODO: Get invites and show GUI
     OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
 
     if (cell == null) {
@@ -163,24 +162,47 @@ public class CellController implements Bean {
     setCellDescription(sender, cell, description);
   }
 
-  public void setCellName(Player sender, OwnedCell cell, String name) {
+  @CommandMethod("cell visit <target>")
+  public void visitCell(Player sender, @Argument OfflinePlayer target) {
+    OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(sender, langConfig.translate("cell.not-existing"));
+      return;
+    }
+
+    teleportToCell(sender, cell);
+  }
+
+  public void setCellName(Player source, OwnedCell cell, String name) {
     if (name.length() > 32) {
-      Logger.log(sender, langConfig.translate("cell.illegal-name"));
+      Logger.log(source, langConfig.translate("cell.illegal-name"));
       return;
     }
 
     cellService.setName(cell, name);
-    Logger.log(sender, langConfig.translate("cell.name-updated"));
+    Logger.log(source, langConfig.translate("cell.name-updated"));
   }
 
-  public void setCellDescription(Player sender, OwnedCell cell, String description) {
+  public void setCellDescription(Player source, OwnedCell cell, String description) {
     if (description.length() > 132) {
-      Logger.log(sender, langConfig.translate("cell.illegal-description"));
+      Logger.log(source, langConfig.translate("cell.illegal-description"));
       return;
     }
 
     cellService.setDescription(cell, description);
-    Logger.log(sender, langConfig.translate("cell.description-updated"));
+    Logger.log(source, langConfig.translate("cell.description-updated"));
+  }
+
+  public void setCellVisibility(Player source, OwnedCell cell, boolean publicVisible) {
+    var member = cell.getMember(source.getUniqueId());
+    if (!member.getRank().canChangeVisibility()) {
+      Logger.log(source, langConfig.translate("cell.visibility.missing-perm"));
+      return;
+    }
+
+    cellService.setVisibility(cell, publicVisible);
+    Logger.log(source, langConfig.translate("cell.visibility.changed"));
   }
 
   /**
@@ -205,7 +227,7 @@ public class CellController implements Bean {
    */
   public void banMember(OwnedCell cell, Player source, OfflinePlayer target) {
     var member = cell.getMember(source.getUniqueId());
-    var targetMember = cell.getBannedMember(target.getUniqueId());
+    var targetMember = cell.getMember(target.getUniqueId());
     if (!member.getRank().canManage(targetMember.getRank())) {
       Logger.log(source, langConfig.translate("cell.members.un-manageable"));
       return;
@@ -226,7 +248,7 @@ public class CellController implements Bean {
    */
   public void kickMember(OwnedCell cell, Player source, OfflinePlayer target) {
     var member = cell.getMember(source.getUniqueId());
-    var targetMember = cell.getBannedMember(target.getUniqueId());
+    var targetMember = cell.getMember(target.getUniqueId());
     if (!member.getRank().canManage(targetMember.getRank())) {
       Logger.log(source, langConfig.translate("cell.members.un-manageable"));
       return;
@@ -396,12 +418,16 @@ public class CellController implements Bean {
     }
 
     Member member = cell.getMember(player.getUniqueId());
-    if (member == null) {
+    if (member == null && !cell.isPublicVisible()) {
       Logger.log(player, langConfig.translate("cmd.missing-permission"));
+      return;
+    }
+
+    if (cell.getBannedMember(player.getUniqueId()) != null) {
+      Logger.log(player, langConfig.translate("cell.banned-interaction"));
       return;
     }
 
     player.teleport(cellService.getSpawnpoint(cell));
   }
-
 }

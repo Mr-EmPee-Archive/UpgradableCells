@@ -14,7 +14,10 @@ import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
+import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
 /**
  * GUI from where you can manage a cell
@@ -55,16 +58,49 @@ public class ManageCellMenu implements Bean {
     public void onOpen() {
       top().setItem(2, 1, homeItem());
       top().setItem(4, 1, cellInfoItem());
+      top().setItem(6, 1, cellVisibilityItem());
       top().setItem(2, 3, upgradeItem());
       top().setItem(4, 3, manageMembersItem());
       top().setItem(6, 3, bannedPlayersItem());
       top().setItem(0, 5, closeItem());
     }
 
+    private GItem cellVisibilityItem() {
+      ItemBuilder item;
+
+      var shield = XMaterial.SHIELD.parseItem();
+      var shieldMeta = (BlockStateMeta) shield.getItemMeta();
+      var bannerMeta = (Banner) shieldMeta.getBlockState();
+      if (cell.isPublicVisible()) {
+        bannerMeta.setBaseColor(DyeColor.GREEN);
+        shieldMeta.setBlockState(bannerMeta);
+        shield.setItemMeta(shieldMeta);
+        item = ItemBuilder.from(shield);
+        item.setName(langConfig.translate("menus.manage-cell.items.visibility.public.name"));
+        item.setLore(langConfig.translateBlock("menus.manage-cell.items.visibility.public.lore"));
+      } else {
+        bannerMeta.setBaseColor(DyeColor.RED);
+        shieldMeta.setBlockState(bannerMeta);
+        shield.setItemMeta(shieldMeta);
+        item = ItemBuilder.from(shield);
+        item.setName(langConfig.translate("menus.manage-cell.items.visibility.private.name"));
+        item.setLore(langConfig.translateBlock("menus.manage-cell.items.visibility.private.lore"));
+      }
+
+      return GItem.builder()
+          .itemstack(item.build())
+          .clickHandler(e -> {
+            var player = (Player) e.getWhoClicked();
+            player.closeInventory();
+
+            cellController.setCellVisibility(player, cell, !cell.isPublicVisible());
+          }).build();
+    }
+
     private GItem cellInfoItem() {
       String name = cell.getName();
       if (name == null) {
-        name = "Cell Of " + player.getName();
+        name = "Cell Of " + cell.getOwnerPlayer().getName();
       }
 
       var item = ItemBuilder.from(XMaterial.OAK_SIGN.parseItem());

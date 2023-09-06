@@ -29,6 +29,7 @@ public class OwnedCell {
   private Integer level;
   private Location origin;
   private boolean pasting;
+  private boolean publicVisible = true;
 
   public OfflinePlayer getOwnerPlayer() {
     return Bukkit.getOfflinePlayer(owner);

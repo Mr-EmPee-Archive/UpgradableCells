@@ -40,7 +40,8 @@ public class CellRepository implements Bean {
               members TEXT DEFAULT "" NOT NULL,
               banned_members TEXT DEFAULT "" NOT NULL,
               description TEXT,
-              name TEXT
+              name TEXT,
+              public_visible INTEGER DEFAULT 1 NOT NULL
           );
           """);
     }
@@ -53,8 +54,8 @@ public class CellRepository implements Bean {
     return CompletableFuture.runAsync(() -> {
       var query = """
           INSERT OR REPLACE INTO cells (
-            owner, level, origin, pasting, members, banned_members, description, name
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            owner, level, origin, pasting, members, banned_members, description, name, public_visible
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
           """;
 
       try (var stm = client.getJdbcConnection().prepareStatement(query)) {
@@ -66,6 +67,7 @@ public class CellRepository implements Bean {
         stm.setString(6, ObjectConverter.parse(data.getBannedMembers()));
         stm.setString(7, data.getDescription());
         stm.setString(8, data.getName());
+        stm.setInt(9, data.isPublicVisible() ? 1 : 0);
         stm.executeUpdate();
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -136,7 +138,7 @@ public class CellRepository implements Bean {
     cell.setOrigin(ObjectConverter.parseLocation(rs.getString("origin")));
     cell.setName(rs.getString("name"));
     cell.setDescription(rs.getString("description"));
-
+    cell.setPublicVisible(rs.getInt("public_visible") == 1);
     cell.setMembers(ObjectConverter.parse(
         rs.getString("members"), new TypeToken<>() {}
     ));

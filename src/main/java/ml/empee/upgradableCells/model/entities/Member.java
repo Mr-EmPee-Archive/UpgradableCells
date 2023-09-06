@@ -64,16 +64,17 @@ public class Member {
   @Accessors(fluent = true)
   @RequiredArgsConstructor
   public enum Rank {
-    MEMBER(false, false, false, false, false),
-    GUARD(true, true, false, false, false),
-    MANAGER(true, true, true, false, true),
-    OWNER(true, true, true, true, true);
+    MEMBER(false, false, false, false, false, false),
+    GUARD(true, true, false, false, false, false),
+    MANAGER(true, true, true, false, true, false),
+    OWNER(true, true, true, true, true, true);
 
     private final boolean canBuild;
     private final boolean canAccessChests;
     private final boolean canInvite;
     private final boolean canUpgrade;
     private final boolean canManageMembers;
+    private final boolean canChangeVisibility;
 
     public boolean canManage(@Nullable Rank rank) {
       if (rank == null) {

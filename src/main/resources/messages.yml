@@ -30,8 +30,12 @@ cell:
     not-member: "&cYou aren't a member of the cell"
     set-rank: "&7&e%s &7is now &6%s&7 of &e%s&7's cell"
     un-manageable: "&cYou can't perform actions on this player!"
+  visibility:
+    changed: "&7The cell visibility has been changed"
+    missing-perm: "&cMissing permissions to change cell visibility"
   cant-build: "&cYou can't build here!"
   cant-interact: "&cYou can't interact here!"
+  banned-interaction: "&cYou are banned from the cell"
   illegal-name: "&cThe cell name can't exceed 32 characters"
   name-updated: "&7The cell name has been updated"
   description-updated: "&7The cell description has been updated"
@@ -115,7 +119,7 @@ menus:
         name: "&eGo to cell"
         lore: "&7Click to teleport to the cell"
       upgrade:
-        name: "&eUpgrade your cell"
+        name: "&eUpgrade the cell"
         default-lore: |
           &r
           &r   &7Cost&8: &c%.2f $
@@ -125,6 +129,13 @@ menus:
           &r   &cReached max level!
           &r
 
+      visibility:
+        private:
+          name: "&eVisibility: &cPrivate"
+          lore: "&7Only cell members can teleport to the cell"
+        public:
+          name: "&eVisibility: &aPublic"
+          lore: "&7All players can teleport to the cell"
   select-cell:
     title: "Select cell"
   select-player:

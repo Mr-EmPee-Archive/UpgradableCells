@@ -166,6 +166,11 @@ public class CellService implements Bean {
     cells.markDirty(cell.getOwner());
   }
 
+  public void setVisibility(OwnedCell cell, boolean publicVisible) {
+    cell.setPublicVisible(publicVisible);
+    cells.markDirty(cell.getOwner());
+  }
+
   public void setDescription(OwnedCell cell, String description) {
     cell.setDescription(description);
     cells.markDirty(cell.getOwner());
