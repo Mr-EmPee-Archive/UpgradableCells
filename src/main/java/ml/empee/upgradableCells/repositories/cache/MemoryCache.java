@@ -106,6 +106,7 @@ public class MemoryCache<KEY, VALUE> {
 
   public final void put(KEY key, VALUE value) {
     cache.put(key, value);
+    dirtyCache.put(key, value);
   }
 
   @Nullable
