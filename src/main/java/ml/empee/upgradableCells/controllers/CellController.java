@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
@@ -25,6 +26,7 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor
 public class CellController implements Bean {
 
+  private final PluginConfig pluginConfig;
   private final CommandsConfig commandsConfig;
   private final CellService cellService;
   private final Economy economy;
@@ -235,6 +237,12 @@ public class CellController implements Bean {
 
     cellService.banMember(cell, target.getUniqueId());
     if (target.isOnline()) {
+      var player = target.getPlayer();
+      var currentCell = cellService.findCellByLocation(player.getLocation()).orElse(null);
+      if (cell.equals(currentCell)) {
+        player.teleport(pluginConfig.getSpawnLocation());
+      }
+
       Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
     }
 
