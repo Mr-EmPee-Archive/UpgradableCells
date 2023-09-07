@@ -2,8 +2,8 @@ package ml.empee.upgradableCells.config.client;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
  * Database client
  */
 
-public class DbClient implements Bean {
+@Singleton
+public class DbClient {
 
   private static final ThreadFactory threadFactory = new ThreadFactory() {
     @Override
@@ -46,11 +47,6 @@ public class DbClient implements Bean {
     this.dbUrl = "jdbc:sqlite:" + dbFile.getAbsolutePath();
 
     dbFile.getParentFile().mkdirs();
-  }
-
-  @Override
-  public void onStart() {
-    //Ping db
   }
 
   @SneakyThrows

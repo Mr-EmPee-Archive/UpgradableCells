@@ -1,13 +1,14 @@
 package ml.empee.upgradableCells.controllers.views;
 
 import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.pane.ScrollPane;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -19,9 +20,11 @@ import java.util.concurrent.CompletableFuture;
  * Menu to claim a cell
  */
 
+@Singleton
 @RequiredArgsConstructor
-public class SelectCellMenu implements Bean {
+public class SelectCellMenu {
 
+  @Instance
   private static SelectCellMenu instance;
   private final LangConfig langConfig;
   private final ViewUtils viewUtils;
@@ -30,11 +33,6 @@ public class SelectCellMenu implements Bean {
     CompletableFuture<OwnedCell> future = new CompletableFuture<>();
     instance.create(player, cells, future).open();
     return future;
-  }
-
-  @Override
-  public void onStart() {
-    instance = this;
   }
 
   private Menu create(Player player, List<OwnedCell> cells, CompletableFuture<OwnedCell> future) {

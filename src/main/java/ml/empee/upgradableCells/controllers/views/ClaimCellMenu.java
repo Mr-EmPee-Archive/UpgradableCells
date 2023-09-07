@@ -2,21 +2,24 @@ package ml.empee.upgradableCells.controllers.views;
 
 import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.entity.Player;
 
 /**
  * Menu to claim a cell
  */
 
+@Singleton
 @RequiredArgsConstructor
-public class ClaimCellMenu implements Bean {
+public class ClaimCellMenu {
 
+  @Instance
   private static ClaimCellMenu instance;
 
   private final CellController cellController;
@@ -24,11 +27,6 @@ public class ClaimCellMenu implements Bean {
 
   public static void open(Player player) {
     instance.create(player).open();
-  }
-
-  @Override
-  public void onStart() {
-    instance = this;
   }
 
   private Menu create(Player player) {

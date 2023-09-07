@@ -3,8 +3,6 @@ package ml.empee.upgradableCells.controllers;
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.specifier.Greedy;
-import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.PluginConfig;
@@ -15,6 +13,7 @@ import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -23,17 +22,23 @@ import org.bukkit.entity.Player;
  * Controller use to manage cell operations
  */
 
-@RequiredArgsConstructor
-public class CellController implements Bean {
+@Singleton
+public class CellController {
 
   private final PluginConfig pluginConfig;
-  private final CommandsConfig commandsConfig;
   private final CellService cellService;
   private final Economy economy;
   private final LangConfig langConfig;
 
-  @Override
-  public void onStart() {
+  public CellController(
+      PluginConfig pluginConfig, CommandsConfig commandsConfig,
+      CellService cellService, Economy economy, LangConfig langConfig
+  ) {
+    this.pluginConfig = pluginConfig;
+    this.cellService = cellService;
+    this.economy = economy;
+    this.langConfig = langConfig;
+
     commandsConfig.register(this);
   }
 

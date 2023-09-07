@@ -33,6 +33,7 @@ bukkit {
 repositories {
   maven("https://jitpack.io")
   maven("https://maven.enginehub.org/repo/")
+  maven("https://gitlab.com/api/v4/projects/49162563/packages/maven")
 
   mavenCentral()
 }
@@ -44,7 +45,7 @@ dependencies {
   compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
   compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
-  implementation("com.github.Mr-EmPee:SimpleIoC:1.7.1")
+  implementation("mr.empee:LightWire:1.2")
   implementation("com.github.Mr-EmPee:SimpleMenu:0.0.5")
   implementation("com.github.Mr-EmPee:ItemBuilder:1.1.1")
 

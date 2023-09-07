@@ -1,18 +1,18 @@
 package ml.empee.upgradableCells.handlers;
 
-import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
-import ml.empee.ioc.RegisteredListener;
+import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -22,12 +22,22 @@ import org.bukkit.event.player.PlayerJoinEvent;
  * Handle actions inside a cell
  */
 
-@RequiredArgsConstructor
-public class CellProtectionHandler implements Bean, RegisteredListener {
+@Singleton
+public class CellProtectionHandler implements Listener {
 
   private final CellService cellService;
   private final LangConfig langConfig;
   private final PluginConfig pluginConfig;
+
+  public CellProtectionHandler(
+      UpgradableCells plugin, CellService cellService, LangConfig langConfig, PluginConfig pluginConfig
+  ) {
+    this.cellService = cellService;
+    this.langConfig = langConfig;
+    this.pluginConfig = pluginConfig;
+
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
+  }
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {

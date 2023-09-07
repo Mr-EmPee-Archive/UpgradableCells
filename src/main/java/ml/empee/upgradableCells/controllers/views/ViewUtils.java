@@ -2,17 +2,18 @@ package ml.empee.upgradableCells.controllers.views;
 
 import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.upgradableCells.config.LangConfig;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.inventory.ItemStack;
 
 /**
  * Utility for common used item inside guis
  */
 
+@Singleton
 @RequiredArgsConstructor
-public class ViewUtils implements Bean {
+public class ViewUtils {
 
   private final LangConfig langConfig;
 

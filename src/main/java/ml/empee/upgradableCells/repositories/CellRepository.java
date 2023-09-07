@@ -2,10 +2,10 @@ package ml.empee.upgradableCells.repositories;
 
 import io.leangen.geantyref.TypeToken;
 import lombok.SneakyThrows;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.utils.ObjectConverter;
+import mr.empee.lightwire.annotations.Singleton;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,17 +19,18 @@ import java.util.concurrent.CompletableFuture;
  * Persist a cell data
  */
 
-public class CellRepository implements Bean {
+@Singleton
+public class CellRepository {
 
   private final DbClient client;
 
   public CellRepository(DbClient client) {
     this.client = client;
+    createTable();
   }
 
-  @Override
   @SneakyThrows
-  public void onStart() {
+  private void createTable() {
     try (var stm = client.getJdbcConnection().createStatement()) {
       stm.executeUpdate("""
           CREATE TABLE IF NOT EXISTS cells (

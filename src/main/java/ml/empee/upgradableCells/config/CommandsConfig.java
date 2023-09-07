@@ -11,8 +11,8 @@ import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.meta.SimpleCommandMeta;
 import cloud.commandframework.paper.PaperCommandManager;
 import io.leangen.geantyref.TypeToken;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,15 +22,18 @@ import java.util.function.Function;
  * Config class to setup cloud commands framework
  */
 
-public class CommandsConfig implements Bean {
+@Singleton
+public class CommandsConfig {
 
   private final LangConfig langConfig;
   private final PaperCommandManager<CommandSender> commandManager;
   private final AnnotationParser<CommandSender> commandParser;
 
+  /**
+   * Setup the command framework
+   */
   public CommandsConfig(JavaPlugin plugin, LangConfig langConfig) throws Exception {
     this.langConfig = langConfig;
-
     commandManager = new PaperCommandManager<>(
         plugin, CommandExecutionCoordinator.simpleCoordinator(), Function.identity(), Function.identity()
     );
@@ -38,12 +41,12 @@ public class CommandsConfig implements Bean {
     commandParser = new AnnotationParser<>(
         commandManager, CommandSender.class, parameters -> SimpleCommandMeta.empty()
     );
+
+    registerExceptionHandlers();
+    registerBrigadier();
   }
 
-  @Override
-  public void onStart() {
-    registerExceptionHandlers();
-
+  private void registerBrigadier() {
     try {
       commandManager.registerBrigadier();
     } catch (BukkitCommandManager.BrigadierFailureException e) {

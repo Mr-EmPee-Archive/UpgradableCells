@@ -1,20 +1,21 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
-import ml.empee.ioc.RegisteredListener;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.pane.ScrollPane;
+import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import java.time.format.DateTimeFormatter;
@@ -27,22 +28,24 @@ import java.util.concurrent.CompletableFuture;
  * Menu to claim a cell
  */
 
-@RequiredArgsConstructor
-public class SelectPlayerMenu implements Bean, RegisteredListener {
+@Singleton
+public class SelectPlayerMenu implements Listener {
 
+  @Instance
   private static SelectPlayerMenu instance;
   private final List<Menu> openedMenus = new ArrayList<>();
   private final LangConfig langConfig;
+
+  public SelectPlayerMenu(UpgradableCells plugin, LangConfig langConfig) {
+    this.langConfig = langConfig;
+
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
+  }
 
   public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, OwnedCell cell, List<OfflinePlayer> players) {
     var action = new CompletableFuture<OfflinePlayer>();
     instance.create(player, cell, players, action).open();
     return action;
-  }
-
-  @Override
-  public void onStart() {
-    instance = this;
   }
 
   @EventHandler

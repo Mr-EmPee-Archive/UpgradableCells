@@ -1,9 +1,9 @@
 package ml.empee.upgradableCells.repositories;
 
 import lombok.SneakyThrows;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.model.entities.WorldState;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
@@ -16,17 +16,18 @@ import java.util.concurrent.CompletableFuture;
  * Save the cell world state
  */
 
-public class WorldStateRepository implements Bean {
+@Singleton
+public class WorldStateRepository {
 
   private final DbClient client;
 
   public WorldStateRepository(DbClient client) {
     this.client = client;
+    createTable();
   }
 
-  @Override
   @SneakyThrows
-  public void onStart() {
+  private void createTable() {
     try (var stm = client.getJdbcConnection().createStatement()) {
       stm.executeUpdate("""
           CREATE TABLE IF NOT EXISTS worlds_state (

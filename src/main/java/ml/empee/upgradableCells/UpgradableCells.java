@@ -1,11 +1,10 @@
 package ml.empee.upgradableCells;
 
-import lombok.Getter;
-import ml.empee.ioc.SimpleIoC;
 import ml.empee.simplemenu.SimpleMenu;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.Lightwire;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,8 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class UpgradableCells extends JavaPlugin {
 
-  @Getter
-  private final SimpleIoC iocContainer = new SimpleIoC(this);
+  private final Lightwire iocContainer = new Lightwire();
   private final SimpleMenu simpleMenu = new SimpleMenu();
 
   /**
@@ -32,7 +30,7 @@ public final class UpgradableCells extends JavaPlugin {
 
     iocContainer.addBean(getEconomyProvider());
     iocContainer.addBean(langConfig);
-    iocContainer.initialize("relocations");
+    iocContainer.loadBeans(getClass().getPackage());
   }
 
   private Economy getEconomyProvider() {
@@ -47,7 +45,5 @@ public final class UpgradableCells extends JavaPlugin {
   public void onDisable() {
     simpleMenu.unregister(this);
     iocContainer.getBean(DbClient.class).closeConnections();
-
-    iocContainer.removeAllBeans(true);
   }
 }

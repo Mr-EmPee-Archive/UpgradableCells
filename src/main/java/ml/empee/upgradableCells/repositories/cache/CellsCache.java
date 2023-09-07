@@ -1,10 +1,10 @@
 package ml.empee.upgradableCells.repositories.cache;
 
 import lombok.SneakyThrows;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.repositories.CellRepository;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,32 +17,21 @@ import java.util.UUID;
  * Cache that holds loaded cells
  */
 
-public class CellsCache extends MemoryCache<UUID, OwnedCell> implements Bean {
+@Singleton
+public class CellsCache extends MemoryCache<UUID, OwnedCell> {
 
   private final CellRepository cellRepository;
-  private final JavaPlugin plugin;
 
   public CellsCache(CellRepository cellRepository, JavaPlugin plugin) {
     super(Duration.of(5, ChronoUnit.SECONDS));
-
-    this.plugin = plugin;
     this.cellRepository = cellRepository;
+
+    Bukkit.getScheduler().runTask(plugin, this::loadCache);
   }
 
   public void reload() {
     clear();
     loadCache();
-  }
-
-  @Override
-  public void onStart() {
-    Bukkit.getScheduler().runTask(plugin, this::loadCache);
-  }
-
-  @Override
-  public void onStop() {
-    stop();
-    clear();
   }
 
   @SneakyThrows

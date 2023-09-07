@@ -2,8 +2,6 @@ package ml.empee.upgradableCells.services;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
@@ -14,6 +12,7 @@ import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
 import ml.empee.upgradableCells.repositories.cache.CellsCache;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,10 +29,9 @@ import java.util.concurrent.TimeUnit;
  * Handle cell management
  */
 
-@RequiredArgsConstructor
-public class CellService implements Bean {
+@Singleton
+public class CellService {
 
-  private final JavaPlugin plugin;
   private final PluginConfig pluginConfig;
   private final CellsCache cells;
   private final WorldService worldService;
@@ -43,15 +41,21 @@ public class CellService implements Bean {
       .expireAfterWrite(2, TimeUnit.MINUTES)
       .build();
 
-  private File schematicFolder;
+  private final File schematicFolder;
 
-  @Override
-  public void onStart() {
-    schematicFolder = new File(plugin.getDataFolder(), "levels");
+  public CellService(
+      JavaPlugin plugin, PluginConfig pluginConfig,
+      CellsCache cells, WorldService worldService
+  ) {
+    this.pluginConfig = pluginConfig;
+    this.cells = cells;
+    this.worldService = worldService;
+    this.schematicFolder = new File(plugin.getDataFolder(), "levels");
+
     loadCellUpgrades();
-
     //TODO: Finish pasting partially pasted cells
   }
+
 
   /**
    * Load cell levels from the schematic folder

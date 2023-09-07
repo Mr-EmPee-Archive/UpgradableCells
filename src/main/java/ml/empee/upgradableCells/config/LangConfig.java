@@ -1,7 +1,8 @@
 package ml.empee.upgradableCells.config;
 
 import lombok.Getter;
-import ml.empee.ioc.Bean;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,18 +13,14 @@ import java.util.List;
  * Handle messages
  */
 
-public class LangConfig extends AbstractConfig implements Bean {
+@Singleton
+public class LangConfig extends AbstractConfig {
 
-  @Getter
+  @Instance @Getter
   private static LangConfig instance;
 
   public LangConfig(JavaPlugin plugin) {
     super(plugin, "messages.yml", 1);
-  }
-
-  @Override
-  public void onStart() {
-    instance = this;
   }
 
   @Override

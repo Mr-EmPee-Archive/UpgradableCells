@@ -2,7 +2,6 @@ package ml.empee.upgradableCells.controllers.views;
 
 import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
-import ml.empee.ioc.Bean;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
@@ -12,6 +11,8 @@ import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -23,9 +24,11 @@ import org.bukkit.inventory.meta.BlockStateMeta;
  * GUI from where you can manage a cell
  */
 
+@Singleton
 @RequiredArgsConstructor
-public class ManageCellMenu implements Bean {
+public class ManageCellMenu {
 
+  @Instance
   private static ManageCellMenu instance;
 
   private final LangConfig langConfig;
@@ -34,11 +37,6 @@ public class ManageCellMenu implements Bean {
 
   public static void open(Player player, OwnedCell cell) {
     instance.create(player, cell).open();
-  }
-
-  @Override
-  public void onStart() {
-    instance = this;
   }
 
   private Menu create(Player viewer, OwnedCell cell) {

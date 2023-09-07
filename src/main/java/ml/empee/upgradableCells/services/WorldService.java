@@ -1,14 +1,13 @@
 package ml.empee.upgradableCells.services;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import ml.empee.ioc.Bean;
 import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.entities.WorldState;
 import ml.empee.upgradableCells.repositories.WorldStateRepository;
 import ml.empee.upgradableCells.utils.Logger;
 import ml.empee.upgradableCells.utils.helpers.VoidGenerator;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -18,8 +17,8 @@ import org.bukkit.WorldCreator;
  * Create and manages the cell world
  */
 
-@RequiredArgsConstructor
-public class WorldService implements Bean {
+@Singleton
+public class WorldService {
 
   private final PluginConfig pluginConfig;
   private final WorldStateRepository worldStateRepository;
@@ -30,9 +29,13 @@ public class WorldService implements Bean {
   private Integer margin;
   private WorldState worldState;
 
-  @Override
+  /**
+   * Create the service
+   */
   @SneakyThrows
-  public void onStart() {
+  public WorldService(PluginConfig pluginConfig, WorldStateRepository worldStateRepository) {
+    this.pluginConfig = pluginConfig;
+    this.worldStateRepository = worldStateRepository;
     cellWorld = Bukkit.getWorld(pluginConfig.getCellWorld());
     if (cellWorld == null) {
       Logger.info("Baking cell world...");
