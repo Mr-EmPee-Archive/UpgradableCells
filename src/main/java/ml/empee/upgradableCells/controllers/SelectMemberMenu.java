@@ -1,4 +1,4 @@
-package ml.empee.upgradableCells.controllers.views;
+package ml.empee.upgradableCells.controllers;
 
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
@@ -29,14 +29,14 @@ import java.util.concurrent.CompletableFuture;
  */
 
 @Singleton
-public class SelectPlayerMenu implements Listener {
+public class SelectMemberMenu implements Listener {
 
   @Instance
-  private static SelectPlayerMenu instance;
+  private static SelectMemberMenu instance;
   private final List<Menu> openedMenus = new ArrayList<>();
   private final LangConfig langConfig;
 
-  public SelectPlayerMenu(UpgradableCells plugin, LangConfig langConfig) {
+  public SelectMemberMenu(UpgradableCells plugin, LangConfig langConfig) {
     this.langConfig = langConfig;
 
     plugin.getServer().getPluginManager().registerEvents(this, plugin);

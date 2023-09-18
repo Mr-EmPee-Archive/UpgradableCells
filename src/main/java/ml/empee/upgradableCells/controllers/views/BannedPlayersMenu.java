@@ -36,7 +36,6 @@ public class BannedPlayersMenu implements Listener {
   private final LangConfig langConfig;
   private final CellController cellController;
   private final List<Menu> openedMenus = new ArrayList<>();
-  private final ScrollPane pane = new ScrollPane(7, 3);
 
   public BannedPlayersMenu(UpgradableCells plugin, LangConfig langConfig, CellController cellController) {
     this.langConfig = langConfig;

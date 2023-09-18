@@ -7,6 +7,7 @@ import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.controllers.SelectMemberMenu;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
@@ -156,7 +157,7 @@ public class ManageCellMenu {
               return;
             }
 
-            SelectPlayerMenu.selectPlayer(player, cell, players).thenAccept(
+            SelectMemberMenu.selectPlayer(player, cell, players).thenAccept(
                 target -> ManageMemberMenu.open(player, cell, target)
             );
           }).build();
