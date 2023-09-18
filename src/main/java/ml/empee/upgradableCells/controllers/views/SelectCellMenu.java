@@ -29,6 +29,8 @@ public class SelectCellMenu {
   private final LangConfig langConfig;
   private final ViewUtils viewUtils;
 
+  //TODO: Update menu when kicked
+
   public static CompletableFuture<OwnedCell> selectCell(Player player, List<OwnedCell> cells) {
     CompletableFuture<OwnedCell> future = new CompletableFuture<>();
     instance.create(player, cells, future).open();

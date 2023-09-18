@@ -30,6 +30,8 @@ public class ManageMemberMenu {
   private final CellController cellController;
   private final LangConfig langConfig;
 
+  //TODO: Close menu if member not aviable anymore, or permissions changed
+
   public static void open(Player viewer, OwnedCell cell, OfflinePlayer target) {
     instance.create(viewer, cell, target).open();
   }
