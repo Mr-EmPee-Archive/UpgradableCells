@@ -90,7 +90,7 @@ public class NmsUtils {
           .filter(m -> m.getParameterCount() == 3)
           .filter(m -> m.getReturnType() == boolean.class)
           .filter(m -> m.getParameterTypes()[0] == blockPos.getClass())
-          .filter(m -> m.getParameterTypes()[1] == blockState.getClass())
+          .filter(m -> m.getParameterTypes()[1].isAssignableFrom(blockState.getClass()))
           .filter(m -> m.getParameterTypes()[2] == int.class)
           .findFirst().orElseThrow();
     }
