@@ -29,6 +29,10 @@ public class CellAPI {
   private final Economy economy;
   private final LangConfig langConfig;
 
+  public List<OwnedCell> findTopCells(int limit) {
+    return cellService.findMostVisitedCells(limit);
+  }
+
   public List<CellProject> getCellProjects() {
     return cellService.getCellProjects();
   }

@@ -62,6 +62,15 @@ menus:
     items:
       close:
         name: "&cBack"
+  top-cells:
+    title: "Top Cells"
+    cell-lore: |
+      &7Total visits: &6%d
+      &r
+      &eClick to visit
+    items:
+      close:
+        name: "&cClose"
   manage-members:
     title: "Manage members"
     items:

@@ -10,6 +10,7 @@ import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
+import ml.empee.upgradableCells.controllers.views.TopCellsMenu;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
@@ -81,7 +82,7 @@ public class CellController {
    */
   @CommandMethod("cell-top")
   public void openCellTopMenu(Player sender) {
-
+    TopCellsMenu.open(sender);
   }
 
   /**

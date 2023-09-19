@@ -120,6 +120,7 @@ public class CellService {
 
   public List<OwnedCell> findMostVisitedCells(int limit) {
     return cells.getContent().stream()
+          .filter(c -> c.isPublicVisible())
           .sorted(Comparator.comparingInt(a -> a.getVisits()))
           .limit(limit)
           .collect(Collectors.toList());
