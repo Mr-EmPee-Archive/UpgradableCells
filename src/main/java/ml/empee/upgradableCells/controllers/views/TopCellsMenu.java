@@ -1,5 +1,12 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import java.util.stream.Collectors;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+
 import com.cryptomorin.xseries.XMaterial;
 
 import lombok.RequiredArgsConstructor;
@@ -7,28 +14,11 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.pane.ScrollPane;
-import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.controllers.CellController;
-import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
-import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
-import ml.empee.upgradableCells.services.CellService;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Menu to manage banned players

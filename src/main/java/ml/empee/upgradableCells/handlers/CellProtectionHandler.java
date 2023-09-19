@@ -22,6 +22,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
  * Handle actions inside a cell
  */
 
+//TODO: Prevent block breaking or moving by piston or explosions
+
 @Singleton
 public class CellProtectionHandler implements Listener {
 

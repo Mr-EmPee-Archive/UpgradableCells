@@ -20,7 +20,6 @@ import org.bukkit.WorldCreator;
 @Singleton
 public class WorldService {
 
-  private final PluginConfig pluginConfig;
   private final WorldStateRepository worldStateRepository;
 
   @Getter
@@ -34,7 +33,6 @@ public class WorldService {
    */
   @SneakyThrows
   public WorldService(PluginConfig pluginConfig, WorldStateRepository worldStateRepository) {
-    this.pluginConfig = pluginConfig;
     this.worldStateRepository = worldStateRepository;
     cellWorld = Bukkit.getWorld(pluginConfig.getCellWorld());
     if (cellWorld == null) {
