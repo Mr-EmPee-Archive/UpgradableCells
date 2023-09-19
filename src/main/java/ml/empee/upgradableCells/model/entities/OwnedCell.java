@@ -8,9 +8,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -23,21 +26,54 @@ public class OwnedCell {
 
   private int id;
   private UUID owner;
-  private String name;
-  private String description;
-  private List<Member> members = new ArrayList<>();
-  private List<Member> bannedMembers = new ArrayList<>();
-  private Integer level;
-  private Location origin;
-  private boolean pasting;
-  private boolean publicVisible = true;
+  private String name = "";
+  private String description = "";
+  private List<Member> members = Collections.synchronizedList(new ArrayList<>());
+  private List<Member> bannedMembers = Collections.synchronizedList(new ArrayList<>());
+  private AtomicInteger level = new AtomicInteger();
+  private AtomicInteger visits = new AtomicInteger();
+  private Location origin = new Location(null, 0, 0, 0);
+  private AtomicBoolean pasting = new AtomicBoolean();
+  private AtomicBoolean publicVisible = new AtomicBoolean(true);
 
   public OfflinePlayer getOwnerPlayer() {
     return Bukkit.getOfflinePlayer(owner);
   }
 
+  public void setName(String name) {
+    synchronized (name) {
+      this.name = name;
+    }
+  }
+
+  public String getName() {
+    synchronized (name) {
+      return name;
+    }
+  }
+
+  public void setDescription(String description) {
+    synchronized (description) {
+      this.description = description;
+    }
+  }
+
+  public String getDescription() {
+    synchronized (description) {
+      return description;
+    }
+  }
+
   public Location getOrigin() {
-    return origin.clone();
+    synchronized (origin) {
+      return origin.clone();
+    }
+  }
+
+  public void setOrigin(Location origin) {
+    synchronized (origin) {
+      this.origin = origin.clone();
+    }
   }
 
   public static OwnedCell of(UUID owner, Integer level, Location origin) {
@@ -48,6 +84,42 @@ public class OwnedCell {
     cell.setLevel(level);
     cell.setOrigin(origin);
     return cell;
+  }
+
+  public void setLevel(int level) {
+    this.level.set(level);
+  }
+
+  public int getLevel() {
+    return level.get();
+  }
+
+  public void setVisits(int visits) {
+    this.visits.set(visits);
+  }
+
+  public void addVisit() {
+    visits.incrementAndGet();
+  }
+
+  public int getVisits() {
+    return visits.get();
+  }
+
+  public boolean isPublicVisible() {
+    return publicVisible.get();
+  }
+
+  public void setPublicVisible(boolean publicVisible) {
+    this.publicVisible.set(publicVisible);
+  }
+
+  public boolean isPasting() {
+    return pasting.get();
+  }
+
+  public void setPasting(boolean pasting) {
+    this.pasting.set(pasting);
   }
 
   public List<Player> getOnlineMembers() {
