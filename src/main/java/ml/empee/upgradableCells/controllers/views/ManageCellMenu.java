@@ -101,14 +101,14 @@ public class ManageCellMenu {
 
     private GItem cellInfoItem() {
       String name = cell.getName();
-      if (name == null) {
+      if (name == null || name.isBlank()) {
         name = "Cell Of " + cell.getOwnerPlayer().getName();
       }
 
       var item = ItemBuilder.from(XMaterial.OAK_SIGN.parseItem());
       item.setName("&e" + name);
 
-      if (cell.getDescription() != null) {
+      if (cell.getDescription() != null && !cell.getDescription().isBlank()) {
         item.setLore(
             WordUtils.wrap(
                 "&7" + cell.getDescription(), 32, "\n&7", false
