@@ -1,29 +1,31 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import com.cryptomorin.xseries.XMaterial;
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
-import ml.empee.simplemenu.model.pane.ScrollPane;
-import ml.empee.upgradableCells.UpgradableCells;
-import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.controllers.CellController;
-import ml.empee.upgradableCells.model.entities.Member;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
-import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.cryptomorin.xseries.XMaterial;
+
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.pane.ScrollPane;
+import ml.empee.upgradableCells.UpgradableCells;
+import ml.empee.upgradableCells.api.CellAPI;
+import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.model.entities.Member;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 
 /**
  * Menu to manage banned players
@@ -35,12 +37,12 @@ public class BannedPlayersMenu implements Listener {
   @Instance
   private static BannedPlayersMenu instance;
   private final LangConfig langConfig;
-  private final CellController cellController;
+  private final CellAPI cellAPI;
   private final List<Menu> openedMenus = new ArrayList<>();
 
-  public BannedPlayersMenu(UpgradableCells plugin, LangConfig langConfig, CellController cellController) {
+  public BannedPlayersMenu(UpgradableCells plugin, LangConfig langConfig, CellAPI cellAPI) {
     this.langConfig = langConfig;
-    this.cellController = cellController;
+    this.cellAPI = cellAPI;
 
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
@@ -138,7 +140,7 @@ public class BannedPlayersMenu implements Listener {
 
       return GItem.builder()
           .itemstack(item)
-          .clickHandler(e -> cellController.pardonMember(cell, player, target))
+          .clickHandler(e -> cellAPI.pardonMember(cell, player, target))
           .build();
     }
   }

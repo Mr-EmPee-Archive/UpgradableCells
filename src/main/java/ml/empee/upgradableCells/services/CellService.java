@@ -19,6 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +39,7 @@ public class CellService {
   private final CellsCache cells;
   private final WorldService worldService;
 
-  private final List<CellProject> cellUpgrades = new ArrayList<>();
+  private final List<CellProject> cellProjects = new ArrayList<>();
   private final Cache<String, OwnedCell> invitations = CacheBuilder.newBuilder()
       .expireAfterWrite(2, TimeUnit.MINUTES)
       .build();
@@ -63,7 +65,7 @@ public class CellService {
    */
   private void loadCellUpgrades() {
     schematicFolder.mkdir();
-    cellUpgrades.clear();
+    cellProjects.clear();
 
     Logger.info("Loading cell upgrades...");
 
@@ -72,16 +74,16 @@ public class CellService {
         project.loadSchematic(schematicFolder);
       }
 
-      cellUpgrades.add(project);
+      cellProjects.add(project);
     }
 
-    if (cellUpgrades.size() == 0) {
+    if (cellProjects.size() == 0) {
       throw new IllegalStateException("Add at least a cell!");
     } else if (!getCellProject(0).hasSchematic()) {
       throw new IllegalStateException("The first cell must have a schematic!");
     }
 
-    Logger.info("Loaded %s cells", cellUpgrades.size());
+    Logger.info("Loaded %s cells", cellProjects.size());
   }
 
   public void reload() {
@@ -90,11 +92,15 @@ public class CellService {
   }
 
   public CellProject getLastProject() {
-    return cellUpgrades.get(cellUpgrades.size() - 1);
+    return cellProjects.get(cellProjects.size() - 1);
   }
 
   public CellProject getCellProject(int level) {
-    return cellUpgrades.get(level);
+    return cellProjects.get(level);
+  }
+
+  public List<CellProject> getCellProjects() {
+    return Collections.unmodifiableList(cellProjects);
   }
 
   public Optional<OwnedCell> findCellByOwner(UUID owner) {
@@ -105,6 +111,18 @@ public class CellService {
     return cells.getContent().stream()
         .filter(c -> c.hasMember(member))
         .collect(Collectors.toList());
+  }
+
+  public void incrementCellVisits(OwnedCell cell) {
+    cell.addVisit();
+    cells.markDirty(cell.getOwner());
+  }
+
+  public List<OwnedCell> findMostVisitedCells(int limit) {
+    return cells.getContent().stream()
+          .sorted(Comparator.comparingInt(a -> a.getVisits()))
+          .limit(limit)
+          .collect(Collectors.toList());
   }
 
   /**

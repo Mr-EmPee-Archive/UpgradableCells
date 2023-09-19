@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.model.entities.Member;
@@ -27,7 +28,7 @@ public class ManageMemberMenu {
   @Instance
   private static ManageMemberMenu instance;
 
-  private final CellController cellController;
+  private final CellAPI cellAPI;
   private final LangConfig langConfig;
 
   //TODO: Close menu if member not aviable anymore, or permissions changed
@@ -87,7 +88,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
+            cellAPI.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
           }).build();
     }
 
@@ -103,7 +104,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
+            cellAPI.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
           }).build();
     }
 
@@ -119,7 +120,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.setRank(cell, player, target, Member.Rank.MANAGER);
+            cellAPI.setRank(cell, player, target, Member.Rank.MANAGER);
           }).build();
     }
 
@@ -136,7 +137,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.kickMember(cell, player, target);
+            cellAPI.kickMember(cell, player, target);
           }).build();
     }
 
@@ -152,7 +153,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.banMember(cell, player, target);
+            cellAPI.banMember(cell, player, target);
           }).build();
     }
 

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.CellController;
 import mr.empee.lightwire.annotations.Instance;
@@ -22,7 +23,7 @@ public class ClaimCellMenu {
   @Instance
   private static ClaimCellMenu instance;
 
-  private final CellController cellController;
+  private final CellAPI cellAPI;
   private final LangConfig langConfig;
 
   public static void open(Player player) {
@@ -53,7 +54,7 @@ public class ClaimCellMenu {
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
-            cellController.createCell(player);
+            cellAPI.createCell(player);
           }).build();
     }
   }
