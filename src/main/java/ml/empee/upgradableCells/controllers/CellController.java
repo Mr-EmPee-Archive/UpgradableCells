@@ -36,8 +36,7 @@ public class CellController {
 
   public CellController(
       CellAPI cellAPI, CommandsConfig commandsConfig,
-      CellService cellService, LangConfig langConfig
-  ) {
+      CellService cellService, LangConfig langConfig) {
     this.cellAPI = cellAPI;
     this.cellService = cellService;
     this.langConfig = langConfig;
@@ -72,8 +71,7 @@ public class CellController {
       ManageCellMenu.open(sender, cells.get(0));
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> ManageCellMenu.open(sender, c)
-      );
+          c -> ManageCellMenu.open(sender, c));
     }
   }
 
@@ -121,7 +119,6 @@ public class CellController {
         .filter(c -> c.getMember(sender.getUniqueId()).getRank().canInvite())
         .collect(Collectors.toList());
 
-
     if (cells.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
       return;
@@ -131,8 +128,7 @@ public class CellController {
       cellAPI.invitePlayer(cells.get(0), sender, target);
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> cellAPI.invitePlayer(c, sender, target)
-      );
+          c -> cellAPI.invitePlayer(c, sender, target));
     }
   }
 
@@ -141,7 +137,9 @@ public class CellController {
    */
   @CommandMethod("cell leave")
   public void leaveCell(Player sender) {
-    var cells = cellService.findCellsByMember(sender.getUniqueId());
+    var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
+      .filter(c -> !c.getOwner().equals(sender.getUniqueId()))
+      .collect(Collectors.toList());
 
     if (cells.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
