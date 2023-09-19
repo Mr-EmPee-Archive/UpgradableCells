@@ -1,21 +1,5 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import com.cryptomorin.xseries.XMaterial;
-import lombok.RequiredArgsConstructor;
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
-import ml.empee.upgradableCells.api.CellAPI;
-import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.controllers.CellController;
-import ml.empee.upgradableCells.controllers.SelectMemberMenu;
-import ml.empee.upgradableCells.model.entities.CellProject;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.services.CellService;
-import ml.empee.upgradableCells.utils.Logger;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
-
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.WordUtils;
@@ -24,6 +8,20 @@ import org.bukkit.DyeColor;
 import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BlockStateMeta;
+
+import com.cryptomorin.xseries.XMaterial;
+
+import lombok.RequiredArgsConstructor;
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.upgradableCells.api.CellAPI;
+import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.model.entities.CellProject;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 
 /**
  * GUI from where you can manage a cell

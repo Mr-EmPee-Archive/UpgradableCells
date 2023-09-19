@@ -1,4 +1,4 @@
-package ml.empee.upgradableCells.controllers;
+package ml.empee.upgradableCells.controllers.views;
 
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
@@ -139,8 +139,10 @@ public class SelectMemberMenu implements Listener {
 
       return GItem.builder()
           .itemstack(item)
-          .clickHandler(e -> action.complete(player))
-          .build();
+          .clickHandler(e -> {
+            e.getWhoClicked().closeInventory();
+            action.complete(player);
+          }).build();
     }
   }
 

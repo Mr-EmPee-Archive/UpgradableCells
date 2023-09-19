@@ -87,7 +87,10 @@ public class SelectCellMenu {
 
       return GItem.builder()
           .itemstack(item)
-          .clickHandler(e -> action.complete(cell))
+          .clickHandler(e -> {
+            e.getWhoClicked().closeInventory();
+            action.complete(cell);
+          })
           .build();
     }
   }
