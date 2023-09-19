@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Menu to claim a cell
@@ -58,7 +59,7 @@ public class SelectCellMenu {
       pane.setCols(
           cells.stream()
               .map(this::cellItem)
-              .toList()
+              .collect(Collectors.toList())
       );
 
       top().addPane(3, 1, pane);

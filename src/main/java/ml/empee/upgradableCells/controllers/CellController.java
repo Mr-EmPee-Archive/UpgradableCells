@@ -15,6 +15,9 @@ import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
 import net.milkbowl.vault.economy.Economy;
+
+import java.util.stream.Collectors;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -108,7 +111,8 @@ public class CellController {
   public void inviteToCell(Player sender, @Argument Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
         .filter(c -> c.getMember(sender.getUniqueId()).getRank().canInvite())
-        .toList();
+        .collect(Collectors.toList());
+
 
     if (cells.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));

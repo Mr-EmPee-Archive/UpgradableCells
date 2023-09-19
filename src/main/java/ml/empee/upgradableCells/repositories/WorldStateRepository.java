@@ -28,14 +28,15 @@ public class WorldStateRepository {
 
   @SneakyThrows
   private void createTable() {
+    var query = "";
+    query += "CREATE TABLE IF NOT EXISTS worlds_state (";
+    query += "  world STRING PRIMARY KEY,";
+    query += "  last_cell INTEGER,";
+    query += "  size INTEGER";
+    query += ");";
+    
     try (var stm = client.getJdbcConnection().createStatement()) {
-      stm.executeUpdate("""
-          CREATE TABLE IF NOT EXISTS worlds_state (
-              world STRING PRIMARY KEY,
-              last_cell INTEGER,
-              size INTEGER
-          );
-          """);
+      stm.executeUpdate(query);
     }
   }
 

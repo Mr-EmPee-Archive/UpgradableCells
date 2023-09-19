@@ -31,20 +31,21 @@ public class CellRepository {
 
   @SneakyThrows
   private void createTable() {
+    var query = "";
+    query += "CREATE TABLE IF NOT EXISTS cells (";
+    query += "  owner TEXT PRIMARY KEY,";
+    query += "  level INTEGER NOT NULL,";
+    query += "  origin TEXT NOT NULL,";
+    query += "  pasting INTEGER DEFAULT 0 NOT NULL,";
+    query += "  members TEXT DEFAULT \"\" NOT NULL,";
+    query += "  banned_members TEXT DEFAULT \"\" NOT NULL,";
+    query += "  description TEXT,";
+    query += "  name TEXT,";
+    query += "  public_visible INTEGER DEFAULT 1 NOT NULL";
+    query += ");";
+
     try (var stm = client.getJdbcConnection().createStatement()) {
-      stm.executeUpdate("""
-          CREATE TABLE IF NOT EXISTS cells (
-              owner TEXT PRIMARY KEY,
-              level INTEGER NOT NULL,
-              origin TEXT NOT NULL,
-              pasting INTEGER DEFAULT 0 NOT NULL,
-              members TEXT DEFAULT "" NOT NULL,
-              banned_members TEXT DEFAULT "" NOT NULL,
-              description TEXT,
-              name TEXT,
-              public_visible INTEGER DEFAULT 1 NOT NULL
-          );
-          """);
+      stm.executeUpdate(query);
     }
   }
 
@@ -53,11 +54,11 @@ public class CellRepository {
    */
   public CompletableFuture<Void> save(OwnedCell data) {
     return CompletableFuture.runAsync(() -> {
-      var query = """
-          INSERT OR REPLACE INTO cells (
-            owner, level, origin, pasting, members, banned_members, description, name, public_visible
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-          """;
+      var query = "";
+      query += "INSERT OR REPLACE INTO cells (";
+      query += "  owner, level, origin, pasting, members,";
+      query += "  banned_members, description, name, public_visible";
+      query += ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
       try (var stm = client.getJdbcConnection().prepareStatement(query)) {
         stm.setString(1, data.getOwner().toString());

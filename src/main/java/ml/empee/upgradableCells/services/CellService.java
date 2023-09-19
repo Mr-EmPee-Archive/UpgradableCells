@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Handle cell management
@@ -103,7 +104,7 @@ public class CellService {
   public List<OwnedCell> findCellsByMember(UUID member) {
     return cells.getContent().stream()
         .filter(c -> c.hasMember(member))
-        .toList();
+        .collect(Collectors.toList());
   }
 
   /**

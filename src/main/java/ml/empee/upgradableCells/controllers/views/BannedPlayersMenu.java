@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Menu to manage banned players
@@ -90,7 +91,7 @@ public class BannedPlayersMenu implements Listener {
           cell.getBannedMembers().stream()
               .filter(m -> m.getRank() == null || playerRank.canManage(m.getRank()))
               .map(this::playerItem)
-              .toList()
+              .collect(Collectors.toList())
       );
     }
 

@@ -36,7 +36,7 @@ public class LangConfig extends AbstractConfig {
       throw new IllegalArgumentException("Missing translation key " + key);
     }
 
-    return ChatColor.translateAlternateColorCodes('&', translation).formatted(placeholders);
+    return String.format(ChatColor.translateAlternateColorCodes('&', translation), placeholders);
   }
 
   public List<String> translateBlock(String key, Object... placeholders) {

@@ -28,8 +28,10 @@ public final class UpgradableCells extends JavaPlugin {
 
     simpleMenu.init(this);
 
+    iocContainer.addBean(this);
     iocContainer.addBean(getEconomyProvider());
     iocContainer.addBean(langConfig);
+
     iocContainer.loadBeans(getClass().getPackage());
   }
 

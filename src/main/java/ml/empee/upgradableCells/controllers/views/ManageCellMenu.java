@@ -14,6 +14,9 @@ import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -149,7 +152,7 @@ public class ManageCellMenu {
                 .filter(p -> playerRank.canManage(p.getRank()))
                 .filter(p -> !p.getUuid().equals(player.getUniqueId()))
                 .map(p -> Bukkit.getOfflinePlayer(p.getUuid()))
-                .toList();
+                .collect(Collectors.toList());
 
             if (players.isEmpty()) {
               Logger.log(player, langConfig.translate("cell.members.no-members"));

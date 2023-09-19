@@ -46,7 +46,7 @@ public class ObjectConverter {
     return gson.toJson(
         collection.stream()
             .map(mapper)
-            .toList()
+            .collect(Collectors.toList())
     );
   }
 

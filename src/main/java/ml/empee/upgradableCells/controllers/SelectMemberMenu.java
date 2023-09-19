@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Menu to claim a cell
@@ -42,7 +43,8 @@ public class SelectMemberMenu implements Listener {
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
-  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, OwnedCell cell, List<OfflinePlayer> players) {
+  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, OwnedCell cell,
+      List<OfflinePlayer> players) {
     var action = new CompletableFuture<OfflinePlayer>();
     instance.create(player, cell, players, action).open();
     return action;
@@ -62,7 +64,8 @@ public class SelectMemberMenu implements Listener {
         .forEach(menu -> menu.addSelectablePlayer(event.getMember().getUuid()));
   }
 
-  private Menu create(Player player, OwnedCell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> future) {
+  private Menu create(Player player, OwnedCell cell, List<OfflinePlayer> players,
+      CompletableFuture<OfflinePlayer> future) {
     return new Menu(player, cell, players, future);
   }
 
@@ -87,7 +90,7 @@ public class SelectMemberMenu implements Listener {
       pane.setCols(
           players.stream()
               .map(this::playerItem)
-              .toList()
+              .collect(Collectors.toList())
       );
 
       refresh();
@@ -98,7 +101,7 @@ public class SelectMemberMenu implements Listener {
       pane.setCols(
           players.stream()
               .map(this::playerItem)
-              .toList()
+              .collect(Collectors.toList())
       );
 
       refresh();
@@ -111,7 +114,7 @@ public class SelectMemberMenu implements Listener {
       pane.setCols(
           players.stream()
               .map(this::playerItem)
-              .toList()
+              .collect(Collectors.toList())
       );
 
       top().addPane(1, 1, pane);
@@ -130,9 +133,7 @@ public class SelectMemberMenu implements Listener {
           .setLore(
               langConfig.translateBlock(
                   "menus.select-player.player-lore",
-                  member.getRank().name(), member.getMemberSince().format(formatter)
-              )
-          )
+                  member.getRank().name(), member.getMemberSince().format(formatter)))
           .owner(player)
           .build();
 
@@ -144,4 +145,3 @@ public class SelectMemberMenu implements Listener {
   }
 
 }
-

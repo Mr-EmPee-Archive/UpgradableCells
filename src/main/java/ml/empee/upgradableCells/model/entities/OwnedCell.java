@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * A cell
@@ -53,13 +54,13 @@ public class OwnedCell {
     return members.stream()
         .map(m -> Bukkit.getPlayer(m.getUuid()))
         .filter(Objects::nonNull)
-        .toList();
+        .collect(Collectors.toList());
   }
 
   public List<OfflinePlayer> getAllMembers() {
     return members.stream()
         .map(m -> Bukkit.getOfflinePlayer(m.getUuid()))
-        .toList();
+        .collect(Collectors.toList());
   }
 
   public Member getMember(UUID uuid) {
