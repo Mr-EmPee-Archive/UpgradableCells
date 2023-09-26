@@ -2,12 +2,17 @@ package ml.empee.upgradableCells.api;
 
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import lombok.RequiredArgsConstructor;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
@@ -28,6 +33,61 @@ public class CellAPI {
   private final CellService cellService;
   private final Economy economy;
   private final LangConfig langConfig;
+
+  public boolean canBuild(Player player, Location target) {
+    if (player.hasPermission(Permissions.ADMIN)) {
+      return true;
+    }
+
+    var cell = cellService.findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return true;
+    }
+
+    Member member = cell.getMember(player.getUniqueId());
+    if (member == null || !member.getRank().canBuild()) {
+      return false;
+    }
+
+    var project = getCellProject(cell.getLevel());
+    return !project.isCellBlock(cell, target);
+  }
+
+  public boolean isCellBlock(Location target) {
+    var cell = cellService.findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return false;
+    }
+
+    var project = getCellProject(cell.getLevel());
+    return project.isCellBlock(cell, target);
+  }
+
+  public boolean canInteract(Player player, Location target, @Nullable Entity entity) {
+    if (player.hasPermission(Permissions.ADMIN)) {
+      return true;
+    }
+    
+    var cell = cellService.findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return true;
+    }
+
+    Member member = cell.getMember(player.getUniqueId());
+    if (member == null) {
+      return false;
+    }
+
+    if (entity == null) {
+      Block block = target.getBlock();
+      if (block.getType().name().contains("CHEST")) {
+        return member.getRank().canAccessChests();
+      }
+    }
+
+    return true;
+  }
+
 
   public List<OwnedCell> findTopCells(int limit) {
     return cellService.findMostNumerousCells(limit);

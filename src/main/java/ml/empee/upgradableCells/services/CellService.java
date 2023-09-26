@@ -1,26 +1,5 @@
 package ml.empee.upgradableCells.services;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import ml.empee.upgradableCells.config.PluginConfig;
-import ml.empee.upgradableCells.constants.Permissions;
-import ml.empee.upgradableCells.model.entities.CellProject;
-import ml.empee.upgradableCells.model.entities.Member;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
-import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
-import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
-import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
-import ml.empee.upgradableCells.repositories.cache.CellsCache;
-import ml.empee.upgradableCells.utils.Logger;
-import mr.empee.lightwire.annotations.Singleton;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +11,24 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
+import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.model.entities.CellProject;
+import ml.empee.upgradableCells.model.entities.Member;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
+import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import ml.empee.upgradableCells.repositories.cache.CellsCache;
+import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
 
 /**
  * Handle cell management
@@ -62,60 +58,6 @@ public class CellService {
 
     loadCellUpgrades();
     // TODO: Finish pasting partially pasted cells
-  }
-
-  public boolean canBuild(Player player, Location target) {
-    if (player.hasPermission(Permissions.ADMIN)) {
-      return true;
-    }
-
-    var cell = findCellByLocation(target).orElse(null);
-    if (cell == null) {
-      return true;
-    }
-
-    Member member = cell.getMember(player.getUniqueId());
-    if (member == null || !member.getRank().canBuild()) {
-      return false;
-    }
-
-    var project = getCellProject(cell.getLevel());
-    return !project.isCellBlock(cell, target);
-  }
-
-  public boolean isCellBlock(Location target) {
-    var cell = findCellByLocation(target).orElse(null);
-    if (cell == null) {
-      return false;
-    }
-
-    var project = getCellProject(cell.getLevel());
-    return project.isCellBlock(cell, target);
-  }
-
-  public boolean canInteract(Player player, Location target, @Nullable Entity entity) {
-    if (player.hasPermission(Permissions.ADMIN)) {
-      return true;
-    }
-    
-    var cell = findCellByLocation(target).orElse(null);
-    if (cell == null) {
-      return true;
-    }
-
-    Member member = cell.getMember(player.getUniqueId());
-    if (member == null) {
-      return false;
-    }
-
-    if (entity == null) {
-      Block block = target.getBlock();
-      if (block.getType().name().contains("CHEST")) {
-        return member.getRank().canAccessChests();
-      }
-    }
-
-    return true;
   }
 
   /**
