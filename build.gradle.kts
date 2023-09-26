@@ -39,7 +39,8 @@ repositories {
 }
 
 dependencies {
-  compileOnly("com.destroystokyo.paper:paper:1.13.2-R0.1-SNAPSHOT")
+  compileOnly("com.destroystokyo.paper:paper:1.13.2-R0.1-SNAPSHOT:sources")
+
   compileOnly("org.jetbrains:annotations:24.0.1")
   compileOnly("org.xerial:sqlite-jdbc:3.34.0")
 
