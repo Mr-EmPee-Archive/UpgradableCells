@@ -171,15 +171,13 @@ public class CellService {
         .collect(Collectors.toList());
   }
 
-  public void incrementCellVisits(OwnedCell cell) {
-    cell.addVisit();
-    cells.markDirty(cell.getOwner());
-  }
-
-  public List<OwnedCell> findMostVisitedCells(int limit) {
+  /**
+   * Find cells with most members
+   */
+  public List<OwnedCell> findMostNumerousCells(int limit) {
     return cells.getContent().stream()
         .filter(c -> c.isPublicVisible())
-        .sorted(Comparator.comparingInt(a -> a.getVisits()))
+        .sorted(Comparator.comparingInt(a -> a.getAllMembers().size()))
         .limit(limit)
         .collect(Collectors.toList());
   }

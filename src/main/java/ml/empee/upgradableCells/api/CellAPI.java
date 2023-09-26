@@ -30,7 +30,7 @@ public class CellAPI {
   private final LangConfig langConfig;
 
   public List<OwnedCell> findTopCells(int limit) {
-    return cellService.findMostVisitedCells(limit);
+    return cellService.findMostNumerousCells(limit);
   }
 
   public List<CellProject> getCellProjects() {

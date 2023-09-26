@@ -65,7 +65,7 @@ public class TopCellsMenu implements Listener {
       OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
       var item = ItemBuilder.skull()
           .setName("&e" + owner.getName())
-          .setLore(langConfig.translateBlock("menus.top-cells.cell-lore", cell.getVisits()))
+          .setLore(langConfig.translateBlock("menus.top-cells.cell-lore", cell.getAllMembers().size()))
           .owner(owner)
           .build();
 

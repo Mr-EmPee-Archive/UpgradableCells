@@ -65,7 +65,7 @@ menus:
   top-cells:
     title: "Top Cells"
     cell-lore: |
-      &7Total visits: &6%d
+      &7Total members: &6%d
       &r
       &eClick to visit
     items:

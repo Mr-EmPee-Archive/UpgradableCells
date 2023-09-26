@@ -31,7 +31,6 @@ public class OwnedCell {
   private List<Member> members = Collections.synchronizedList(new ArrayList<>());
   private List<Member> bannedMembers = Collections.synchronizedList(new ArrayList<>());
   private AtomicInteger level = new AtomicInteger();
-  private AtomicInteger visits = new AtomicInteger();
   private Location origin = new Location(null, 0, 0, 0);
   private AtomicBoolean pasting = new AtomicBoolean();
   private AtomicBoolean publicVisible = new AtomicBoolean(true);
@@ -92,18 +91,6 @@ public class OwnedCell {
 
   public int getLevel() {
     return level.get();
-  }
-
-  public void setVisits(int visits) {
-    this.visits.set(visits);
-  }
-
-  public void addVisit() {
-    visits.incrementAndGet();
-  }
-
-  public int getVisits() {
-    return visits.get();
   }
 
   public boolean isPublicVisible() {
