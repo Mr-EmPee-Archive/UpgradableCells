@@ -61,9 +61,9 @@ public class CellProject {
     return schematicId != null;
   }
 
-  public boolean canBuild(OwnedCell ownedCell, Location location) {
+  public boolean isCellBlock(OwnedCell ownedCell, Location location) {
     var data = getSchematic().getBlock(location.toVector().subtract(ownedCell.getOrigin().toVector()));
-    return data == null || data.getMaterial() == Material.AIR;
+    return data != null && data.getMaterial() != Material.AIR;
   }
 
   /**

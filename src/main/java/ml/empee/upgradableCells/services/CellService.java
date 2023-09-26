@@ -3,6 +3,7 @@ package ml.empee.upgradableCells.services;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.model.entities.CellProject;
 import ml.empee.upgradableCells.model.entities.Member;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
@@ -15,6 +16,9 @@ import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -27,6 +31,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 /**
  * Handle cell management
@@ -48,17 +54,69 @@ public class CellService {
 
   public CellService(
       JavaPlugin plugin, PluginConfig pluginConfig,
-      CellsCache cells, WorldService worldService
-  ) {
+      CellsCache cells, WorldService worldService) {
     this.pluginConfig = pluginConfig;
     this.cells = cells;
     this.worldService = worldService;
     this.schematicFolder = new File(plugin.getDataFolder(), "levels");
 
     loadCellUpgrades();
-    //TODO: Finish pasting partially pasted cells
+    // TODO: Finish pasting partially pasted cells
   }
 
+  public boolean canBuild(Player player, Location target) {
+    if (player.hasPermission(Permissions.ADMIN)) {
+      return true;
+    }
+
+    var cell = findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return true;
+    }
+
+    Member member = cell.getMember(player.getUniqueId());
+    if (member == null || !member.getRank().canBuild()) {
+      return false;
+    }
+
+    var project = getCellProject(cell.getLevel());
+    return !project.isCellBlock(cell, target);
+  }
+
+  public boolean isCellBlock(Location target) {
+    var cell = findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return false;
+    }
+
+    var project = getCellProject(cell.getLevel());
+    return project.isCellBlock(cell, target);
+  }
+
+  public boolean canInteract(Player player, Location target, @Nullable Entity entity) {
+    if (player.hasPermission(Permissions.ADMIN)) {
+      return true;
+    }
+    
+    var cell = findCellByLocation(target).orElse(null);
+    if (cell == null) {
+      return true;
+    }
+
+    Member member = cell.getMember(player.getUniqueId());
+    if (member == null) {
+      return false;
+    }
+
+    if (entity == null) {
+      Block block = target.getBlock();
+      if (block.getType().name().contains("CHEST")) {
+        return member.getRank().canAccessChests();
+      }
+    }
+
+    return true;
+  }
 
   /**
    * Load cell levels from the schematic folder
@@ -120,10 +178,10 @@ public class CellService {
 
   public List<OwnedCell> findMostVisitedCells(int limit) {
     return cells.getContent().stream()
-          .filter(c -> c.isPublicVisible())
-          .sorted(Comparator.comparingInt(a -> a.getVisits()))
-          .limit(limit)
-          .collect(Collectors.toList());
+        .filter(c -> c.isPublicVisible())
+        .sorted(Comparator.comparingInt(a -> a.getVisits()))
+        .limit(limit)
+        .collect(Collectors.toList());
   }
 
   /**
