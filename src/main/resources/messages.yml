@@ -13,6 +13,7 @@ navigation:
 
 cell:
   invitation:
+    max-members: "&cThe cell has reached the max members limit"
     banned: "&cYou can't invite banned players"
     missing: "&cYou haven't been invited to the cell"
     missing-perm: "&cYou haven't permission to invite players"

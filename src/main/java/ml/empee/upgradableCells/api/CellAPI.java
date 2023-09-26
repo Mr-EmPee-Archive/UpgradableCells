@@ -182,6 +182,11 @@ public class CellAPI {
       return;
     }
 
+    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getAllMembers().size()) {
+      Logger.log(source, langConfig.translate("cell.invitation.max-members"));
+      return;
+    }
+
     cellService.invite(cell, target.getUniqueId());
     Logger.log(source, langConfig.translate("cell.invitation.sent", target.getName()));
     Logger.log(target, langConfig.translate("cell.invitation.received", cell.getOwnerPlayer().getName()));
@@ -202,6 +207,11 @@ public class CellAPI {
     }
 
     if (cell.isBannedMember(player.getUniqueId())) {
+      return;
+    }
+
+    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getAllMembers().size()) {
+      Logger.log(player, langConfig.translate("cell.invitation.max-members"));
       return;
     }
 
@@ -303,10 +313,6 @@ public class CellAPI {
     if (cell.getBannedMember(player.getUniqueId()) != null) {
       Logger.log(player, langConfig.translate("cell.banned-interaction"));
       return;
-    }
-
-    if (member == null) {
-      cellService.incrementCellVisits(cell);
     }
 
     player.teleport(cellService.getSpawnpoint(cell));
