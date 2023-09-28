@@ -1,12 +1,14 @@
 package ml.empee.upgradableCells.config;
 
-import lombok.Getter;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
+import java.util.List;
+
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.List;
+import lombok.Getter;
+import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 
 
 /**

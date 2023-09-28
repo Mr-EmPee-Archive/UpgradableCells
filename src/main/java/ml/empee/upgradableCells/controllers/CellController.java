@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.specifier.Greedy;
+import lombok.RequiredArgsConstructor;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
@@ -25,21 +26,12 @@ import mr.empee.lightwire.annotations.Singleton;
  */
 
 @Singleton
-public class CellController {
+@RequiredArgsConstructor
+public class CellController implements Controller {
 
   private final CellService cellService;
   private final CellAPI cellAPI;
   private final LangConfig langConfig;
-
-  public CellController(
-      CellAPI cellAPI, CommandsConfig commandsConfig,
-      CellService cellService, LangConfig langConfig) {
-    this.cellAPI = cellAPI;
-    this.cellService = cellService;
-    this.langConfig = langConfig;
-
-    commandsConfig.register(this);
-  }
 
   @CommandMethod("claim")
   public void claimCell(Player sender) {

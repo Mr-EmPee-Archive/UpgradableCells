@@ -24,8 +24,6 @@ public class CellPerimeterHandler implements Listener {
   ) {
     this.cellService = cellService;
     this.pluginConfig = pluginConfig;
-
-    plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
   @EventHandler(ignoreCancelled = true)

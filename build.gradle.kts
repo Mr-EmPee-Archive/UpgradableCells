@@ -14,7 +14,7 @@ plugins {
 group = "ml.empee"
 
 if (project.hasProperty("tag")) {
-  version = project.property("tag")!!
+  version = project.property("tag")
 } else {
   version = "develop"
 }

@@ -88,7 +88,6 @@ public class CellAPI {
     return true;
   }
 
-
   public List<OwnedCell> findTopCells(int limit) {
     return cellService.findMostNumerousCells(limit);
   }
