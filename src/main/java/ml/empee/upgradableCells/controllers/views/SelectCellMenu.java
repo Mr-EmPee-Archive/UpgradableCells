@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
-import ml.empee.simplemenu.model.pane.ScrollPane;
+import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import mr.empee.lightwire.annotations.Instance;
@@ -55,8 +55,8 @@ public class SelectCellMenu {
 
     @Override
     public void onOpen() {
-      var pane = new ScrollPane(3, 1);
-      pane.setCols(
+      var pane = ScrollPane.horizontal(3, 1, 1);
+      pane.addAll(
           cells.stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
@@ -65,15 +65,15 @@ public class SelectCellMenu {
       top().addPane(3, 1, pane);
       top().setItem(1, 1, GItem.builder()
           .itemstack(viewUtils.previousButton())
-          .visibilityHandler(pane::hasPreviousCol)
-          .clickHandler(e -> pane.previousCol())
+          .visibilityHandler(() -> pane.getColOffset() > 0)
+          .clickHandler(e -> pane.setColOffset(pane.getColOffset() - 1))
           .build()
       );
 
       top().setItem(7, 1, GItem.builder()
           .itemstack(viewUtils.nextButton())
-          .visibilityHandler(pane::hasNextCol)
-          .clickHandler(e -> pane.nextCol())
+          .visibilityHandler(() -> pane.getColOffset() < pane.getTotalCols())
+          .clickHandler(e -> pane.setColOffset(pane.getColOffset() + 1))
           .build()
       );
     }

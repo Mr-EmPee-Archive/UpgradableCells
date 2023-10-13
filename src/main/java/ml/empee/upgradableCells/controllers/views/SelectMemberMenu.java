@@ -1,29 +1,24 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
-import ml.empee.simplemenu.model.pane.ScrollPane;
-import ml.empee.upgradableCells.UpgradableCells;
-import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
-import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.panes.ScrollPane;
+import ml.empee.upgradableCells.UpgradableCells;
+import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.model.entities.OwnedCell;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 
 /**
  * Menu to claim a cell
@@ -32,9 +27,10 @@ import java.util.stream.Collectors;
 @Singleton
 public class SelectMemberMenu implements Listener {
 
+  //TODO: Update menu when join/kick
+
   @Instance
   private static SelectMemberMenu instance;
-  private final List<Menu> openedMenus = new ArrayList<>();
   private final LangConfig langConfig;
 
   public SelectMemberMenu(UpgradableCells plugin, LangConfig langConfig) {
@@ -50,20 +46,6 @@ public class SelectMemberMenu implements Listener {
     return action;
   }
 
-  @EventHandler
-  public void onCellMemberLeave(CellMemberLeaveEvent event) {
-    openedMenus.stream()
-        .filter(menu -> menu.cell.equals(event.getCell()))
-        .forEach(menu -> menu.removeSelectablePlayer(event.getMember().getUuid()));
-  }
-
-  @EventHandler
-  public void onCellMemberJoin(CellMemberJoinEvent event) {
-    openedMenus.stream()
-        .filter(menu -> menu.cell.equals(event.getCell()))
-        .forEach(menu -> menu.addSelectablePlayer(event.getMember().getUuid()));
-  }
-
   private Menu create(Player player, OwnedCell cell, List<OfflinePlayer> players,
       CompletableFuture<OfflinePlayer> future) {
     return new Menu(player, cell, players, future);
@@ -73,7 +55,7 @@ public class SelectMemberMenu implements Listener {
 
     private final OwnedCell cell;
     private final CompletableFuture<OfflinePlayer> action;
-    private final ScrollPane pane = new ScrollPane(7, 3);
+    private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
 
     private final List<OfflinePlayer> players;
 
@@ -85,44 +67,15 @@ public class SelectMemberMenu implements Listener {
       this.players = new ArrayList<>(players);
     }
 
-    public void removeSelectablePlayer(UUID uuid) {
-      players.removeIf(p -> p.getUniqueId().equals(uuid));
-      pane.setCols(
-          players.stream()
-              .map(this::playerItem)
-              .collect(Collectors.toList())
-      );
-
-      refresh();
-    }
-
-    public void addSelectablePlayer(UUID uuid) {
-      players.add(Bukkit.getOfflinePlayer(uuid));
-      pane.setCols(
-          players.stream()
-              .map(this::playerItem)
-              .collect(Collectors.toList())
-      );
-
-      refresh();
-    }
-
     @Override
     public void onOpen() {
-      openedMenus.add(this);
-
-      pane.setCols(
+      pane.addAll(
           players.stream()
               .map(this::playerItem)
               .collect(Collectors.toList())
       );
 
       top().addPane(1, 1, pane);
-    }
-
-    @Override
-    public void onClose(InventoryCloseEvent event) {
-      openedMenus.remove(this);
     }
 
     private GItem playerItem(OfflinePlayer player) {

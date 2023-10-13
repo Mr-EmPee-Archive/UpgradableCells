@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.ChestMenu;
-import ml.empee.simplemenu.model.pane.ScrollPane;
+import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
@@ -42,7 +42,7 @@ public class TopCellsMenu implements Listener {
   }
 
   private class Menu extends ChestMenu {
-    private final ScrollPane pane = new ScrollPane(7, 3);
+    private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
 
     public Menu(Player viewer) {
       super(viewer, 5, langConfig.translate("menus.top-cells.title"));
@@ -52,7 +52,7 @@ public class TopCellsMenu implements Listener {
     public void onOpen() {
       top().setItem(0, 4, closeItem());
 
-      pane.setCols(
+      pane.addAll(
           cellAPI.findTopCells(21).stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
