@@ -7,7 +7,7 @@ import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
@@ -35,7 +35,7 @@ public class ClaimCellMenu {
     return new Menu(player);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
     public Menu(Player player) {
       super(player, 3, langConfig.translate("menus.claim-cell.title"));
     }

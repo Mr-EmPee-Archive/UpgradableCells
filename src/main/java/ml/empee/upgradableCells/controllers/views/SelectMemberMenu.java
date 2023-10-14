@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.config.LangConfig;
@@ -51,7 +51,7 @@ public class SelectMemberMenu implements Listener {
     return new Menu(player, cell, players, future);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
 
     private final OwnedCell cell;
     private final CompletableFuture<OfflinePlayer> action;

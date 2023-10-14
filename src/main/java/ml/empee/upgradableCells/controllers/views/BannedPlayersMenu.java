@@ -11,7 +11,7 @@ import com.cryptomorin.xseries.XMaterial;
 
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.api.CellAPI;
@@ -51,7 +51,7 @@ public class BannedPlayersMenu implements Listener {
     return new Menu(player, cell);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
     private final OwnedCell cell;
     private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
 

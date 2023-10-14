@@ -1,21 +1,22 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.OwnedCell;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 /**
  * Menu to claim a cell
@@ -42,7 +43,7 @@ public class SelectCellMenu {
     return new Menu(player, cells, future);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
     private final List<OwnedCell> cells;
     private final CompletableFuture<OwnedCell> action;
 

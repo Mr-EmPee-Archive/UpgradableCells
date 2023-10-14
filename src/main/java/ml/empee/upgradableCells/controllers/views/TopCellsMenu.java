@@ -12,7 +12,7 @@ import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
@@ -41,7 +41,7 @@ public class TopCellsMenu implements Listener {
     return new Menu(player);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
     private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
 
     public Menu(Player viewer) {

@@ -10,7 +10,7 @@ import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.Member;
@@ -42,7 +42,7 @@ public class ManageMemberMenu {
     return new Menu(viewer, cell, target);
   }
 
-  private class Menu extends ChestMenu {
+  private class Menu extends InventoryMenu {
     private final OwnedCell cell;
     private final OfflinePlayer target;
 
