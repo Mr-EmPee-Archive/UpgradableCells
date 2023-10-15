@@ -32,6 +32,10 @@ cell:
     set-rank: "&7&e%s &7is now &6%s&7 of &e%s&7's cell"
     un-manageable: "&cYou can't perform actions on this player!"
   visibility:
+    title:
+      private: "&cPrivate"
+      public: "&aPublic"
+      lore: "&eYour cells privacy has changed to"
     changed: "&7The cell visibility has been changed"
     missing-perm: "&cMissing permissions to change cell visibility"
   cant-build: "&cYou can't build here!"

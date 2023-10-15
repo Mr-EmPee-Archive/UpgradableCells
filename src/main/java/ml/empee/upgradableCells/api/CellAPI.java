@@ -67,7 +67,7 @@ public class CellAPI {
     if (player.hasPermission(Permissions.ADMIN)) {
       return true;
     }
-    
+
     var cell = cellService.findCellByLocation(target).orElse(null);
     if (cell == null) {
       return true;
@@ -132,6 +132,18 @@ public class CellAPI {
     }
 
     cellService.setVisibility(cell, publicVisible);
+    if (publicVisible) {
+      source.sendTitle(
+          langConfig.translate("cell.visibility.title.public"),
+          langConfig.translate("cell.visibility.title.lore"),
+          10, 70, 10);
+    } else {
+      source.sendTitle(
+          langConfig.translate("cell.visibility.title.private"),
+          langConfig.translate("cell.visibility.title.lore"),
+          10, 70, 10);
+    }
+
     Logger.log(source, langConfig.translate("cell.visibility.changed"));
   }
 
@@ -171,7 +183,8 @@ public class CellAPI {
         player.teleport(pluginConfig.getSpawnLocation());
       }
 
-      Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
+      Logger.log(target.getPlayer(),
+          langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerPlayer().getName()));
     }
 
     for (Player p : cell.getOnlineMembers()) {
@@ -192,7 +205,8 @@ public class CellAPI {
 
     cellService.removeMember(cell, target.getUniqueId());
     if (target.isOnline()) {
-      Logger.log(target.getPlayer(), langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
+      Logger.log(target.getPlayer(),
+          langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerPlayer().getName()));
     }
 
     for (Player p : cell.getOnlineMembers()) {
@@ -213,7 +227,8 @@ public class CellAPI {
 
     cellService.setMember(cell, target.getUniqueId(), rank);
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.set-rank", target.getName(), rank, cell.getOwnerPlayer().getName()));
+      Logger.log(member,
+          langConfig.translate("cell.members.set-rank", target.getName(), rank, cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -278,7 +293,8 @@ public class CellAPI {
     cellService.removeInvitation(cell, player.getUniqueId());
 
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerPlayer().getName()));
+      Logger.log(member,
+          langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerPlayer().getName()));
     }
   }
 
@@ -298,7 +314,8 @@ public class CellAPI {
     }
 
     cellService.removeMember(cell, player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
+    Logger.log(player,
+        langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     for (Player m : cell.getOnlineMembers()) {
       Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerPlayer().getName()));
     }
