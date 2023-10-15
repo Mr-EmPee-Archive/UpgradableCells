@@ -48,7 +48,7 @@ dependencies {
   compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
   implementation("com.github.Mr-EmPee:LightWire:1.0.0")
-  implementation("com.github.Mr-EmPee:SimpleMenu:0.0.11")
+  implementation("com.github.Mr-EmPee:SimpleMenu:0.0.12")
   implementation("com.github.Mr-EmPee:ItemBuilder:1.1.3")
 
   implementation("com.github.cryptomorin:XSeries:9.4.0") { isTransitive = false }
