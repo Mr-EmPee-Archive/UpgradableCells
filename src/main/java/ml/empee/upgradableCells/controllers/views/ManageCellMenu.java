@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
+import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.entities.CellProject;
@@ -56,13 +57,25 @@ public class ManageCellMenu {
 
     @Override
     public void onOpen() {
-      top().setItem(2, 1, homeItem());
-      top().setItem(4, 1, cellInfoItem());
-      top().setItem(6, 1, cellVisibilityItem());
-      top().setItem(2, 3, upgradeItem());
-      top().setItem(4, 3, manageMembersItem());
-      top().setItem(6, 3, bannedPlayersItem());
-      top().setItem(0, 5, closeItem());
+      StaticPane pane = new StaticPane(9, 6);
+      pane.setItem(2, 1, homeItem());
+      pane.setItem(4, 1, cellInfoItem());
+      pane.setItem(6, 1, cellVisibilityItem());
+      pane.setItem(2, 3, upgradeItem());
+      pane.setItem(4, 3, manageMembersItem());
+      pane.setItem(6, 3, bannedPlayersItem());
+      pane.setItem(0, 5, closeItem());
+
+      top().fill(background());
+      top().addPane(0, 0, pane);
+    }
+
+    private GItem background() {
+      var item = ItemBuilder.from(XMaterial.BLACK_STAINED_GLASS_PANE.parseItem())
+          .setName(" ")
+          .build();
+
+      return GItem.of(item);
     }
 
     private GItem cellVisibilityItem() {
