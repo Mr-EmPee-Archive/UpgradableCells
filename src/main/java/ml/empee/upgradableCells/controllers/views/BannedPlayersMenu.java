@@ -3,6 +3,8 @@ package ml.empee.upgradableCells.controllers.views;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -53,27 +55,32 @@ public class BannedPlayersMenu implements Listener {
 
   private class Menu extends InventoryMenu {
     private final OwnedCell cell;
-    private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
+    private final GTheme gTheme = new GTheme();
+    private final ScrollPane playersPane = ScrollPane.horizontal(7, 3, 3);
 
     public Menu(Player viewer, OwnedCell cell) {
-      super(viewer, 5, langConfig.translate("menus.banned-players.title"));
+      super(viewer, 5);
       this.cell = cell;
+      this.title = langConfig.translate("menus.banned-players.title");
     }
 
     @Override
     public void onOpen() {
-      top().setItem(0, 4, closeItem());
+      var background = new StaticPane(9, 5);
+      background.fill(GItem.of(gTheme.background()));
+      background.setItem(0, 4, closeItem());
 
       var playerRank = cell.getMember(player.getUniqueId()).getRank();
 
-      pane.addAll(
+      playersPane.set(
           cell.getBannedMembers().stream()
               .filter(m -> m.getRank() == null || playerRank.canManage(m.getRank()))
               .map(this::playerItem)
               .collect(Collectors.toList())
       );
-      
-      top().addPane(1, 1, pane);
+
+      addPane(1, 1, playersPane);
+      addPane(0, 0, background);
     }
 
     private GItem closeItem() {
@@ -82,7 +89,7 @@ public class BannedPlayersMenu implements Listener {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             ManageCellMenu.open((Player) e.getWhoClicked(), cell);
           }).build();
@@ -103,7 +110,7 @@ public class BannedPlayersMenu implements Listener {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> cellAPI.pardonMember(cell, player, target))
           .build();
     }

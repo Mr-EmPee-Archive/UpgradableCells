@@ -1,5 +1,7 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.entity.Player;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -36,13 +38,20 @@ public class ClaimCellMenu {
   }
 
   private class Menu extends InventoryMenu {
+
+    private final GTheme gTheme = new GTheme();
+
     public Menu(Player player) {
-      super(player, 3, langConfig.translate("menus.claim-cell.title"));
+      super(player, 3);
+      this.title = langConfig.translate("menus.claim-cell.title");
     }
 
     @Override
     public void onOpen() {
-      top().setItem(4, 1, buyCellItem());
+      var top = new StaticPane(9, 3);
+      top.fill(GItem.of(gTheme.background()));
+      top.setItem(4, 1, buyCellItem());
+      addPane(0, 0, top);
     }
 
     private GItem buyCellItem() {
@@ -51,7 +60,7 @@ public class ClaimCellMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();

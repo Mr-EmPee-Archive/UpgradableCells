@@ -2,6 +2,7 @@ package ml.empee.upgradableCells.controllers.views;
 
 import java.util.stream.Collectors;
 
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -48,34 +49,29 @@ public class ManageCellMenu {
 
   private class Menu extends InventoryMenu {
     private final OwnedCell cell;
+    private final GTheme gTheme = new GTheme();
 
     public Menu(Player player, OwnedCell cell) {
-      super(player, 6, langConfig.translate("menus.manage-cell.title", cell.getOwnerPlayer().getName()));
+      super(player, 6);
 
       this.cell = cell;
+      this.title = langConfig.translate("menus.manage-cell.title", cell.getOwnerPlayer().getName());
     }
 
     @Override
     public void onOpen() {
-      StaticPane pane = new StaticPane(9, 6);
-      pane.setItem(2, 1, homeItem());
-      pane.setItem(4, 1, cellInfoItem());
-      pane.setItem(6, 1, cellVisibilityItem());
-      pane.setItem(2, 3, upgradeItem());
-      pane.setItem(4, 3, manageMembersItem());
-      pane.setItem(6, 3, bannedPlayersItem());
-      pane.setItem(0, 5, closeItem());
+      StaticPane top = new StaticPane(9, 6);
+      top.fill(GItem.of(gTheme.background()));
 
-      top().fill(background());
-      top().addPane(0, 0, pane);
-    }
+      top.setItem(2, 1, homeItem());
+      top.setItem(4, 1, cellInfoItem());
+      top.setItem(6, 1, cellVisibilityItem());
+      top.setItem(2, 3, upgradeItem());
+      top.setItem(4, 3, manageMembersItem());
+      top.setItem(6, 3, bannedPlayersItem());
+      top.setItem(0, 5, closeItem());
 
-    private GItem background() {
-      var item = ItemBuilder.from(XMaterial.BLACK_STAINED_GLASS_PANE.parseItem())
-          .setName(" ")
-          .build();
-
-      return GItem.of(item);
+      addPane(0, 0, top);
     }
 
     private GItem cellVisibilityItem() {
@@ -101,7 +97,7 @@ public class ManageCellMenu {
       }
 
       return GItem.builder()
-          .itemstack(item.build())
+          .itemStack(item.build())
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -128,7 +124,7 @@ public class ManageCellMenu {
       }
 
       return GItem.builder()
-          .itemstack(item.build())
+          .itemStack(item.build())
           .build();
     }
 
@@ -139,7 +135,7 @@ public class ManageCellMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -155,7 +151,7 @@ public class ManageCellMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             var playerRank = cell.getMember(player.getUniqueId()).getRank();
@@ -192,7 +188,7 @@ public class ManageCellMenu {
       }
 
       return GItem.builder()
-          .itemstack(item.build())
+          .itemStack(item.build())
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
             source.closeInventory();
@@ -206,7 +202,7 @@ public class ManageCellMenu {
       item.setLore(langConfig.translateBlock("menus.manage-cell.items.banned-players.lore"));
 
       return GItem.builder()
-          .itemstack(item.build())
+          .itemStack(item.build())
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
             if (!cell.getMember(source.getUniqueId()).getRank().canManageMembers()) {
@@ -225,7 +221,7 @@ public class ManageCellMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             e.getWhoClicked().closeInventory();
           }).build();

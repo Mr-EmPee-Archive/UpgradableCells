@@ -2,6 +2,8 @@ package ml.empee.upgradableCells.controllers.views;
 
 import java.util.stream.Collectors;
 
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -42,23 +44,28 @@ public class TopCellsMenu implements Listener {
   }
 
   private class Menu extends InventoryMenu {
-    private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
+    private final ScrollPane cellsPane = ScrollPane.horizontal(7, 3, 3);
+    private final GTheme gTheme = new GTheme();
 
     public Menu(Player viewer) {
-      super(viewer, 5, langConfig.translate("menus.top-cells.title"));
+      super(viewer, 5);
+      this.title = langConfig.translate("menus.top-cells.title");
     }
 
     @Override
     public void onOpen() {
-      top().setItem(0, 4, closeItem());
+      var background = new StaticPane(9, 5);
+      background.fill(GItem.of(gTheme.background()));
+      background.setItem(0, 4, closeItem());
 
-      pane.addAll(
+      cellsPane.set(
           cellAPI.findTopCells(21).stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
       );
 
-      top().addPane(1, 1, pane);
+      addPane(1, 1, cellsPane);
+      addPane(0, 0, background);
     }
 
     private GItem cellItem(OwnedCell cell) {
@@ -70,7 +77,7 @@ public class TopCellsMenu implements Listener {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             cellAPI.teleportToCell(player, cell);
@@ -83,7 +90,7 @@ public class TopCellsMenu implements Listener {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             e.getWhoClicked().closeInventory();
           }).build();

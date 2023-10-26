@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GComponenets;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -29,7 +32,7 @@ public class SelectCellMenu {
   @Instance
   private static SelectCellMenu instance;
   private final LangConfig langConfig;
-  private final ViewUtils viewUtils;
+  private final GComponenets GComponenets;
 
   //TODO: Update menu when kicked
 
@@ -45,38 +48,35 @@ public class SelectCellMenu {
 
   private class Menu extends InventoryMenu {
     private final List<OwnedCell> cells;
+    private final GTheme gTheme = new GTheme();
     private final CompletableFuture<OwnedCell> action;
 
     public Menu(Player viewer, List<OwnedCell> cells, CompletableFuture<OwnedCell> action) {
-      super(viewer, 3, langConfig.translate("menus.select-cell.title"));
+      super(viewer, 3);
 
+      this.title = langConfig.translate("menus.select-cell.title");
       this.cells = cells;
       this.action = action;
     }
 
     @Override
     public void onOpen() {
-      var pane = ScrollPane.horizontal(3, 1, 1);
-      pane.addAll(
+      var cellsPane = ScrollPane.horizontal(3, 1, 1);
+      var background = new StaticPane(9, 3);
+      background.fill(GItem.of(gTheme.background()));
+
+      cellsPane.addAll(
           cells.stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
       );
 
-      top().addPane(3, 1, pane);
-      top().setItem(1, 1, GItem.builder()
-          .itemstack(viewUtils.previousButton())
-          .visibilityHandler(() -> pane.getColOffset() > 0)
-          .clickHandler(e -> pane.setColOffset(pane.getColOffset() - 1))
-          .build()
-      );
+      background.setItem(1, 1, GComponenets.previousButton(cellsPane, this));
 
-      top().setItem(7, 1, GItem.builder()
-          .itemstack(viewUtils.nextButton())
-          .visibilityHandler(() -> pane.getColOffset() < pane.getTotalCols())
-          .clickHandler(e -> pane.setColOffset(pane.getColOffset() + 1))
-          .build()
-      );
+      background.setItem(7, 1, GComponenets.nextButton(cellsPane, this));
+
+      addPane(3, 1, cellsPane);
+      addPane(0, 0, background);
     }
 
     private GItem cellItem(OwnedCell cell) {
@@ -87,12 +87,11 @@ public class SelectCellMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             e.getWhoClicked().closeInventory();
             action.complete(cell);
-          })
-          .build();
+          }).build();
     }
   }
 

@@ -1,5 +1,7 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -45,24 +47,31 @@ public class ManageMemberMenu {
   private class Menu extends InventoryMenu {
     private final OwnedCell cell;
     private final OfflinePlayer target;
+    private final GTheme gTheme = new GTheme();
 
     public Menu(Player viewer, OwnedCell cell, OfflinePlayer target) {
-      super(viewer, 5, langConfig.translate("menus.manage-members.title"));
+      super(viewer, 5);
 
       this.cell = cell;
       this.target = target;
+      this.title = langConfig.translate("menus.manage-members.title");
     }
 
     @Override
     public void onOpen() {
-      top().setItem(2, 1, setRankMemberItem());
-      top().setItem(4, 1, setRankGuardItem());
-      top().setItem(6, 1, setRankManagerItem());
+      var top = new StaticPane(9, 5);
+      top.fill(GItem.of(gTheme.background()));
 
-      top().setItem(3, 3, kickItem());
-      top().setItem(5, 3, banItem());
+      top.setItem(2, 1, setRankMemberItem());
+      top.setItem(4, 1, setRankGuardItem());
+      top.setItem(6, 1, setRankManagerItem());
 
-      top().setItem(0, 4, closeItem());
+      top.setItem(3, 3, kickItem());
+      top.setItem(5, 3, banItem());
+
+      top.setItem(0, 4, closeItem());
+
+      addPane(0, 0, top);
     }
 
     private GItem closeItem() {
@@ -71,7 +80,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             ManageCellMenu.open((Player) e.getWhoClicked(), cell);
           }).build();
@@ -84,7 +93,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -100,7 +109,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -116,7 +125,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -133,7 +142,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
@@ -149,7 +158,7 @@ public class ManageMemberMenu {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();

@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import com.cryptomorin.xseries.XMaterial;
+import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -55,27 +58,33 @@ public class SelectMemberMenu implements Listener {
 
     private final OwnedCell cell;
     private final CompletableFuture<OfflinePlayer> action;
-    private final ScrollPane pane = ScrollPane.horizontal(7, 3, 3);
+    private final ScrollPane membersPane = ScrollPane.horizontal(7, 3, 3);
 
     private final List<OfflinePlayer> players;
+    private final GTheme gTheme = new GTheme();
 
     public Menu(Player viewer, OwnedCell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> action) {
-      super(viewer, 5, langConfig.translate("menus.select-player.title"));
+      super(viewer, 5);
 
       this.cell = cell;
       this.action = action;
       this.players = new ArrayList<>(players);
+      this.title = langConfig.translate("menus.select-player.title");
     }
 
     @Override
     public void onOpen() {
-      pane.addAll(
+      var background = new StaticPane(9, 5);
+      background.fill(GItem.of(gTheme.background()));
+
+      membersPane.set(
           players.stream()
               .map(this::playerItem)
               .collect(Collectors.toList())
       );
 
-      top().addPane(1, 1, pane);
+      addPane(1, 1, membersPane);
+      addPane(0, 0, background);
     }
 
     private GItem playerItem(OfflinePlayer player) {
@@ -91,7 +100,7 @@ public class SelectMemberMenu implements Listener {
           .build();
 
       return GItem.builder()
-          .itemstack(item)
+          .itemStack(item)
           .clickHandler(e -> {
             e.getWhoClicked().closeInventory();
             action.complete(player);
