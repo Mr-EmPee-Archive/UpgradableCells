@@ -61,8 +61,9 @@ public class SelectCellMenu {
 
     @Override
     public void onOpen() {
-      var cellsPane = ScrollPane.horizontal(3, 1, 1);
+      var cellsPane = ScrollPane.vertical(3, 1, 1);
       var background = new StaticPane(9, 3);
+      var content = new StaticPane(9, 3);
       background.fill(GItem.of(gTheme.background()));
 
       cellsPane.addAll(
@@ -71,11 +72,11 @@ public class SelectCellMenu {
               .collect(Collectors.toList())
       );
 
-      background.setItem(1, 1, GComponenets.previousButton(cellsPane, this));
-
-      background.setItem(7, 1, GComponenets.nextButton(cellsPane, this));
+      content.setItem(1, 1, GComponenets.previousButton(cellsPane, this));
+      content.setItem(7, 1, GComponenets.nextButton(cellsPane, this));
 
       addPane(3, 1, cellsPane);
+      addPane(0, 0, content);
       addPane(0, 0, background);
     }
 
