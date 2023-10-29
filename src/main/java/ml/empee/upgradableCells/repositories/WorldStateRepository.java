@@ -7,8 +7,10 @@ import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,44 +19,26 @@ import java.util.concurrent.CompletableFuture;
  */
 
 @Singleton
-public class WorldStateRepository {
-
-  private final DbClient client;
+public class WorldStateRepository extends AbstractRepository<WorldState, String> {
 
   public WorldStateRepository(DbClient client) {
-    this.client = client;
-    createTable();
+    super(client, "worlds_state");
   }
 
-  @SneakyThrows
-  private void createTable() {
-    var query = "";
-    query += "CREATE TABLE IF NOT EXISTS worlds_state (";
-    query += "  world STRING PRIMARY KEY,";
-    query += "  last_cell INTEGER,";
-    query += "  size INTEGER";
-    query += ");";
-    
-    try (var stm = client.getJdbcConnection().createStatement()) {
-      stm.executeUpdate(query);
-    }
+  @Override
+  protected List<String> schema() {
+    return List.of(
+        "world STRING PRIMARY KEY",
+        "last_cell INTEGER",
+        "size INTEGER"
+    );
   }
 
-  /**
-   * Create or update a world-sate
-   */
-  public CompletableFuture<Void> save(WorldState data) {
-    return CompletableFuture.runAsync(() -> {
-      var query = "INSERT OR REPLACE INTO worlds_state (world, last_cell, margin, size) VALUES (?, ?, ?);";
-      try (var stm = client.getJdbcConnection().prepareStatement(query)) {
-        stm.setString(1, data.getWorld().getName());
-        stm.setInt(2, data.getLastCell());
-        stm.setInt(3, data.getSize());
-        stm.executeUpdate();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }, client.getThreadPool());
+  @Override
+  protected void prepareStatement(PreparedStatement stm, WorldState data) throws SQLException {
+    stm.setString(1, data.getWorld().getName());
+    stm.setInt(2, data.getLastCell());
+    stm.setInt(3, data.getSize());
   }
 
   /**
@@ -71,7 +55,7 @@ public class WorldStateRepository {
           return Optional.empty();
         }
 
-        return Optional.of(parseResult(result));
+        return Optional.of(parse(result));
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -79,7 +63,7 @@ public class WorldStateRepository {
   }
 
   @SneakyThrows
-  private WorldState parseResult(ResultSet rs) {
+  protected WorldState parse(ResultSet rs) {
     WorldState cell = new WorldState(Bukkit.getWorld(rs.getString("world")));
     cell.setSize(rs.getInt("size"));
     cell.setLastCell(rs.getInt("last_cell"));
