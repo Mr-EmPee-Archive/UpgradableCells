@@ -26,9 +26,9 @@ public class GComponenets {
 
     return GItem.builder()
         .itemStack(item)
-        .visibilityHandler(() -> pane.getColOffset() < pane.getTotalCols())
+        .visibilityHandler(pane::hasNextPage)
         .clickHandler(e -> {
-          pane.setColOffset(pane.getColOffset() + 1);
+          pane.nextPage();
           menu.update();
         }).build();
   }
@@ -40,9 +40,9 @@ public class GComponenets {
 
     return GItem.builder()
         .itemStack(item)
-        .visibilityHandler(() -> pane.getColOffset() > 0)
+        .visibilityHandler(pane::hasPreviousPage)
         .clickHandler(e -> {
-          pane.setColOffset(pane.getColOffset() - 1);
+          pane.previousPage();
           menu.update();
         }).build();
   }
