@@ -1,7 +1,7 @@
 package ml.empee.upgradableCells.handlers;
 
 import ml.empee.upgradableCells.UpgradableCells;
-import ml.empee.upgradableCells.api.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
@@ -27,12 +27,12 @@ import org.bukkit.inventory.EquipmentSlot;
 @Singleton
 public class CellProtectionHandler implements Listener {
 
-  private final CellAPI cellAPI;
+  private final CellController cellController;
   private final LangConfig langConfig;
 
   public CellProtectionHandler(
-      UpgradableCells plugin, CellAPI cellAPI, LangConfig langConfig) {
-    this.cellAPI = cellAPI;
+      UpgradableCells plugin, CellController cellController, LangConfig langConfig) {
+    this.cellController = cellController;
     this.langConfig = langConfig;
 
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -40,7 +40,7 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {
-    if (cellAPI.canBuild(event.getPlayer(), event.getBlock().getLocation())) {
+    if (cellController.canBuild(event.getPlayer(), event.getBlock().getLocation())) {
       return;
     }
 
@@ -50,7 +50,7 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockBreak(BlockBreakEvent event) {
-    if (cellAPI.canBuild(event.getPlayer(), event.getBlock().getLocation())) {
+    if (cellController.canBuild(event.getPlayer(), event.getBlock().getLocation())) {
       return;
     }
 
@@ -60,7 +60,7 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerInteract(PlayerInteractEvent event) {
-    if (cellAPI.canInteract(event.getPlayer(), event.getClickedBlock().getLocation(), null)) {
+    if (cellController.canInteract(event.getPlayer(), event.getClickedBlock().getLocation(), null)) {
       return;
     }
 
@@ -72,7 +72,7 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onBucketFill(PlayerBucketFillEvent event) {
-    if (cellAPI.canBuild(event.getPlayer(), event.getBlockClicked().getLocation())) {
+    if (cellController.canBuild(event.getPlayer(), event.getBlockClicked().getLocation())) {
       return;
     }
 
@@ -82,7 +82,7 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-    if (cellAPI.canBuild(event.getPlayer(), event.getBlockClicked().getLocation())) {
+    if (cellController.canBuild(event.getPlayer(), event.getBlockClicked().getLocation())) {
       return;
     }
 
@@ -92,18 +92,18 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onEntityExplode(EntityExplodeEvent event) {
-    event.blockList().removeIf(b -> cellAPI.isCellBlock(b.getLocation()));
+    event.blockList().removeIf(b -> cellController.isCellBlock(b.getLocation()));
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockExplode(BlockExplodeEvent event) {
-    event.blockList().removeIf(b -> cellAPI.isCellBlock(b.getLocation()));
+    event.blockList().removeIf(b -> cellController.isCellBlock(b.getLocation()));
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onPistonExtend(BlockPistonExtendEvent event) {
     boolean movingSchemBlock = event.getBlocks().stream().anyMatch(
-        b -> cellAPI.isCellBlock(b.getLocation()));
+        b -> cellController.isCellBlock(b.getLocation()));
 
     if (movingSchemBlock) {
       event.setCancelled(true);
@@ -113,7 +113,7 @@ public class CellProtectionHandler implements Listener {
   @EventHandler(ignoreCancelled = true)
   public void onPistonRetract(BlockPistonRetractEvent event) {
     boolean movingSchemBlock = event.getBlocks().stream().anyMatch(
-        b -> cellAPI.isCellBlock(b.getLocation()));
+        b -> cellController.isCellBlock(b.getLocation()));
 
     if (movingSchemBlock) {
       event.setCancelled(true);
@@ -122,14 +122,14 @@ public class CellProtectionHandler implements Listener {
 
   @EventHandler(ignoreCancelled = true)
   public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-    if (cellAPI.isCellBlock(event.getBlock().getLocation())) {
+    if (cellController.isCellBlock(event.getBlock().getLocation())) {
       event.setCancelled(true);
     }
   }
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockBurn(BlockBurnEvent event) {
-    if (cellAPI.isCellBlock(event.getBlock().getLocation())) {
+    if (cellController.isCellBlock(event.getBlock().getLocation())) {
       event.setCancelled(true);
     }
   }

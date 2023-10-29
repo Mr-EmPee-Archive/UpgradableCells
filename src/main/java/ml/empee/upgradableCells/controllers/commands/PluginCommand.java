@@ -1,5 +1,6 @@
-package ml.empee.upgradableCells.controllers;
+package ml.empee.upgradableCells.controllers.commands;
 
+import ml.empee.upgradableCells.controllers.Controller;
 import org.bukkit.command.CommandSender;
 
 import cloud.commandframework.annotations.CommandMethod;
@@ -17,7 +18,7 @@ import mr.empee.lightwire.annotations.Singleton;
 
 @Singleton
 @RequiredArgsConstructor
-public class PluginController implements Controller {
+public class PluginCommand implements Controller {
 
   private final LangConfig langConfig;
   private final CellService cellService;

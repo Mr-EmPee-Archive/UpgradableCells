@@ -17,7 +17,7 @@ import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.UpgradableCells;
-import ml.empee.upgradableCells.api.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.Member;
 import mr.empee.lightwire.annotations.Instance;
@@ -35,11 +35,11 @@ public class BannedPlayersMenu implements Listener {
   @Instance
   private static BannedPlayersMenu instance;
   private final LangConfig langConfig;
-  private final CellAPI cellAPI;
+  private final CellController cellController;
 
-  public BannedPlayersMenu(UpgradableCells plugin, LangConfig langConfig, CellAPI cellAPI) {
+  public BannedPlayersMenu(UpgradableCells plugin, LangConfig langConfig, CellController cellController) {
     this.langConfig = langConfig;
-    this.cellAPI = cellAPI;
+    this.cellController = cellController;
 
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
@@ -111,7 +111,7 @@ public class BannedPlayersMenu implements Listener {
 
       return GItem.builder()
           .itemStack(item)
-          .clickHandler(e -> cellAPI.pardonMember(cell, player, target))
+          .clickHandler(e -> cellController.pardonMember(cell, player, target))
           .build();
     }
   }

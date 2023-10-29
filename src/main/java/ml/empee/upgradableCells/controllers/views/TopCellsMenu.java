@@ -17,7 +17,7 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
-import ml.empee.upgradableCells.api.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
@@ -33,7 +33,7 @@ public class TopCellsMenu implements Listener {
   @Instance
   private static TopCellsMenu instance;
   private final LangConfig langConfig;
-  private final CellAPI cellAPI;
+  private final CellController cellController;
 
   public static void open(Player player) {
     instance.create(player).open();
@@ -59,7 +59,7 @@ public class TopCellsMenu implements Listener {
       background.setItem(0, 4, closeItem());
 
       cellsPane.set(
-          cellAPI.findTopCells(21).stream()
+          cellController.findTopCells(21).stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
       );
@@ -80,7 +80,7 @@ public class TopCellsMenu implements Listener {
           .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
-            cellAPI.teleportToCell(player, cell);
+            cellController.teleportToCell(player, cell);
           }).build();
     }
 
