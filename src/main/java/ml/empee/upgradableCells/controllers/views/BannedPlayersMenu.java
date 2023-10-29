@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -18,8 +19,7 @@ import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.Member;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.Member;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
 
@@ -45,20 +45,20 @@ public class BannedPlayersMenu implements Listener {
   }
 
 
-  public static void open(Player player, OwnedCell cell) {
+  public static void open(Player player, Cell cell) {
     instance.create(player, cell).open();
   }
 
-  private Menu create(Player player, OwnedCell cell) {
+  private Menu create(Player player, Cell cell) {
     return new Menu(player, cell);
   }
 
   private class Menu extends InventoryMenu {
-    private final OwnedCell cell;
+    private final Cell cell;
     private final GTheme gTheme = new GTheme();
     private final ScrollPane playersPane = ScrollPane.horizontal(7, 3, 3);
 
-    public Menu(Player viewer, OwnedCell cell) {
+    public Menu(Player viewer, Cell cell) {
       super(viewer, 5);
       this.cell = cell;
       this.title = langConfig.translate("menus.banned-players.title");
@@ -70,7 +70,7 @@ public class BannedPlayersMenu implements Listener {
       background.fill(GItem.of(gTheme.background()));
       background.setItem(0, 4, closeItem());
 
-      var playerRank = cell.getMember(player.getUniqueId()).getRank();
+      var playerRank = cell.getMember(player.getUniqueId()).orElseThrow().getRank();
 
       playersPane.set(
           cell.getBannedMembers().stream()

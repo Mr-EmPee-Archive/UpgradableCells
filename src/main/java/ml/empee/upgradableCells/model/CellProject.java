@@ -1,7 +1,8 @@
-package ml.empee.upgradableCells.model.entities;
+package ml.empee.upgradableCells.model;
 
 import lombok.Builder;
 import lombok.Getter;
+import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.utils.helpers.Schematic;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -49,7 +50,7 @@ public class CellProject {
     schematic = new Schematic(new File(schematicFolder, schematicId));
   }
 
-  public CompletableFuture<Void> paste(OwnedCell cell) {
+  public CompletableFuture<Void> paste(Cell cell) {
     Schematic schematic = parent == null ? getSchematic() : parent.getSchematic();
     return getSchematic().paste(cell.getOrigin(), l -> {
       var data = schematic.getBlock(l);
@@ -61,7 +62,7 @@ public class CellProject {
     return schematicId != null;
   }
 
-  public boolean isCellBlock(OwnedCell ownedCell, Location location) {
+  public boolean isCellBlock(Cell ownedCell, Location location) {
     var data = getSchematic().getBlock(location.toVector().subtract(ownedCell.getOrigin().toVector()));
     return data != null && data.getMaterial() != Material.AIR;
   }

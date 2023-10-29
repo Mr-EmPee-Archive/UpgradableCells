@@ -8,7 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import ml.empee.upgradableCells.model.entities.CellProject;
+import ml.empee.upgradableCells.model.CellProject;
 import mr.empee.lightwire.annotations.Singleton;
 
 /**

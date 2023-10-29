@@ -2,6 +2,7 @@ package ml.empee.upgradableCells.controllers.views;
 
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -15,8 +16,7 @@ import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.Member;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.Member;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
 
@@ -36,20 +36,20 @@ public class ManageMemberMenu {
 
   //TODO: Close menu if member not aviable anymore, or permissions changed
 
-  public static void open(Player viewer, OwnedCell cell, OfflinePlayer target) {
+  public static void open(Player viewer, Cell cell, OfflinePlayer target) {
     instance.create(viewer, cell, target).open();
   }
 
-  private Menu create(Player viewer, OwnedCell cell, OfflinePlayer target) {
+  private Menu create(Player viewer, Cell cell, OfflinePlayer target) {
     return new Menu(viewer, cell, target);
   }
 
   private class Menu extends InventoryMenu {
-    private final OwnedCell cell;
+    private final Cell cell;
     private final OfflinePlayer target;
     private final GTheme gTheme = new GTheme();
 
-    public Menu(Player viewer, OwnedCell cell, OfflinePlayer target) {
+    public Menu(Player viewer, Cell cell, OfflinePlayer target) {
       super(viewer, 5);
 
       this.cell = cell;

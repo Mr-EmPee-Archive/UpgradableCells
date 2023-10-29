@@ -2,6 +2,8 @@ package ml.empee.upgradableCells.controllers;
 
 import java.util.stream.Collectors;
 
+import ml.empee.upgradableCells.model.Member;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -15,7 +17,6 @@ import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
 import ml.empee.upgradableCells.controllers.views.TopCellsMenu;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
@@ -88,7 +89,7 @@ public class CellController implements Controller {
 
   @CommandMethod("cell join <target>")
   public void joinCell(Player sender, @Argument OfflinePlayer target) {
-    OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+    var cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
 
     if (cell == null) {
       Logger.log(sender, langConfig.translate("cell.not-existing"));
@@ -104,7 +105,7 @@ public class CellController implements Controller {
   @CommandMethod("cell invite <target>")
   public void inviteToCell(Player sender, @Argument Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
-        .filter(c -> c.getMember(sender.getUniqueId()).getRank().canInvite())
+        .filter(c -> c.getMember(sender.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.INVITE))
         .collect(Collectors.toList());
 
     if (cells.isEmpty()) {
@@ -169,7 +170,7 @@ public class CellController implements Controller {
 
   @CommandMethod("cell visit <target>")
   public void visitCell(Player sender, @Argument OfflinePlayer target) {
-    OwnedCell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+    Cell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
 
     if (cell == null) {
       Logger.log(sender, langConfig.translate("cell.not-existing"));

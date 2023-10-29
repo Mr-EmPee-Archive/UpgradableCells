@@ -2,7 +2,7 @@ package ml.empee.upgradableCells.model.events;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -19,7 +19,7 @@ public class CellMemberPardonEvent extends Event {
   @Getter
   private static final HandlerList handlerList = new HandlerList();
 
-  private final OwnedCell cell;
+  private final Cell cell;
   private final UUID member;
 
   @Override

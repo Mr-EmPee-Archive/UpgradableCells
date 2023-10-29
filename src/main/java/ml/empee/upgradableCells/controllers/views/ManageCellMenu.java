@@ -1,17 +1,6 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import java.util.stream.Collectors;
-
-import ml.empee.upgradableCells.controllers.views.utils.GTheme;
-import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.block.Banner;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.BlockStateMeta;
-
 import com.cryptomorin.xseries.XMaterial;
-
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
@@ -19,11 +8,21 @@ import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.CellProject;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.CellProject;
+import ml.empee.upgradableCells.model.Member;
+import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
+import org.bukkit.block.Banner;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.BlockStateMeta;
+
+import java.util.stream.Collectors;
 
 /**
  * GUI from where you can manage a cell
@@ -39,23 +38,23 @@ public class ManageCellMenu {
   private final LangConfig langConfig;
   private final CellAPI cellAPI;
 
-  public static void open(Player player, OwnedCell cell) {
+  public static void open(Player player, Cell cell) {
     instance.create(player, cell).open();
   }
 
-  private Menu create(Player viewer, OwnedCell cell) {
+  private Menu create(Player viewer, Cell cell) {
     return new Menu(viewer, cell);
   }
 
   private class Menu extends InventoryMenu {
-    private final OwnedCell cell;
+    private final Cell cell;
     private final GTheme gTheme = new GTheme();
 
-    public Menu(Player player, OwnedCell cell) {
+    public Menu(Player player, Cell cell) {
       super(player, 6);
 
       this.cell = cell;
-      this.title = langConfig.translate("menus.manage-cell.title", cell.getOwnerPlayer().getName());
+      this.title = langConfig.translate("menus.manage-cell.title", cell.getPlayerOwner().getName());
     }
 
     @Override
@@ -109,7 +108,7 @@ public class ManageCellMenu {
     private GItem cellInfoItem() {
       String name = cell.getName();
       if (name == null || name.isBlank()) {
-        name = "Cell Of " + cell.getOwnerPlayer().getName();
+        name = "Cell Of " + cell.getPlayerOwner().getName();
       }
 
       var item = ItemBuilder.from(XMaterial.OAK_SIGN.parseItem());
@@ -154,7 +153,7 @@ public class ManageCellMenu {
           .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
-            var playerRank = cell.getMember(player.getUniqueId()).getRank();
+            var playerRank = cell.getMember(player.getUniqueId()).orElseThrow().getRank();
             var players = cell.getMembers().stream()
                 .filter(p -> playerRank.canManage(p.getRank()))
                 .filter(p -> !p.getUuid().equals(player.getUniqueId()))
@@ -205,7 +204,7 @@ public class ManageCellMenu {
           .itemStack(item.build())
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
-            if (!cell.getMember(source.getUniqueId()).getRank().canManageMembers()) {
+            if (!cell.getMember(source.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.MANAGE_MEMBERS)) {
               Logger.log(player, langConfig.translate("cell.members.no-members"));
               player.closeInventory();
               return;

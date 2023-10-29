@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GComponenets;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -17,7 +18,6 @@ import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
 
@@ -36,22 +36,22 @@ public class SelectCellMenu {
 
   //TODO: Update menu when kicked
 
-  public static CompletableFuture<OwnedCell> selectCell(Player player, List<OwnedCell> cells) {
-    CompletableFuture<OwnedCell> future = new CompletableFuture<>();
+  public static CompletableFuture<Cell> selectCell(Player player, List<Cell> cells) {
+    CompletableFuture<Cell> future = new CompletableFuture<>();
     instance.create(player, cells, future).open();
     return future;
   }
 
-  private Menu create(Player player, List<OwnedCell> cells, CompletableFuture<OwnedCell> future) {
+  private Menu create(Player player, List<Cell> cells, CompletableFuture<Cell> future) {
     return new Menu(player, cells, future);
   }
 
   private class Menu extends InventoryMenu {
-    private final List<OwnedCell> cells;
+    private final List<Cell> cells;
     private final GTheme gTheme = new GTheme();
-    private final CompletableFuture<OwnedCell> action;
+    private final CompletableFuture<Cell> action;
 
-    public Menu(Player viewer, List<OwnedCell> cells, CompletableFuture<OwnedCell> action) {
+    public Menu(Player viewer, List<Cell> cells, CompletableFuture<Cell> action) {
       super(viewer, 3);
 
       this.title = langConfig.translate("menus.select-cell.title");
@@ -79,7 +79,7 @@ public class SelectCellMenu {
       addPane(0, 0, background);
     }
 
-    private GItem cellItem(OwnedCell cell) {
+    private GItem cellItem(Cell cell) {
       OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
       var item = ItemBuilder.skull()
           .setName("&e" + owner.getName())

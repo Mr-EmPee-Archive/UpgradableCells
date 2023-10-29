@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -18,7 +19,6 @@ import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.api.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
 
@@ -68,7 +68,7 @@ public class TopCellsMenu implements Listener {
       addPane(0, 0, background);
     }
 
-    private GItem cellItem(OwnedCell cell) {
+    private GItem cellItem(Cell cell) {
       OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
       var item = ItemBuilder.skull()
           .setName("&e" + owner.getName())

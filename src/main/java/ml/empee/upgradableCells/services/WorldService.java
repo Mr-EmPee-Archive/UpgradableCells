@@ -17,7 +17,7 @@ import org.bukkit.WorldCreator;
  * Create and manages the cell world
  */
 
-@Singleton
+@Singleton(priority = Singleton.Priority.HIGH)
 public class WorldService {
 
   private final WorldStateRepository worldStateRepository;

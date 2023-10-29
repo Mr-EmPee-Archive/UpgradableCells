@@ -1,5 +1,22 @@
 package ml.empee.upgradableCells.services;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.model.CellProject;
+import ml.empee.upgradableCells.model.Member;
+import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
+import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import ml.empee.upgradableCells.repositories.memory.CellMemoryRepository;
+import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,25 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import ml.empee.upgradableCells.config.PluginConfig;
-import ml.empee.upgradableCells.model.entities.CellProject;
-import ml.empee.upgradableCells.model.entities.Member;
-import ml.empee.upgradableCells.model.entities.OwnedCell;
-import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
-import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
-import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
-import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
-import ml.empee.upgradableCells.repositories.cache.CellsCache;
-import ml.empee.upgradableCells.utils.Logger;
-import mr.empee.lightwire.annotations.Singleton;
-
 /**
  * Handle cell management
  */
@@ -38,11 +36,11 @@ import mr.empee.lightwire.annotations.Singleton;
 public class CellService {
 
   private final PluginConfig pluginConfig;
-  private final CellsCache cells;
+  private final CellMemoryRepository cellRepository;
   private final WorldService worldService;
 
   private final List<CellProject> cellProjects = new ArrayList<>();
-  private final Cache<String, OwnedCell> invitations = CacheBuilder.newBuilder()
+  private final Cache<String, Cell> invitations = CacheBuilder.newBuilder()
       .expireAfterWrite(2, TimeUnit.MINUTES)
       .build();
 
@@ -50,14 +48,15 @@ public class CellService {
 
   public CellService(
       JavaPlugin plugin, PluginConfig pluginConfig,
-      CellsCache cells, WorldService worldService) {
+      CellMemoryRepository cellRepository, WorldService worldService
+  ) {
     this.pluginConfig = pluginConfig;
-    this.cells = cells;
+    this.cellRepository = cellRepository;
     this.worldService = worldService;
     this.schematicFolder = new File(plugin.getDataFolder(), "levels");
 
     loadCellUpgrades();
-    // TODO: Finish pasting partially pasted cells
+    // TODO: Pasting partially pasted cells
   }
 
   /**
@@ -88,7 +87,7 @@ public class CellService {
 
   public void reload() {
     loadCellUpgrades();
-    cells.reload();
+    cellRepository.reload();
   }
 
   public CellProject getLastProject() {
@@ -103,22 +102,22 @@ public class CellService {
     return Collections.unmodifiableList(cellProjects);
   }
 
-  public Optional<OwnedCell> findCellByOwner(UUID owner) {
-    return Optional.ofNullable(cells.get(owner));
+  public Optional<Cell> findCellByOwner(UUID owner) {
+    return cellRepository.get(owner);
   }
 
-  public List<OwnedCell> findCellsByMember(UUID member) {
-    return cells.getContent().stream()
-        .filter(c -> c.hasMember(member))
+  public List<Cell> findCellsByMember(UUID member) {
+    return cellRepository.getAll().stream()
+        .filter(c -> c.getMember(member).isPresent())
         .collect(Collectors.toList());
   }
 
   /**
    * Find cells with most members
    */
-  public List<OwnedCell> findMostNumerousCells(int limit) {
-    return cells.getContent().stream()
-        .filter(c -> c.isPublicVisible())
+  public List<Cell> findMostNumerousCells(int limit) {
+    return cellRepository.getAll().stream()
+        .filter(Cell::isPublicVisible)
         .sorted(Comparator.comparingInt(a -> a.getAllMembers().size()))
         .limit(limit)
         .collect(Collectors.toList());
@@ -127,11 +126,11 @@ public class CellService {
   /**
    * @return the cell within the location
    */
-  public Optional<OwnedCell> findCellByLocation(Location location) {
+  public Optional<Cell> findCellByLocation(Location location) {
     var position = location.toVector();
     var margin = worldService.getMargin();
 
-    return cells.getContent().stream()
+    return cellRepository.getAll().stream()
         .filter(c -> {
           var origin = c.getOrigin();
           if (!origin.getWorld().equals(location.getWorld())) {
@@ -142,7 +141,7 @@ public class CellService {
         }).findAny();
   }
 
-  public Location getSpawnpoint(OwnedCell cell) {
+  public Location getSpawnpoint(Cell cell) {
     return cell.getOrigin().add(getCellProject(cell.getLevel()).getSpawnpoint());
   }
 
@@ -150,8 +149,8 @@ public class CellService {
    * Create a new cell and its structure
    */
   public CompletableFuture<Void> createCell(UUID player) {
-    OwnedCell cell = OwnedCell.of(player, 0, worldService.getFreeLocation());
-    cells.put(player, cell);
+    Cell cell = Cell.of(player, 0, worldService.getFreeLocation());
+    cellRepository.save(cell);
 
     return pasteCellStructure(cell);
   }
@@ -159,9 +158,10 @@ public class CellService {
   /**
    * Update a cell level and its structure
    */
-  public CompletableFuture<Void> upgradeCell(OwnedCell cell, int level) {
-    cell.setLevel(level);
-    cells.markDirty(cell.getOwner());
+  public CompletableFuture<Void> upgradeCell(UUID cellId, int level) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    cell = cell.withLevel(level);
+    cellRepository.save(cell);
 
     CellProject project = getCellProject(cell.getLevel());
     if (!project.hasSchematic()) {
@@ -171,93 +171,88 @@ public class CellService {
     return pasteCellStructure(cell);
   }
 
-  private CompletableFuture<Void> pasteCellStructure(OwnedCell cell) {
+  private CompletableFuture<Void> pasteCellStructure(Cell cell) {
     CellProject project = getCellProject(cell.getLevel());
-    cell.setPasting(true);
-
-    cells.markDirty(cell.getOwner());
+    cellRepository.save(cell.withUpdating(true));
 
     return project.paste(cell).thenRun(() -> {
-      cell.setPasting(false);
-      cells.markDirty(cell.getOwner());
+      var c = cellRepository.get(cell.getOwner()).orElseThrow();
+      cellRepository.save(c.withUpdating(false));
     });
   }
 
-  public void setName(OwnedCell cell, String name) {
-    cell.setName(name);
-    cells.markDirty(cell.getOwner());
+  public void setName(UUID cellId, String name) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    cellRepository.save(cell.withName(name));
   }
 
-  public void setVisibility(OwnedCell cell, boolean publicVisible) {
-    cell.setPublicVisible(publicVisible);
-    cells.markDirty(cell.getOwner());
+  public void setVisibility(UUID cellId, boolean publicVisible) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    cellRepository.save(cell.withPublicVisible(publicVisible));
   }
 
-  public void setDescription(OwnedCell cell, String description) {
-    cell.setDescription(description);
-    cells.markDirty(cell.getOwner());
+  public void setDescription(UUID cellId, String description) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    cellRepository.save(cell.withDescription(description));
   }
 
   /**
    * Add a member to the cell or change the rank of an existing member
-   *
-   * @throws IllegalArgumentException if the member is banned
    */
-  public void setMember(OwnedCell cell, UUID uuid, Member.Rank rank) {
-    if (cell.isBannedMember(uuid)) {
-      throw new IllegalArgumentException("Unable to add a banned member!");
-    }
+  public void setMember(UUID cellId, UUID uuid, Member.Rank rank) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    var member = cell.getMember(uuid).orElse(null);
 
-    var member = cell.getMember(uuid);
     if (member == null) {
       member = Member.create(uuid, rank);
-      cell.addMember(member);
-
+      cell = cell.withMember(member);
       Bukkit.getPluginManager().callEvent(new CellMemberJoinEvent(cell, member));
     } else {
-      member.setRank(rank);
+      cell = cell.withMember(member.withRank(rank));
     }
 
-    cells.markDirty(cell.getOwner());
+    cellRepository.save(cell);
   }
 
-  public void removeMember(OwnedCell cell, UUID uuid) {
-    Member member = cell.removeMember(uuid);
-    if (member == null) {
-      return;
-    }
+  public void removeMember(UUID cellId, UUID uuid) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    var member = cell.getMember(uuid).orElseThrow();
+
+    cell = cell.withoutMember(uuid);
+    cellRepository.save(cell);
 
     Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member));
-    cells.markDirty(cell.getOwner());
   }
 
-  public void banMember(OwnedCell cell, UUID uuid) {
-    var member = cell.getMember(uuid);
-    member.setBannedSince(System.currentTimeMillis());
+  public void banMember(UUID cellId, UUID uuid) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    var member = cell.getMember(uuid).orElseThrow();
 
-    cell.banMember(member);
-    removeMember(cell, uuid);
+    cell = cell.withBannedMember(member.withBannedSince(System.currentTimeMillis()));
+    cell = cell.withoutMember(uuid);
 
+    cellRepository.save(cell);
     Bukkit.getPluginManager().callEvent(new CellMemberBanEvent(cell, uuid));
-    cells.markDirty(cell.getOwner());
   }
 
-  public void pardonMember(OwnedCell cell, UUID uuid) {
-    cell.pardonMember(uuid);
+  public void pardonMember(UUID cellId, UUID uuid) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+    cell = cell.withoutBannedMember(uuid);
+
     Bukkit.getPluginManager().callEvent(new CellMemberPardonEvent(cell, uuid));
-    cells.markDirty(cell.getOwner());
+    cellRepository.save(cell);
   }
 
-  public void invite(OwnedCell cell, UUID player) {
+  public void invite(Cell cell, UUID player) {
     var invitationId = cell.getOwner() + "->" + player;
     invitations.put(invitationId, cell);
   }
 
-  public boolean hasInvitation(OwnedCell cell, UUID player) {
+  public boolean hasInvitation(Cell cell, UUID player) {
     return invitations.getIfPresent(cell.getOwner() + "->" + player) != null;
   }
 
-  public void removeInvitation(OwnedCell cell, UUID player) {
+  public void removeInvitation(Cell cell, UUID player) {
     invitations.invalidate(cell.getOwner() + "->" + player);
   }
 

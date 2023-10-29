@@ -47,7 +47,7 @@ dependencies {
   compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.9")
   compileOnly("com.github.MilkBowl:VaultAPI:1.7")
 
-  implementation("com.github.Mr-EmPee:LightWire:1.0.0")
+  implementation("com.github.Mr-EmPee:LightWire:1.1.0")
   implementation("com.github.Mr-EmPee:SimpleMenu:0.2.2")
   implementation("com.github.Mr-EmPee:ItemBuilder:1.1.3")
 

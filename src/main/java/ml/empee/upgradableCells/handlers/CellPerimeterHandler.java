@@ -34,7 +34,7 @@ public class CellPerimeterHandler implements Listener {
       return;
     }
 
-    if (!cell.isBannedMember(player.getUniqueId())) {
+    if (cell.getBannedMember(player.getUniqueId()).isEmpty()) {
       return;
     }
 
