@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -109,7 +108,8 @@ public class Cell implements Entity<UUID> {
 
   public Cell withBannedMember(Member member) {
     var bannedMembers = new HashSet<>(this.bannedMembers);
-    bannedMembers.remove(member);
+
+    bannedMembers.removeIf(m -> m.getUuid().equals(member.getUuid()));
     bannedMembers.add(member);
 
     return withBannedMembers(bannedMembers);
@@ -117,7 +117,8 @@ public class Cell implements Entity<UUID> {
 
   public Cell withMember(Member member) {
     var members = new HashSet<>(this.members);
-    members.remove(member);
+
+    members.removeIf(m -> m.getUuid().equals(member.getUuid()));
     members.add(member);
 
     return withMembers(members);
