@@ -111,8 +111,10 @@ public class BannedPlayersMenu implements Listener {
 
       return GItem.builder()
           .itemStack(item)
-          .clickHandler(e -> cellController.pardonMember(cell, player, target))
-          .build();
+          .clickHandler(e -> {
+            cellController.pardonMember(cell, player, target);
+            player.closeInventory();
+          }).build();
     }
   }
 

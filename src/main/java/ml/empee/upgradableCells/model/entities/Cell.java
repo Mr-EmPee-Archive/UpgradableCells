@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 @With
 @Value
 @Builder
-public class Cell implements Entity<UUID> {
+public class Cell implements AnonymousEntity {
 
-  UUID owner;
+  Long id;
 
   String name;
   String description;
@@ -43,7 +43,6 @@ public class Cell implements Entity<UUID> {
 
   public static Cell of(UUID owner, Integer level, Location origin) {
     Cell cell = Cell.builder()
-        .owner(owner)
         .level(level)
         .origin(origin.clone())
         .build();
@@ -72,7 +71,7 @@ public class Cell implements Entity<UUID> {
         .collect(Collectors.toList());
   }
 
-  public List<OfflinePlayer> getAllMembers() {
+  public List<OfflinePlayer> getMembersAsPlayers() {
     return members.stream()
         .map(m -> Bukkit.getOfflinePlayer(m.getUuid()))
         .collect(Collectors.toList());
@@ -130,15 +129,17 @@ public class Cell implements Entity<UUID> {
       return false;
     }
 
-    return owner.equals(((Cell) obj).owner);
+    return getOwner().equals(((Cell) obj).getOwner());
   }
 
-  public OfflinePlayer getPlayerOwner() {
-    return Bukkit.getOfflinePlayer(owner);
+  public Optional<UUID> getOwner() {
+    return members.stream()
+        .filter(m -> m.getRank().equals(Member.Rank.OWNER))
+        .findFirst().map(Member::getUuid);
   }
 
-  @Override
-  public UUID getId() {
-    return owner;
+  public OfflinePlayer getOwnerAsPlayer() {
+    return Bukkit.getOfflinePlayer(getOwner().orElseThrow());
   }
+
 }

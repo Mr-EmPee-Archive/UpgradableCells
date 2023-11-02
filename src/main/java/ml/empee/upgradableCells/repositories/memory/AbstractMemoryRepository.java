@@ -45,7 +45,12 @@ public abstract class AbstractMemoryRepository<R extends AbstractRepository<T, K
   public T save(T entity) {
     if (entity.getId() == null) {
       if (entity instanceof AnonymousEntity) {
-        entity = (T) ((AnonymousEntity) entity).withId(((Long) cache.lastKey()) + 1L);
+        long generatedId = 0;
+        if (!cache.isEmpty()) {
+          generatedId = ((Long) cache.lastKey()) + 1L;
+        }
+
+        entity = (T) ((AnonymousEntity) entity).withId(generatedId);
       } else {
         throw new IllegalArgumentException("Missing id from entity!");
       }

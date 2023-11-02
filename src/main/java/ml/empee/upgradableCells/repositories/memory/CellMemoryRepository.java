@@ -7,7 +7,7 @@ import mr.empee.lightwire.annotations.Singleton;
 import java.util.UUID;
 
 @Singleton
-public class CellMemoryRepository extends AbstractMemoryRepository<CellRepository, Cell, UUID> {
+public class CellMemoryRepository extends AbstractMemoryRepository<CellRepository, Cell, Long> {
 
   public CellMemoryRepository(CellRepository repository) {
     super(repository);

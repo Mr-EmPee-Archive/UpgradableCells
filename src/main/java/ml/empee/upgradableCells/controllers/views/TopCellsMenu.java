@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -69,10 +68,10 @@ public class TopCellsMenu implements Listener {
     }
 
     private GItem cellItem(Cell cell) {
-      OfflinePlayer owner = Bukkit.getOfflinePlayer(cell.getOwner());
+      OfflinePlayer owner = cell.getOwnerAsPlayer();
       var item = ItemBuilder.skull()
           .setName("&e" + owner.getName())
-          .setLore(langConfig.translateBlock("menus.top-cells.cell-lore", cell.getAllMembers().size()))
+          .setLore(langConfig.translateBlock("menus.top-cells.cell-lore", cell.getMembersAsPlayers().size()))
           .owner(owner)
           .build();
 

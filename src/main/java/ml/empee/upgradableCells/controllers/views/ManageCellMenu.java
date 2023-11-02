@@ -54,7 +54,7 @@ public class ManageCellMenu {
       super(player, 6);
 
       this.cell = cell;
-      this.title = langConfig.translate("menus.manage-cell.title", cell.getPlayerOwner().getName());
+      this.title = langConfig.translate("menus.manage-cell.title", cell.getOwnerAsPlayer().getName());
     }
 
     @Override
@@ -108,7 +108,7 @@ public class ManageCellMenu {
     private GItem cellInfoItem() {
       String name = cell.getName();
       if (name == null || name.isBlank()) {
-        name = "Cell Of " + cell.getPlayerOwner().getName();
+        name = "Cell Of " + cell.getOwnerAsPlayer().getName();
       }
 
       var item = ItemBuilder.from(XMaterial.OAK_SIGN.parseItem());

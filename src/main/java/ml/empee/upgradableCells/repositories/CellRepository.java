@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  */
 
 @Singleton
-public class CellRepository extends AbstractRepository<Cell, UUID> {
+public class CellRepository extends AbstractRepository<Cell, Long> {
 
   public CellRepository(DbClient client) {
     super(client, "cells");
@@ -28,7 +28,7 @@ public class CellRepository extends AbstractRepository<Cell, UUID> {
   @Override
   protected List<String> schema() {
     return List.of(
-        "owner TEXT PRIMARY KEY",
+        "id INTEGER PRIMARY KEY",
         "name TEXT",
         "description TEXT",
         "members TEXT DEFAULT \"\" NOT NULL",
@@ -42,7 +42,7 @@ public class CellRepository extends AbstractRepository<Cell, UUID> {
 
   @Override
   protected void prepareStatement(PreparedStatement stm, Cell data) throws SQLException {
-    stm.setString(1, data.getOwner().toString());
+    stm.setLong(1, data.getId());
     stm.setString(2, data.getName());
     stm.setString(3, data.getDescription());
     stm.setString(4, ObjectConverter.parse(data.getMembers()));
@@ -56,7 +56,7 @@ public class CellRepository extends AbstractRepository<Cell, UUID> {
   @SneakyThrows
   protected Cell parse(ResultSet rs) {
     return Cell.builder()
-        .owner(UUID.fromString(rs.getString("owner")))
+        .id(rs.getLong("id"))
         .name(rs.getString("name"))
         .description(rs.getString("description"))
         .members(ObjectConverter.parse(rs.getString("members"), new TypeToken<>() {}))

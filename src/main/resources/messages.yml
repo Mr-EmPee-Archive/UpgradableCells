@@ -39,6 +39,7 @@ cell:
     changed: "&7The cell visibility has been changed"
     missing-perm: "&cMissing permissions to change cell visibility"
   cant-build: "&cYou can't build here!"
+  deleted: "&cThe cell has been deleted by an admin!"
   cant-interact: "&cYou can't interact here!"
   banned-interaction: "&cYou are banned from the cell"
   illegal-name: "&cThe cell name can't exceed 32 characters"

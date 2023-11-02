@@ -161,7 +161,7 @@ public class CellController {
 
     cell = cellService.pardonMember(cell.getId(), target.getUniqueId());
     for (Player p : cell.getOnlineMembers()) {
-      Logger.log(p, langConfig.translate("cell.members.unbanned", target.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(p, langConfig.translate("cell.members.unbanned", target.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
@@ -184,11 +184,11 @@ public class CellController {
         player.teleport(pluginConfig.getSpawnLocation());
       }
 
-      Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(target.getPlayer(), langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerAsPlayer().getName()));
     }
 
     for (Player p : cell.getOnlineMembers()) {
-      Logger.log(p, langConfig.translate("cell.members.banned", target.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(p, langConfig.translate("cell.members.banned", target.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
@@ -206,11 +206,11 @@ public class CellController {
 
     cell = cellService.removeMember(cell.getId(), target.getUniqueId());
     if (target.isOnline()) {
-      Logger.log(target.getPlayer(), langConfig.translate("cell.members.kicked", target.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(target.getPlayer(), langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerAsPlayer().getName()));
     }
 
     for (Player p : cell.getOnlineMembers()) {
-      Logger.log(p, langConfig.translate("cell.members.kicked", target.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(p, langConfig.translate("cell.members.kicked", target.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
@@ -228,7 +228,7 @@ public class CellController {
     cell = cellService.setMember(cell.getId(), target.getUniqueId(), rank);
     for (Player member : cell.getOnlineMembers()) {
       Logger.log(member,
-          langConfig.translate("cell.members.set-rank", target.getName(), rank, cell.getPlayerOwner().getName())
+          langConfig.translate("cell.members.set-rank", target.getName(), rank, cell.getOwnerAsPlayer().getName())
       );
     }
   }
@@ -257,14 +257,14 @@ public class CellController {
       return;
     }
 
-    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getAllMembers().size()) {
+    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getMembersAsPlayers().size()) {
       Logger.log(source, langConfig.translate("cell.invitation.max-members"));
       return;
     }
 
     cellService.invite(cell, target.getUniqueId());
     Logger.log(source, langConfig.translate("cell.invitation.sent", target.getName()));
-    Logger.log(target, langConfig.translate("cell.invitation.received", cell.getPlayerOwner().getName()));
+    Logger.log(target, langConfig.translate("cell.invitation.received", cell.getOwnerAsPlayer().getName()));
   }
 
   /**
@@ -285,7 +285,7 @@ public class CellController {
       return;
     }
 
-    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getAllMembers().size()) {
+    if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getMembersAsPlayers().size()) {
       Logger.log(player, langConfig.translate("cell.invitation.max-members"));
       return;
     }
@@ -294,7 +294,7 @@ public class CellController {
     cellService.removeInvitation(cell, player.getUniqueId());
 
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
@@ -314,9 +314,9 @@ public class CellController {
     }
 
     cell = cellService.removeMember(cell.getId(), player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.members.has-left", player.getName(), cell.getPlayerOwner().getName()));
+    Logger.log(player, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerAsPlayer().getName()));
     for (Player m : cell.getOnlineMembers()) {
-      Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getPlayerOwner().getName()));
+      Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
@@ -391,6 +391,24 @@ public class CellController {
     }
 
     player.teleport(cellService.getSpawnpoint(cell));
+  }
+
+  /**
+   * Ban all members of the cell (including the owner) and make it private
+   */
+  public void makeCellUnacessable(CommandSender source, Cell cell) {
+    cellService.setVisibility(cell.getId(), false);
+
+    for (var member : cell.getMembersAsPlayers()) {
+      cellService.banMember(cell.getId(), member.getUniqueId());
+
+      if (member.isOnline()) {
+        member.getPlayer().teleport(pluginConfig.getSpawnLocation());
+        Logger.log(member.getPlayer(), langConfig.translate("cell.deleted"));
+      }
+    }
+
+    Logger.log(source, "&7The cell of &e%s&7 has been deleted!", cell.getOwnerAsPlayer().getName());
   }
 
 }

@@ -2,10 +2,13 @@ package ml.empee.upgradableCells.controllers.commands;
 
 import java.util.stream.Collectors;
 
+import cloud.commandframework.annotations.CommandPermission;
+import ml.empee.upgradableCells.constants.Permissions;
 import ml.empee.upgradableCells.controllers.Controller;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import cloud.commandframework.annotations.Argument;
@@ -179,5 +182,18 @@ public class CellCommand implements Controller {
     }
 
     cellController.teleportToCell(sender, cell);
+  }
+
+  @CommandMethod("cell delete <target>")
+  @CommandPermission(Permissions.ADMIN)
+  public void deleteCell(CommandSender sender, @Argument OfflinePlayer target) {
+    Cell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+
+    if (cell == null) {
+      Logger.log(sender, langConfig.translate("cell.not-existing"));
+      return;
+    }
+
+    cellController.makeCellUnacessable(sender, cell);
   }
 }

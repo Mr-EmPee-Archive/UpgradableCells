@@ -103,7 +103,9 @@ public class CellService {
   }
 
   public Optional<Cell> findCellByOwner(UUID owner) {
-    return cellRepository.get(owner);
+    return cellRepository.getAll().stream()
+        .filter(c -> owner.equals(c.getOwner().orElse(null)))
+        .findFirst();
   }
 
   public List<Cell> findCellsByMember(UUID member) {
@@ -118,7 +120,7 @@ public class CellService {
   public List<Cell> findMostNumerousCells(int limit) {
     return cellRepository.getAll().stream()
         .filter(Cell::isPublicVisible)
-        .sorted(Comparator.comparingInt(a -> a.getAllMembers().size()))
+        .sorted(Comparator.comparingInt(a -> a.getMembersAsPlayers().size()))
         .limit(limit)
         .collect(Collectors.toList());
   }
@@ -150,65 +152,61 @@ public class CellService {
    */
   public CompletableFuture<Cell> createCell(UUID player) {
     Cell cell = Cell.of(player, 0, worldService.getFreeLocation());
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell);
 
-    return pasteCellStructure(cell);
+    return pasteCellStructure(cell.getId());
   }
 
   /**
    * Update a cell level and its structure
    */
-  public CompletableFuture<Cell> upgradeCell(UUID cellId, int level) {
+  public CompletableFuture<Cell> upgradeCell(Long cellId, int level) {
     var cell = cellRepository.get(cellId).orElseThrow();
     cell = cell.withLevel(level);
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell);
 
     CellProject project = getCellProject(cell.getLevel());
     if (!project.hasSchematic()) {
       return CompletableFuture.completedFuture(null);
     }
 
-    return pasteCellStructure(cell);
+    return pasteCellStructure(cell.getId());
   }
 
-  private CompletableFuture<Cell> pasteCellStructure(Cell cell) {
+  private CompletableFuture<Cell> pasteCellStructure(Long cellId) {
+    var cell = cellRepository.get(cellId).orElseThrow();
+
     CellProject project = getCellProject(cell.getLevel());
-    cellRepository.save(cell.withUpdating(true));
+    cell = cellRepository.save(cell.withUpdating(true));
 
     return project.paste(cell).thenApply(a -> {
-      var c = cellRepository.get(cell.getOwner()).orElseThrow();
-      c = c.withUpdating(false);
-      cellRepository.save(c);
-      return c;
+      var c = cellRepository.get(cellId).orElseThrow();
+      return cellRepository.save(c.withUpdating(false));
     });
   }
 
-  public Cell setName(UUID cellId, String name) {
+  public Cell setName(Long cellId, String name) {
     var cell = cellRepository.get(cellId).orElseThrow();
-    cell = cell.withName(name);
-
-    cellRepository.save(cell.withName(name));
+    cell = cellRepository.save(cell.withName(name));
     return cell;
   }
 
-  public Cell setVisibility(UUID cellId, boolean publicVisible) {
+  public Cell setVisibility(Long cellId, boolean publicVisible) {
     var cell = cellRepository.get(cellId).orElseThrow();
-    cell = cell.withPublicVisible(publicVisible);
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell.withPublicVisible(publicVisible));
     return cell;
   }
 
-  public Cell setDescription(UUID cellId, String description) {
+  public Cell setDescription(Long cellId, String description) {
     var cell = cellRepository.get(cellId).orElseThrow();
-    cell = cell.withDescription(description);
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell.withDescription(description));
     return cell;
   }
 
   /**
    * Add a member to the cell or change the rank of an existing member
    */
-  public Cell setMember(UUID cellId, UUID uuid, Member.Rank rank) {
+  public Cell setMember(Long cellId, UUID uuid, Member.Rank rank) {
     var cell = cellRepository.get(cellId).orElseThrow();
     var member = cell.getMember(uuid).orElse(null);
 
@@ -220,39 +218,37 @@ public class CellService {
       cell = cell.withMember(member.withRank(rank));
     }
 
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell);
     return cell;
   }
 
-  public Cell removeMember(UUID cellId, UUID uuid) {
+  public Cell removeMember(Long cellId, UUID uuid) {
     var cell = cellRepository.get(cellId).orElseThrow();
     var member = cell.getMember(uuid).orElseThrow();
 
-    cell = cell.withoutMember(uuid);
-    cellRepository.save(cell);
+    cell = cellRepository.save(cell.withoutMember(uuid));
 
     Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member));
     return cell;
   }
 
-  public Cell banMember(UUID cellId, UUID uuid) {
+  public Cell banMember(Long cellId, UUID uuid) {
     var cell = cellRepository.get(cellId).orElseThrow();
     var member = cell.getMember(uuid).orElseThrow();
 
     cell = cell.withBannedMember(member.withBannedSince(System.currentTimeMillis()));
     cell = cell.withoutMember(uuid);
+    cell = cellRepository.save(cell);
 
-    cellRepository.save(cell);
     Bukkit.getPluginManager().callEvent(new CellMemberBanEvent(cell, uuid));
     return cell;
   }
 
-  public Cell pardonMember(UUID cellId, UUID uuid) {
+  public Cell pardonMember(Long cellId, UUID uuid) {
     var cell = cellRepository.get(cellId).orElseThrow();
-    cell = cell.withoutBannedMember(uuid);
+    cell = cellRepository.save(cell.withoutBannedMember(uuid));
 
     Bukkit.getPluginManager().callEvent(new CellMemberPardonEvent(cell, uuid));
-    cellRepository.save(cell);
     return cell;
   }
 
