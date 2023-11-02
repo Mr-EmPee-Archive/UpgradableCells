@@ -78,6 +78,7 @@ tasks {
 
   compileJava {
     sourceCompatibility = "11"
+    targetCompatibility = "11"
 
     options.encoding = Charsets.UTF_8.name()
     options.compilerArgs.add("-parameters")
@@ -85,11 +86,5 @@ tasks {
 
   runServer {
     version.set("1.13.2")
-  }
-}
-
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
   }
 }
