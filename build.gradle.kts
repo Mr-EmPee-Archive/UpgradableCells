@@ -2,7 +2,6 @@ import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
   id("org.gradle.java-library")
-  id("org.gradle.checkstyle")
 
   id("io.freefair.lombok") version "6.6.3"
   id("com.github.johnrengelman.shadow") version "8.1.0"
@@ -61,10 +60,6 @@ dependencies {
 }
 
 tasks {
-  checkstyle {
-    toolVersion = "10.10.0"
-    configFile = file("$projectDir/checkstyle.xml")
-  }
 
   shadowJar {
     archiveFileName.set("${project.name}.jar")

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.upgradableCells.controllers.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.model.Member;
 import mr.empee.lightwire.annotations.Instance;
@@ -31,28 +31,26 @@ public class ManageMemberMenu {
   @Instance
   private static ManageMemberMenu instance;
 
-  private final CellAPI cellAPI;
+  private final CellController cellController;
   private final LangConfig langConfig;
 
-  //TODO: Close menu if member not aviable anymore, or permissions changed
-
-  public static void open(Player viewer, Cell cell, OfflinePlayer target) {
-    instance.create(viewer, cell, target).open();
+  public static void open(Player viewer, Long cellId, OfflinePlayer target) {
+    instance.create(viewer, cellId, target).open();
   }
 
-  private Menu create(Player viewer, Cell cell, OfflinePlayer target) {
-    return new Menu(viewer, cell, target);
+  private Menu create(Player viewer, Long cellId, OfflinePlayer target) {
+    return new Menu(viewer, cellId, target);
   }
 
   private class Menu extends InventoryMenu {
-    private final Cell cell;
+    private final Long cellId;
     private final OfflinePlayer target;
     private final GTheme gTheme = new GTheme();
 
-    public Menu(Player viewer, Cell cell, OfflinePlayer target) {
+    public Menu(Player viewer, Long cellId, OfflinePlayer target) {
       super(viewer, 5);
 
-      this.cell = cell;
+      this.cellId = cellId;
       this.target = target;
       this.title = langConfig.translate("menus.manage-members.title");
     }
@@ -82,7 +80,7 @@ public class ManageMemberMenu {
       return GItem.builder()
           .itemStack(item)
           .clickHandler(e -> {
-            ManageCellMenu.open((Player) e.getWhoClicked(), cell);
+            ManageCellMenu.open((Player) e.getWhoClicked(), cellId);
           }).build();
     }
 
@@ -98,7 +96,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
+            cellController.setRank(cellId, (Player) e.getWhoClicked(), target, Member.Rank.MEMBER);
           }).build();
     }
 
@@ -114,7 +112,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.setRank(cell, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
+            cellController.setRank(cellId, (Player) e.getWhoClicked(), target, Member.Rank.GUARD);
           }).build();
     }
 
@@ -130,7 +128,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.setRank(cell, player, target, Member.Rank.MANAGER);
+            cellController.setRank(cellId, player, target, Member.Rank.MANAGER);
           }).build();
     }
 
@@ -147,7 +145,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.kickMember(cell, player, target);
+            cellController.kickMember(cellId, player, target);
           }).build();
     }
 
@@ -163,7 +161,7 @@ public class ManageMemberMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.banMember(cell, player, target);
+            cellController.banMember(cellId, player, target);
           }).build();
     }
 

@@ -102,6 +102,10 @@ public class CellService {
     return Collections.unmodifiableList(cellProjects);
   }
 
+  public Optional<Cell> findCellById(Long id) {
+    return cellRepository.get(id);
+  }
+
   public Optional<Cell> findCellByOwner(UUID owner) {
     return cellRepository.getAll().stream()
         .filter(c -> owner.equals(c.getOwner().orElse(null)))
@@ -117,7 +121,7 @@ public class CellService {
   /**
    * Find cells with most members
    */
-  public List<Cell> findMostNumerousCells(int limit) {
+  public List<Cell> findCellWithMostMembers(int limit) {
     return cellRepository.getAll().stream()
         .filter(Cell::isPublicVisible)
         .sorted(Comparator.comparingInt(a -> a.getMembersAsPlayers().size()))

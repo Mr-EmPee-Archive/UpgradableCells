@@ -33,24 +33,22 @@ public class SelectCellMenu {
   private final LangConfig langConfig;
   private final GComponenets GComponenets;
 
-  //TODO: Update menu when kicked
-
-  public static CompletableFuture<Cell> selectCell(Player player, List<Cell> cells) {
-    CompletableFuture<Cell> future = new CompletableFuture<>();
+  public static CompletableFuture<Long> selectCell(Player player, List<Cell> cells) {
+    CompletableFuture<Long> future = new CompletableFuture<>();
     instance.create(player, cells, future).open();
     return future;
   }
 
-  private Menu create(Player player, List<Cell> cells, CompletableFuture<Cell> future) {
+  private Menu create(Player player, List<Cell> cells, CompletableFuture<Long> future) {
     return new Menu(player, cells, future);
   }
 
   private class Menu extends InventoryMenu {
     private final List<Cell> cells;
     private final GTheme gTheme = new GTheme();
-    private final CompletableFuture<Cell> action;
+    private final CompletableFuture<Long> action;
 
-    public Menu(Player viewer, List<Cell> cells, CompletableFuture<Cell> action) {
+    public Menu(Player viewer, List<Cell> cells, CompletableFuture<Long> action) {
       super(viewer, 3);
 
       this.title = langConfig.translate("menus.select-cell.title");
@@ -90,7 +88,7 @@ public class SelectCellMenu {
           .itemStack(item)
           .clickHandler(e -> {
             e.getWhoClicked().closeInventory();
-            action.complete(cell);
+            action.complete(cell.getId());
           }).build();
     }
   }

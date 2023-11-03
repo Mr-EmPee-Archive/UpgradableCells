@@ -1,8 +1,14 @@
 package ml.empee.upgradableCells.controllers;
 
-import java.util.List;
-
-import ml.empee.upgradableCells.model.entities.Cell;
+import lombok.RequiredArgsConstructor;
+import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.config.PluginConfig;
+import ml.empee.upgradableCells.constants.Permissions;
+import ml.empee.upgradableCells.model.Member;
+import ml.empee.upgradableCells.services.CellService;
+import ml.empee.upgradableCells.utils.Logger;
+import mr.empee.lightwire.annotations.Singleton;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -11,24 +17,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
-import lombok.RequiredArgsConstructor;
-import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.config.PluginConfig;
-import ml.empee.upgradableCells.constants.Permissions;
-import ml.empee.upgradableCells.model.CellProject;
-import ml.empee.upgradableCells.model.Member;
-import ml.empee.upgradableCells.services.CellService;
-import ml.empee.upgradableCells.utils.Logger;
-import mr.empee.lightwire.annotations.Singleton;
-import net.milkbowl.vault.economy.Economy;
-
 /**
  * Controller use to manage cell operations
  */
 
 @Singleton
 @RequiredArgsConstructor
-public class CellAPI {
+public class CellController {
 
   private final PluginConfig pluginConfig;
   private final CellService cellService;
@@ -50,7 +45,7 @@ public class CellAPI {
       return false;
     }
 
-    var project = getCellProject(cell.getLevel());
+    var project = cellService.getCellProject(cell.getLevel());
     return !project.isCellBlock(cell, target);
   }
 
@@ -60,12 +55,12 @@ public class CellAPI {
       return false;
     }
 
-    var project = getCellProject(cell.getLevel());
+    var project = cellService.getCellProject(cell.getLevel());
     return project.isCellBlock(cell, target);
   }
 
-  public boolean canInteract(Player player, Location target, @Nullable Entity entity) {
-    if (player.hasPermission(Permissions.ADMIN)) {
+  public boolean canInteract(Player source, Location target, @Nullable Entity entity) {
+    if (source.hasPermission(Permissions.ADMIN)) {
       return true;
     }
 
@@ -74,7 +69,7 @@ public class CellAPI {
       return true;
     }
 
-    Member member = cell.getMember(player.getUniqueId()).orElse(null);
+    Member member = cell.getMember(source.getUniqueId()).orElse(null);
     if (member == null) {
       return false;
     }
@@ -89,50 +84,35 @@ public class CellAPI {
     return true;
   }
 
-  public List<Cell> findTopCells(int limit) {
-    return cellService.findMostNumerousCells(limit);
-  }
-
-  public List<CellProject> getCellProjects() {
-    return cellService.getCellProjects();
-  }
-
-  public CellProject getCellProject(int level) {
-    return getCellProjects().get(level);
-  }
-
-  public CellProject getLastProject() {
-    return getCellProjects().get(getCellProjects().size() - 1);
-  }
-
-  public void setCellName(Player source, Cell cell, String name) {
+  public void setCellName(Long cellId, Player source, String name) {
     if (name.length() > 32) {
       Logger.log(source, langConfig.translate("cell.illegal-name"));
       return;
     }
 
-    cell = cellService.setName(cell.getId(), name);
+    cellService.setName(cellId, name);
     Logger.log(source, langConfig.translate("cell.name-updated"));
   }
 
-  public void setCellDescription(Player source, Cell cell, String description) {
+  public void setCellDescription(Long cellId, Player source, String description) {
     if (description.length() > 132) {
       Logger.log(source, langConfig.translate("cell.illegal-description"));
       return;
     }
 
-    cell = cellService.setDescription(cell.getId(), description);
+    cellService.setDescription(cellId, description);
     Logger.log(source, langConfig.translate("cell.description-updated"));
   }
 
-  public void setCellVisibility(Player source, Cell cell, boolean publicVisible) {
+  public void setCellVisibility(Long cellId, Player source, boolean publicVisible) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     var member = cell.getMember(source.getUniqueId()).orElseThrow();
     if (!member.getRank().hasPermission(Member.Permissions.CHANGE_VISIBILITY)) {
       Logger.log(source, langConfig.translate("cell.visibility.missing-perm"));
       return;
     }
 
-    cell = cellService.setVisibility(cell.getId(), publicVisible);
+    cellService.setVisibility(cell.getId(), publicVisible);
     if (publicVisible) {
       source.sendTitle(
           langConfig.translate("cell.visibility.title.public"),
@@ -151,7 +131,8 @@ public class CellAPI {
   /**
    * Pardon a banned member
    */
-  public void pardonMember(Cell cell, Player source, OfflinePlayer target) {
+  public void pardonMember(Long cellId, Player source, OfflinePlayer target) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     var member = cell.getMember(source.getUniqueId()).orElseThrow();
     var targetMember = cell.getBannedMember(target.getUniqueId()).orElseThrow();
     if (!member.getRank().canManage(targetMember.getRank())) {
@@ -168,7 +149,8 @@ public class CellAPI {
   /**
    * Ban a member
    */
-  public void banMember(Cell cell, Player source, OfflinePlayer target) {
+  public void banMember(Long cellId, Player source, OfflinePlayer target) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     var member = cell.getMember(source.getUniqueId()).orElseThrow();
     var targetMember = cell.getMember(target.getUniqueId()).orElseThrow();
     if (!member.getRank().canManage(targetMember.getRank())) {
@@ -195,7 +177,8 @@ public class CellAPI {
   /**
    * Kick a member
    */
-  public void kickMember(Cell cell, Player source, OfflinePlayer target) {
+  public void kickMember(Long cellId, Player source, OfflinePlayer target) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     var member = cell.getMember(source.getUniqueId()).orElseThrow();
     var targetMember = cell.getMember(target.getUniqueId()).orElseThrow();
 
@@ -217,7 +200,8 @@ public class CellAPI {
   /**
    * Change the rank of a cell member
    */
-  public void setRank(Cell cell, Player source, OfflinePlayer target, Member.Rank rank) {
+  public void setRank(Long cellId, Player source, OfflinePlayer target, Member.Rank rank) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     var sourceRank = cell.getMember(source.getUniqueId()).orElseThrow().getRank();
     var targetRank = cell.getMember(target.getUniqueId()).orElseThrow().getRank();
     if (!sourceRank.canManage(targetRank) || !sourceRank.canManage(rank)) {
@@ -236,7 +220,8 @@ public class CellAPI {
   /**
    * Invite a player to a cell
    */
-  public void invitePlayer(Cell cell, Player source, Player target) {
+  public void invitePlayer(Long cellId, Player source, Player target) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     if (!cell.getMember(source.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.INVITE)) {
       Logger.log(source, langConfig.translate("cell.invitation.missing-perm"));
       return;
@@ -270,133 +255,138 @@ public class CellAPI {
   /**
    * Join a cell if invited
    */
-  public void joinCell(Player player, Cell cell) {
-    if (cell.getMember(player.getUniqueId()).isPresent()) {
-      Logger.log(player, langConfig.translate("cell.invitation.already-joined"));
+  public void joinCell(Long cellId, Player source) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
+    if (cell.getMember(source.getUniqueId()).isPresent()) {
+      Logger.log(source, langConfig.translate("cell.invitation.already-joined"));
       return;
     }
 
-    if (!cellService.hasInvitation(cell, player.getUniqueId())) {
-      Logger.log(player, langConfig.translate("cell.invitation.missing"));
+    if (!cellService.hasInvitation(cell, source.getUniqueId())) {
+      Logger.log(source, langConfig.translate("cell.invitation.missing"));
       return;
     }
 
-    if (cell.getBannedMember(player.getUniqueId()).isPresent()) {
+    if (cell.getBannedMember(source.getUniqueId()).isPresent()) {
       return;
     }
 
     if (cellService.getCellProject(cell.getLevel()).getMembers() <= cell.getMembersAsPlayers().size()) {
-      Logger.log(player, langConfig.translate("cell.invitation.max-members"));
+      Logger.log(source, langConfig.translate("cell.invitation.max-members"));
       return;
     }
 
-    cell = cellService.setMember(cell.getId(), player.getUniqueId(), Member.Rank.MEMBER);
-    cellService.removeInvitation(cell, player.getUniqueId());
+    cell = cellService.setMember(cell.getId(), source.getUniqueId(), Member.Rank.MEMBER);
+    cellService.removeInvitation(cell, source.getUniqueId());
 
     for (Player member : cell.getOnlineMembers()) {
-      Logger.log(member, langConfig.translate("cell.members.has-joined", player.getName(), cell.getOwnerAsPlayer().getName()));
+      Logger.log(member, langConfig.translate("cell.members.has-joined", source.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
   /**
    * Leave a cell
    */
-  public void leaveCell(Player player, Cell cell) {
-    var member = cell.getMember(player.getUniqueId()).orElse(null);
+  public void leaveCell(Long cellId, Player source) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
+    var member = cell.getMember(source.getUniqueId()).orElse(null);
     if (member == null) {
-      Logger.log(player, langConfig.translate("cell.members.not-member"));
+      Logger.log(source, langConfig.translate("cell.members.not-member"));
       return;
     }
 
     if (member.getRank() == Member.Rank.OWNER) {
-      Logger.log(player, langConfig.translate("cell.owner-leave"));
+      Logger.log(source, langConfig.translate("cell.owner-leave"));
       return;
     }
 
-    cell = cellService.removeMember(cell.getId(), player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerAsPlayer().getName()));
+    cell = cellService.removeMember(cell.getId(), source.getUniqueId());
+    Logger.log(source, langConfig.translate("cell.members.has-left", source.getName(), cell.getOwnerAsPlayer().getName()));
     for (Player m : cell.getOnlineMembers()) {
-      Logger.log(m, langConfig.translate("cell.members.has-left", player.getName(), cell.getOwnerAsPlayer().getName()));
+      Logger.log(m, langConfig.translate("cell.members.has-left", source.getName(), cell.getOwnerAsPlayer().getName()));
     }
   }
 
   /**
    * Create a cell
    */
-  public void createCell(Player player) {
-    if (cellService.findCellByOwner(player.getUniqueId()).isPresent()) {
-      Logger.log(player, langConfig.translate("cell.already-bought"));
+  public void createCell(Player source) {
+    if (cellService.findCellByOwner(source.getUniqueId()).isPresent()) {
+      Logger.log(source, langConfig.translate("cell.already-bought"));
       return;
     }
 
     var project = cellService.getCellProject(0);
-    if (!economy.has(player, project.getCost())) {
-      Logger.log(player, langConfig.translate("economy.missing-money", project.getCost()));
+    if (!economy.has(source, project.getCost())) {
+      Logger.log(source, langConfig.translate("economy.missing-money", project.getCost()));
       return;
     }
 
-    economy.withdrawPlayer(player, project.getCost());
-    cellService.createCell(player.getUniqueId());
-    Logger.log(player, langConfig.translate("cell.bought-cell"));
+    economy.withdrawPlayer(source, project.getCost());
+    cellService.createCell(source.getUniqueId());
+    Logger.log(source, langConfig.translate("cell.bought-cell"));
   }
 
   /**
    * Upgrade a cell to the next-level
    */
-  public void upgradeCell(Player player, Cell cell) {
-    if (!cell.getMember(player.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.UPGRADE)) {
-      Logger.log(player, langConfig.translate("cmd.missing-permission"));
+  public void upgradeCell(Long cellId, Player source) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
+    if (!cell.getMember(source.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.UPGRADE)) {
+      Logger.log(source, langConfig.translate("cmd.missing-permission"));
       return;
     }
 
     if (cellService.getLastProject().getLevel() == cell.getLevel()) {
-      Logger.log(player, langConfig.translate("cell.max-level"));
+      Logger.log(source, langConfig.translate("cell.max-level"));
       return;
     }
 
     if (cell.isUpdating()) {
-      Logger.log(player, langConfig.translate("cell.still-building"));
+      Logger.log(source, langConfig.translate("cell.still-building"));
       return;
     }
 
     var project = cellService.getCellProject(cell.getLevel() + 1);
-    if (!economy.has(player, project.getCost())) {
-      Logger.log(player, langConfig.translate("economy.missing-money", project.getCost()));
+    if (!economy.has(source, project.getCost())) {
+      Logger.log(source, langConfig.translate("economy.missing-money", project.getCost()));
       return;
     }
 
-    economy.withdrawPlayer(player, project.getCost());
+    economy.withdrawPlayer(source, project.getCost());
     cellService.upgradeCell(cell.getId(), project.getLevel());
-    Logger.log(player, langConfig.translate("cell.bought-upgrade"));
+    Logger.log(source, langConfig.translate("cell.bought-upgrade"));
   }
 
   /**
    * Teleport a player to a cell
    */
-  public void teleportToCell(Player player, Cell cell) {
+  public void teleportToCell(Long cellId, Player source) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     if (cell.getLevel() == 0 && cell.isUpdating()) {
-      Logger.log(player, langConfig.translate("cell.still-building"));
+      Logger.log(source, langConfig.translate("cell.still-building"));
       return;
     }
 
-    Member member = cell.getMember(player.getUniqueId()).orElse(null);
+    Member member = cell.getMember(source.getUniqueId()).orElse(null);
     if (member == null && !cell.isPublicVisible()) {
-      Logger.log(player, langConfig.translate("cmd.missing-permission"));
+      Logger.log(source, langConfig.translate("cmd.missing-permission"));
       return;
     }
 
-    if (cell.getBannedMember(player.getUniqueId()).isPresent()) {
-      Logger.log(player, langConfig.translate("cell.banned-interaction"));
+    if (cell.getBannedMember(source.getUniqueId()).isPresent()) {
+      Logger.log(source, langConfig.translate("cell.banned-interaction"));
       return;
     }
 
-    player.teleport(cellService.getSpawnpoint(cell));
+    source.teleport(cellService.getSpawnpoint(cell));
   }
 
   /**
    * Ban all members of the cell (including the owner) and make it private
    */
-  public void makeCellUnacessable(CommandSender source, Cell cell) {
+  public void makeCellUnacessable(Long cellId, CommandSender source) {
+    var cell = cellService.findCellById(cellId).orElseThrow();
     cellService.setVisibility(cell.getId(), false);
 
     for (var member : cell.getMembersAsPlayers()) {

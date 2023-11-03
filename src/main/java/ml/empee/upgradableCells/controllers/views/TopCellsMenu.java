@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -16,7 +17,7 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
-import ml.empee.upgradableCells.controllers.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
@@ -32,7 +33,8 @@ public class TopCellsMenu implements Listener {
   @Instance
   private static TopCellsMenu instance;
   private final LangConfig langConfig;
-  private final CellAPI cellAPI;
+  private final CellController cellController;
+  private final CellService cellService;
 
   public static void open(Player player) {
     instance.create(player).open();
@@ -58,7 +60,7 @@ public class TopCellsMenu implements Listener {
       background.setItem(0, 4, closeItem());
 
       cellsPane.set(
-          cellAPI.findTopCells(21).stream()
+          cellService.findCellWithMostMembers(21).stream()
               .map(this::cellItem)
               .collect(Collectors.toList())
       );
@@ -79,7 +81,7 @@ public class TopCellsMenu implements Listener {
           .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
-            cellAPI.teleportToCell(player, cell);
+            cellController.teleportToCell(cell.getId(), player);
           }).build();
     }
 

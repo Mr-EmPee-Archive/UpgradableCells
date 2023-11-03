@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.upgradableCells.controllers.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
@@ -26,7 +26,7 @@ public class ClaimCellMenu {
   @Instance
   private static ClaimCellMenu instance;
 
-  private final CellAPI cellAPI;
+  private final CellController cellController;
   private final LangConfig langConfig;
 
   public static void open(Player player) {
@@ -64,7 +64,7 @@ public class ClaimCellMenu {
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
-            cellAPI.createCell(player);
+            cellController.createCell(player);
           }).build();
     }
   }

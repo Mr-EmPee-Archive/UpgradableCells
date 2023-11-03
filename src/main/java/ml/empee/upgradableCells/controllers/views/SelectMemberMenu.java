@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -29,45 +30,45 @@ import mr.empee.lightwire.annotations.Singleton;
 @Singleton
 public class SelectMemberMenu implements Listener {
 
-  //TODO: Update menu when join/kick
-
   @Instance
   private static SelectMemberMenu instance;
   private final LangConfig langConfig;
+  private final CellService cellService;
 
-  public SelectMemberMenu(UpgradableCells plugin, LangConfig langConfig) {
+  public SelectMemberMenu(UpgradableCells plugin, LangConfig langConfig, CellService cellService) {
     this.langConfig = langConfig;
+    this.cellService = cellService;
 
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
-  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, Cell cell,
-      List<OfflinePlayer> players) {
+  public static CompletableFuture<OfflinePlayer> selectPlayer(Player player, Long cellId, List<OfflinePlayer> players) {
     var action = new CompletableFuture<OfflinePlayer>();
-    instance.create(player, cell, players, action).open();
+    instance.create(player, cellId, players, action).open();
     return action;
   }
 
-  private Menu create(Player player, Cell cell, List<OfflinePlayer> players,
-                      CompletableFuture<OfflinePlayer> future) {
-    return new Menu(player, cell, players, future);
+  private Menu create(Player player, Long cellId, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> future) {
+    return new Menu(player, cellId, players, future);
   }
 
   private class Menu extends InventoryMenu {
 
-    private final Cell cell;
     private final CompletableFuture<OfflinePlayer> action;
     private final ScrollPane membersPane = ScrollPane.horizontal(7, 3, 3);
 
     private final List<OfflinePlayer> players;
     private final GTheme gTheme = new GTheme();
 
-    public Menu(Player viewer, Cell cell, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> action) {
+    private Cell cell;
+
+    public Menu(Player viewer, Long cellId, List<OfflinePlayer> players, CompletableFuture<OfflinePlayer> action) {
       super(viewer, 5);
 
-      this.cell = cell;
       this.action = action;
       this.players = new ArrayList<>(players);
+
+      this.cell = cellService.findCellById(cellId).orElseThrow();
       this.title = langConfig.translate("menus.select-player.title");
     }
 

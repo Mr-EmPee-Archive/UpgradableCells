@@ -6,12 +6,13 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.StaticPane;
-import ml.empee.upgradableCells.controllers.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.CellProject;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
@@ -36,24 +37,28 @@ public class ManageCellMenu {
   private static ManageCellMenu instance;
 
   private final LangConfig langConfig;
-  private final CellAPI cellAPI;
+  private final CellController cellController;
+  private final CellService cellService;
 
-  public static void open(Player player, Cell cell) {
-    instance.create(player, cell).open();
+  public static void open(Player player, Long cellId) {
+    instance.create(player, cellId).open();
   }
 
-  private Menu create(Player viewer, Cell cell) {
-    return new Menu(viewer, cell);
+  private Menu create(Player viewer, Long cellId) {
+    return new Menu(viewer, cellId);
   }
 
   private class Menu extends InventoryMenu {
-    private final Cell cell;
     private final GTheme gTheme = new GTheme();
 
-    public Menu(Player player, Cell cell) {
+    private final Long cellId;
+
+    public Menu(Player player, Long cellId) {
       super(player, 6);
 
-      this.cell = cell;
+      this.cellId = cellId;
+
+      var cell = cellService.findCellById(cellId).orElseThrow();
       this.title = langConfig.translate("menus.manage-cell.title", cell.getOwnerAsPlayer().getName());
     }
 
@@ -74,6 +79,8 @@ public class ManageCellMenu {
     }
 
     private GItem cellVisibilityItem() {
+      var cell = cellService.findCellById(cellId).orElseThrow();
+
       ItemBuilder item;
 
       var shield = XMaterial.SHIELD.parseItem();
@@ -101,11 +108,12 @@ public class ManageCellMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.setCellVisibility(player, cell, !cell.isPublicVisible());
+            cellController.setCellVisibility(cell.getId(), player, !cell.isPublicVisible());
           }).build();
     }
 
     private GItem cellInfoItem() {
+      var cell = cellService.findCellById(cellId).orElseThrow();
       String name = cell.getName();
       if (name == null || name.isBlank()) {
         name = "Cell Of " + cell.getOwnerAsPlayer().getName();
@@ -139,7 +147,7 @@ public class ManageCellMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellAPI.teleportToCell(player, cell);
+            cellController.teleportToCell(cellId, player);
           }).build();
     }
 
@@ -153,6 +161,7 @@ public class ManageCellMenu {
           .itemStack(item)
           .clickHandler(e -> {
             var player = (Player) e.getWhoClicked();
+            var cell = cellService.findCellById(cellId).orElseThrow();
             var playerRank = cell.getMember(player.getUniqueId()).orElseThrow().getRank();
             var players = cell.getMembers().stream()
                 .filter(p -> playerRank.canManage(p.getRank()))
@@ -166,16 +175,17 @@ public class ManageCellMenu {
               return;
             }
 
-            SelectMemberMenu.selectPlayer(player, cell, players).thenAccept(
-                target -> ManageMemberMenu.open(player, cell, target)
+            SelectMemberMenu.selectPlayer(player, cellId, players).thenAccept(
+                target -> ManageMemberMenu.open(player, cellId, target)
             );
           }).build();
     }
 
     private GItem upgradeItem() {
+      var cell = cellService.findCellById(cellId).orElseThrow();
       CellProject project = null;
-      if (cell.getLevel() != cellAPI.getLastProject().getLevel()) {
-        project = cellAPI.getCellProject(cell.getLevel() + 1);
+      if (cell.getLevel() != cellService.getLastProject().getLevel()) {
+        project = cellService.getCellProject(cell.getLevel() + 1);
       }
 
       var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem());
@@ -191,7 +201,7 @@ public class ManageCellMenu {
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
             source.closeInventory();
-            cellAPI.upgradeCell(source, cell);
+            cellController.upgradeCell(cell.getId(), source);
           }).build();
     }
 
@@ -204,13 +214,7 @@ public class ManageCellMenu {
           .itemStack(item.build())
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
-            if (!cell.getMember(source.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.MANAGE_MEMBERS)) {
-              Logger.log(player, langConfig.translate("cell.members.no-members"));
-              player.closeInventory();
-              return;
-            }
-
-            BannedPlayersMenu.open(source, cell);
+            BannedPlayersMenu.open(source, cellId);
           }).build();
     }
 

@@ -14,7 +14,7 @@ import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.specifier.Greedy;
 import lombok.RequiredArgsConstructor;
-import ml.empee.upgradableCells.controllers.CellAPI;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
@@ -33,7 +33,7 @@ import mr.empee.lightwire.annotations.Singleton;
 public class CellCommand implements Command {
 
   private final CellService cellService;
-  private final CellAPI cellAPI;
+  private final CellController cellController;
   private final LangConfig langConfig;
 
   @CommandMethod("claim")
@@ -60,7 +60,7 @@ public class CellCommand implements Command {
     }
 
     if (cells.size() == 1) {
-      ManageCellMenu.open(sender, cells.get(0));
+      ManageCellMenu.open(sender, cells.get(0).getId());
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
           c -> ManageCellMenu.open(sender, c));
@@ -87,7 +87,7 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.teleportToCell(sender, cell);
+    cellController.teleportToCell(cell.getId(), sender);
   }
 
   @CommandMethod("cell join <target>")
@@ -99,7 +99,7 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.joinCell(sender, cell);
+    cellController.joinCell(cell.getId(), sender);
   }
 
   /**
@@ -117,10 +117,10 @@ public class CellCommand implements Command {
     }
 
     if (cells.size() == 1) {
-      cellAPI.invitePlayer(cells.get(0), sender, target);
+      cellController.invitePlayer(cells.get(0).getId(), sender, target);
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> cellAPI.invitePlayer(c, sender, target));
+          c -> cellController.invitePlayer(c, sender, target));
     }
   }
 
@@ -130,7 +130,7 @@ public class CellCommand implements Command {
   @CommandMethod("cell leave")
   public void leaveCell(Player sender) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
-      .filter(c -> !c.getOwner().equals(sender.getUniqueId()))
+      .filter(c -> !sender.getUniqueId().equals(c.getOwner().orElse(null)))
       .collect(Collectors.toList());
 
     if (cells.isEmpty()) {
@@ -139,10 +139,10 @@ public class CellCommand implements Command {
     }
 
     if (cells.size() == 1) {
-      cellAPI.leaveCell(sender, cells.get(0));
+      cellController.leaveCell(cells.get(0).getId(), sender);
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> cellAPI.leaveCell(sender, c)
+          c -> cellController.leaveCell(c, sender)
       );
     }
   }
@@ -156,7 +156,7 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.setCellName(sender, cell, name);
+    cellController.setCellName(cell.getId(), sender, name);
   }
 
   @CommandMethod("cell description <description>")
@@ -168,7 +168,7 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.setCellDescription(sender, cell, description);
+    cellController.setCellDescription(cell.getId(), sender, description);
   }
 
   @CommandMethod("cell visit <target>")
@@ -180,7 +180,7 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.teleportToCell(sender, cell);
+    cellController.teleportToCell(cell.getId(), sender);
   }
 
   @CommandMethod("cell delete <target>")
@@ -193,6 +193,6 @@ public class CellCommand implements Command {
       return;
     }
 
-    cellAPI.makeCellUnacessable(sender, cell);
+    cellController.makeCellUnacessable(cell.getId(), sender);
   }
 }
