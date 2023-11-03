@@ -8,7 +8,7 @@ import ml.empee.simplemenu.SimpleMenu;
 import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.client.DbClient;
-import ml.empee.upgradableCells.controllers.Controller;
+import ml.empee.upgradableCells.controllers.commands.Command;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.Lightwire;
 import net.milkbowl.vault.economy.Economy;
@@ -41,7 +41,7 @@ public final class UpgradableCells extends JavaPlugin {
     );
 
     var commandManager = iocContainer.getBean(CommandsConfig.class);
-    iocContainer.getAllBeans(Controller.class).forEach(
+    iocContainer.getAllBeans(Command.class).forEach(
       c -> commandManager.register(c)
     );
   }

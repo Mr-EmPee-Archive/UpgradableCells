@@ -4,7 +4,6 @@ import java.util.stream.Collectors;
 
 import cloud.commandframework.annotations.CommandPermission;
 import ml.empee.upgradableCells.constants.Permissions;
-import ml.empee.upgradableCells.controllers.Controller;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.entities.Cell;
 import org.bukkit.OfflinePlayer;
@@ -15,7 +14,7 @@ import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.specifier.Greedy;
 import lombok.RequiredArgsConstructor;
-import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.controllers.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
@@ -31,10 +30,10 @@ import mr.empee.lightwire.annotations.Singleton;
 
 @Singleton
 @RequiredArgsConstructor
-public class CellCommand implements Controller {
+public class CellCommand implements Command {
 
   private final CellService cellService;
-  private final CellController cellController;
+  private final CellAPI cellAPI;
   private final LangConfig langConfig;
 
   @CommandMethod("claim")
@@ -88,7 +87,7 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.teleportToCell(sender, cell);
+    cellAPI.teleportToCell(sender, cell);
   }
 
   @CommandMethod("cell join <target>")
@@ -100,7 +99,7 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.joinCell(sender, cell);
+    cellAPI.joinCell(sender, cell);
   }
 
   /**
@@ -118,10 +117,10 @@ public class CellCommand implements Controller {
     }
 
     if (cells.size() == 1) {
-      cellController.invitePlayer(cells.get(0), sender, target);
+      cellAPI.invitePlayer(cells.get(0), sender, target);
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> cellController.invitePlayer(c, sender, target));
+          c -> cellAPI.invitePlayer(c, sender, target));
     }
   }
 
@@ -140,10 +139,10 @@ public class CellCommand implements Controller {
     }
 
     if (cells.size() == 1) {
-      cellController.leaveCell(sender, cells.get(0));
+      cellAPI.leaveCell(sender, cells.get(0));
     } else {
       SelectCellMenu.selectCell(sender, cells).thenAccept(
-          c -> cellController.leaveCell(sender, c)
+          c -> cellAPI.leaveCell(sender, c)
       );
     }
   }
@@ -157,7 +156,7 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.setCellName(sender, cell, name);
+    cellAPI.setCellName(sender, cell, name);
   }
 
   @CommandMethod("cell description <description>")
@@ -169,7 +168,7 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.setCellDescription(sender, cell, description);
+    cellAPI.setCellDescription(sender, cell, description);
   }
 
   @CommandMethod("cell visit <target>")
@@ -181,7 +180,7 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.teleportToCell(sender, cell);
+    cellAPI.teleportToCell(sender, cell);
   }
 
   @CommandMethod("cell delete <target>")
@@ -194,6 +193,6 @@ public class CellCommand implements Controller {
       return;
     }
 
-    cellController.makeCellUnacessable(sender, cell);
+    cellAPI.makeCellUnacessable(sender, cell);
   }
 }

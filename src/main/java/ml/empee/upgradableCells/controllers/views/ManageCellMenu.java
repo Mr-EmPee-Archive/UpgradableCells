@@ -6,7 +6,7 @@ import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
 import ml.empee.simplemenu.model.menus.InventoryMenu;
 import ml.empee.simplemenu.model.panes.StaticPane;
-import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.controllers.CellAPI;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.CellProject;
@@ -36,7 +36,7 @@ public class ManageCellMenu {
   private static ManageCellMenu instance;
 
   private final LangConfig langConfig;
-  private final CellController cellController;
+  private final CellAPI cellAPI;
 
   public static void open(Player player, Cell cell) {
     instance.create(player, cell).open();
@@ -101,7 +101,7 @@ public class ManageCellMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.setCellVisibility(player, cell, !cell.isPublicVisible());
+            cellAPI.setCellVisibility(player, cell, !cell.isPublicVisible());
           }).build();
     }
 
@@ -139,7 +139,7 @@ public class ManageCellMenu {
             var player = (Player) e.getWhoClicked();
             player.closeInventory();
 
-            cellController.teleportToCell(player, cell);
+            cellAPI.teleportToCell(player, cell);
           }).build();
     }
 
@@ -174,8 +174,8 @@ public class ManageCellMenu {
 
     private GItem upgradeItem() {
       CellProject project = null;
-      if (cell.getLevel() != cellController.getLastProject().getLevel()) {
-        project = cellController.getCellProject(cell.getLevel() + 1);
+      if (cell.getLevel() != cellAPI.getLastProject().getLevel()) {
+        project = cellAPI.getCellProject(cell.getLevel() + 1);
       }
 
       var item = ItemBuilder.from(XMaterial.GRASS_BLOCK.parseItem());
@@ -191,7 +191,7 @@ public class ManageCellMenu {
           .clickHandler(e -> {
             var source = (Player) e.getWhoClicked();
             source.closeInventory();
-            cellController.upgradeCell(source, cell);
+            cellAPI.upgradeCell(source, cell);
           }).build();
     }
 

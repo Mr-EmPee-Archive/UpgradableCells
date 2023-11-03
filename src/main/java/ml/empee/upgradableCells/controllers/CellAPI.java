@@ -28,7 +28,7 @@ import net.milkbowl.vault.economy.Economy;
 
 @Singleton
 @RequiredArgsConstructor
-public class CellController {
+public class CellAPI {
 
   private final PluginConfig pluginConfig;
   private final CellService cellService;
