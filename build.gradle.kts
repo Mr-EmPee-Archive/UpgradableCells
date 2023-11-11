@@ -83,3 +83,10 @@ tasks {
     version.set("1.13.2")
   }
 }
+
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
