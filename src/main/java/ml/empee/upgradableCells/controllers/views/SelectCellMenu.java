@@ -79,8 +79,10 @@ public class SelectCellMenu {
 
     private GItem cellItem(Cell cell) {
       OfflinePlayer owner = cell.getOwnerAsPlayer();
+      var cellName = cell.getName() == null ? owner.getName() : cell.getName();
+
       var item = ItemBuilder.skull()
-          .setName("&e" + owner.getName())
+          .setName("&e" + cellName)
           .owner(owner)
           .build();
 

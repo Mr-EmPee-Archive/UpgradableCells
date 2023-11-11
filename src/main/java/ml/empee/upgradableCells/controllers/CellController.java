@@ -85,7 +85,7 @@ public class CellController {
   }
 
   public void setCellName(Long cellId, Player source, String name) {
-    if (name.length() > 32) {
+    if (name.length() > 32 || name.length() < 4 || name.isBlank()) {
       Logger.log(source, langConfig.translate("cell.illegal-name"));
       return;
     }
@@ -237,7 +237,7 @@ public class CellController {
       return;
     }
 
-    if (cellService.hasInvitation(cell, target.getUniqueId())) {
+    if (cellService.hasInvitation(cell.getId(), target.getUniqueId())) {
       Logger.log(source, langConfig.translate("cell.invitation.already-invited"));
       return;
     }
@@ -247,7 +247,7 @@ public class CellController {
       return;
     }
 
-    cellService.invite(cell, target.getUniqueId());
+    cellService.invite(cell.getId(), target.getUniqueId());
     Logger.log(source, langConfig.translate("cell.invitation.sent", target.getName()));
     Logger.log(target, langConfig.translate("cell.invitation.received", cell.getOwnerAsPlayer().getName()));
   }
@@ -262,7 +262,7 @@ public class CellController {
       return;
     }
 
-    if (!cellService.hasInvitation(cell, source.getUniqueId())) {
+    if (!cellService.hasInvitation(cell.getId(), source.getUniqueId())) {
       Logger.log(source, langConfig.translate("cell.invitation.missing"));
       return;
     }
@@ -277,7 +277,7 @@ public class CellController {
     }
 
     cell = cellService.setMember(cell.getId(), source.getUniqueId(), Member.Rank.MEMBER);
-    cellService.removeInvitation(cell, source.getUniqueId());
+    cellService.removeInvitation(cell.getId(), source.getUniqueId());
 
     for (Player member : cell.getOnlineMembers()) {
       Logger.log(member, langConfig.translate("cell.members.has-joined", source.getName(), cell.getOwnerAsPlayer().getName()));
@@ -311,8 +311,9 @@ public class CellController {
    * Create a cell
    */
   public void createCell(Player source) {
-    if (cellService.findCellByOwner(source.getUniqueId()).isPresent()) {
-      Logger.log(source, langConfig.translate("cell.already-bought"));
+    var ownedCells = cellService.findCellByOwner(source.getUniqueId());
+    if (!Permissions.canClaimCells(source, ownedCells.size() + 1)) {
+      Logger.log(source, langConfig.translate("cell.max-bought"));
       return;
     }
 
@@ -400,5 +401,4 @@ public class CellController {
 
     Logger.log(source, "&7The cell of &e%s&7 has been deleted!", cell.getOwnerAsPlayer().getName());
   }
-
 }

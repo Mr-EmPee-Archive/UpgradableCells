@@ -1,28 +1,25 @@
 package ml.empee.upgradableCells.controllers.commands;
 
-import java.util.stream.Collectors;
-
-import cloud.commandframework.annotations.CommandPermission;
-import ml.empee.upgradableCells.constants.Permissions;
-import ml.empee.upgradableCells.model.Member;
-import ml.empee.upgradableCells.model.entities.Cell;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
 import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import cloud.commandframework.annotations.specifier.Greedy;
 import lombok.RequiredArgsConstructor;
-import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.constants.Permissions;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
 import ml.empee.upgradableCells.controllers.views.TopCellsMenu;
+import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+
+import java.util.stream.Collectors;
 
 /**
  * Controller use to manage cell operations
@@ -38,13 +35,7 @@ public class CellCommand implements Command {
 
   @CommandMethod("claim")
   public void claimCell(Player sender) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
-
-    if (cell == null) {
-      ClaimCellMenu.open(sender);
-    } else {
-      Logger.log(sender, langConfig.translate("cell.already-bought"));
-    }
+    ClaimCellMenu.open(sender);
   }
 
   /**
@@ -80,26 +71,37 @@ public class CellCommand implements Command {
    */
   @CommandMethod("home")
   public void teleportToCell(Player sender) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+    var cell = cellService.findCellByOwner(sender.getUniqueId());
 
-    if (cell == null) {
+    if (cell.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
       return;
     }
 
-    cellController.teleportToCell(cell.getId(), sender);
+    if (cell.size() == 1) {
+      cellController.teleportToCell(cell.get(0).getId(), sender);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.teleportToCell(c, sender)
+      );
+    }
   }
 
-  @CommandMethod("cell join <target>")
-  public void joinCell(Player sender, @Argument OfflinePlayer target) {
-    var cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
-
-    if (cell == null) {
-      Logger.log(sender, langConfig.translate("cell.not-existing"));
+  @CommandMethod("cell join")
+  public void joinCell(Player sender) {
+    var invites = cellService.getInvitations(sender.getUniqueId());
+    if (invites.isEmpty()) {
+      Logger.log(sender, langConfig.translate("cell.invitation.empty"));
       return;
     }
 
-    cellController.joinCell(cell.getId(), sender);
+    if (invites.size() == 1) {
+      cellController.joinCell(invites.get(0).getId(), sender);
+    } else {
+      SelectCellMenu.selectCell(sender, invites).thenAccept(
+          c -> cellController.joinCell(c, sender)
+      );
+    }
   }
 
   /**
@@ -149,50 +151,74 @@ public class CellCommand implements Command {
 
   @CommandMethod("cell name <name>")
   public void setCellName(Player sender, @Argument @Greedy String name) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+    var cell = cellService.findCellByOwner(sender.getUniqueId());
 
-    if (cell == null) {
+    if (cell.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
       return;
     }
 
-    cellController.setCellName(cell.getId(), sender, name);
+    if (cell.size() == 1) {
+      cellController.setCellName(cell.get(0).getId(), sender, name);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.setCellName(c, sender, name)
+      );
+    }
   }
 
   @CommandMethod("cell description <description>")
   public void setCellDescription(Player sender, @Argument @Greedy String description) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId()).orElse(null);
+    var cell = cellService.findCellByOwner(sender.getUniqueId());
 
-    if (cell == null) {
+    if (cell.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-bought"));
       return;
     }
 
-    cellController.setCellDescription(cell.getId(), sender, description);
+    if (cell.size() == 1) {
+      cellController.setCellDescription(cell.get(0).getId(), sender, description);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.setCellDescription(c, sender, description)
+      );
+    }
   }
 
   @CommandMethod("cell visit <target>")
   public void visitCell(Player sender, @Argument OfflinePlayer target) {
-    Cell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+    var cell = cellService.findCellByOwner(target.getUniqueId());
 
-    if (cell == null) {
+    if (cell.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-existing"));
       return;
     }
 
-    cellController.teleportToCell(cell.getId(), sender);
+    if (cell.size() == 1) {
+      cellController.teleportToCell(cell.get(0).getId(), sender);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.teleportToCell(c, sender)
+      );
+    }
   }
 
   @CommandMethod("cell delete <target>")
   @CommandPermission(Permissions.ADMIN)
-  public void deleteCell(CommandSender sender, @Argument OfflinePlayer target) {
-    Cell cell = cellService.findCellByOwner(target.getUniqueId()).orElse(null);
+  public void deleteCell(Player sender, @Argument OfflinePlayer target) {
+    var cell = cellService.findCellByOwner(target.getUniqueId());
 
-    if (cell == null) {
+    if (cell.isEmpty()) {
       Logger.log(sender, langConfig.translate("cell.not-existing"));
       return;
     }
 
-    cellController.makeCellUnacessable(cell.getId(), sender);
+    if (cell.size() == 1) {
+      cellController.makeCellUnacessable(cell.get(0).getId(), sender);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.makeCellUnacessable(c, sender)
+      );
+    }
   }
 }

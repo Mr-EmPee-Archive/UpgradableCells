@@ -2,6 +2,7 @@ package ml.empee.upgradableCells.services;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import lombok.SneakyThrows;
 import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.CellProject;
 import ml.empee.upgradableCells.model.Member;
@@ -40,8 +41,8 @@ public class CellService {
   private final WorldService worldService;
 
   private final List<CellProject> cellProjects = new ArrayList<>();
-  private final Cache<String, Cell> invitations = CacheBuilder.newBuilder()
-      .expireAfterWrite(2, TimeUnit.MINUTES)
+  private final Cache<UUID, List<Long>> invitations = CacheBuilder.newBuilder()
+      .expireAfterAccess(2, TimeUnit.MINUTES)
       .build();
 
   private final File schematicFolder;
@@ -106,10 +107,10 @@ public class CellService {
     return cellRepository.get(id);
   }
 
-  public Optional<Cell> findCellByOwner(UUID owner) {
+  public List<Cell> findCellByOwner(UUID owner) {
     return cellRepository.getAll().stream()
         .filter(c -> owner.equals(c.getOwner().orElse(null)))
-        .findFirst();
+        .collect(Collectors.toList());
   }
 
   public List<Cell> findCellsByMember(UUID member) {
@@ -256,17 +257,38 @@ public class CellService {
     return cell;
   }
 
-  public void invite(Cell cell, UUID player) {
-    var invitationId = cell.getOwner() + "->" + player;
-    invitations.put(invitationId, cell);
+  @SneakyThrows
+  public void invite(Long cellId, UUID player) {
+    invitations.get(player, ArrayList::new).add(cellId);
   }
 
-  public boolean hasInvitation(Cell cell, UUID player) {
-    return invitations.getIfPresent(cell.getOwner() + "->" + player) != null;
+  public boolean hasInvitation(Long cellId, UUID player) {
+    var invites = invitations.getIfPresent(player);
+    if (invites != null) {
+      return invites.contains(cellId);
+    }
+
+    return false;
   }
 
-  public void removeInvitation(Cell cell, UUID player) {
-    invitations.invalidate(cell.getOwner() + "->" + player);
+  public List<Cell> getInvitations(UUID player) {
+    var invites = invitations.getIfPresent(player);
+    if (invites == null) {
+      return Collections.emptyList();
+    }
+
+    return invites.stream()
+        .map(cellRepository::get)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toList());
+  }
+
+  public void removeInvitation(Long cellId, UUID player) {
+    var invites = invitations.getIfPresent(player);
+    if (invites != null) {
+      invites.remove(cellId);
+    }
   }
 
 }
