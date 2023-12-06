@@ -28,7 +28,7 @@ import mr.empee.lightwire.annotations.Singleton;
 
 @Singleton
 @RequiredArgsConstructor
-public class TopCellsMenu implements Listener {
+public class TopCellsMenu {
 
   @Instance
   private static TopCellsMenu instance;

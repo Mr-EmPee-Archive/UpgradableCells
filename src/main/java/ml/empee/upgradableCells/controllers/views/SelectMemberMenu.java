@@ -9,9 +9,13 @@ import java.util.stream.Collectors;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
 import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import ml.empee.itembuilder.ItemBuilder;
@@ -34,6 +38,52 @@ public class SelectMemberMenu implements Listener {
   private static SelectMemberMenu instance;
   private final LangConfig langConfig;
   private final CellService cellService;
+  private final List<Menu> menus = new ArrayList<>();
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberRoleChangeEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMenuUpdate(CellMemberJoinEvent event) {
+    menus.forEach(m -> {
+      if (m.players.stream().anyMatch(p -> p.getUniqueId().equals(event.getMember().getUuid()))) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMenuUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (m.players.stream().anyMatch(p -> p.getUniqueId().equals(event.getMember().getUuid()))) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMenuUpdate(CellMemberRoleChangeEvent event) {
+    menus.forEach(m -> {
+      if (m.players.stream().anyMatch(p -> p.getUniqueId().equals(event.getMember().getUuid()))) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
 
   public SelectMemberMenu(UpgradableCells plugin, LangConfig langConfig, CellService cellService) {
     this.langConfig = langConfig;
@@ -74,6 +124,7 @@ public class SelectMemberMenu implements Listener {
 
     @Override
     public void onOpen() {
+      menus.add(this);
       var background = new StaticPane(9, 5);
       background.fill(GItem.of(gTheme.background()));
 
@@ -85,6 +136,11 @@ public class SelectMemberMenu implements Listener {
 
       addPane(1, 1, membersPane);
       addPane(0, 0, background);
+    }
+
+    @Override
+    public void onClose() {
+      menus.remove(this);
     }
 
     private GItem playerItem(OfflinePlayer player) {

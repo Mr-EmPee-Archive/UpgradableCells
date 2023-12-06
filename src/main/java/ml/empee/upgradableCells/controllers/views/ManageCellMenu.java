@@ -12,6 +12,7 @@ import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.CellProject;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Instance;
@@ -21,8 +22,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +36,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 @RequiredArgsConstructor
-public class ManageCellMenu {
+public class ManageCellMenu implements Listener {
 
   @Instance
   private static ManageCellMenu instance;
@@ -39,6 +44,16 @@ public class ManageCellMenu {
   private final LangConfig langConfig;
   private final CellController cellController;
   private final CellService cellService;
+  private final List<Menu> menus = new ArrayList<>();
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
 
   public static void open(Player player, Long cellId) {
     instance.create(player, cellId).open();
@@ -64,6 +79,7 @@ public class ManageCellMenu {
 
     @Override
     public void onOpen() {
+      menus.add(this);
       StaticPane top = new StaticPane(9, 6);
       top.fill(GItem.of(gTheme.background()));
 
@@ -76,6 +92,11 @@ public class ManageCellMenu {
       top.setItem(0, 5, closeItem());
 
       addPane(0, 0, top);
+    }
+
+    @Override
+    public void onClose() {
+      menus.remove(this);
     }
 
     private GItem cellVisibilityItem() {

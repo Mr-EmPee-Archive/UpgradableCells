@@ -1,5 +1,6 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GComponenets;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -19,6 +21,8 @@ import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
 /**
  * Menu to claim a cell
@@ -26,12 +30,13 @@ import mr.empee.lightwire.annotations.Singleton;
 
 @Singleton
 @RequiredArgsConstructor
-public class SelectCellMenu {
+public class SelectCellMenu implements Listener {
 
   @Instance
   private static SelectCellMenu instance;
   private final LangConfig langConfig;
   private final GComponenets GComponenets;
+  private final List<Menu> menus = new ArrayList<>();
 
   public static CompletableFuture<Long> selectCell(Player player, List<Cell> cells) {
     CompletableFuture<Long> future = new CompletableFuture<>();
@@ -41,6 +46,15 @@ public class SelectCellMenu {
 
   private Menu create(Player player, List<Cell> cells, CompletableFuture<Long> future) {
     return new Menu(player, cells, future);
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
   }
 
   private class Menu extends InventoryMenu {
@@ -58,6 +72,7 @@ public class SelectCellMenu {
 
     @Override
     public void onOpen() {
+      menus.add(this);
       var cellsPane = ScrollPane.vertical(3, 1, 1);
       var background = new StaticPane(9, 3);
       var content = new StaticPane(9, 3);
@@ -75,6 +90,11 @@ public class SelectCellMenu {
       addPane(3, 1, cellsPane);
       addPane(0, 0, content);
       addPane(0, 0, background);
+    }
+
+    @Override
+    public void onClose() {
+      menus.remove(this);
     }
 
     private GItem cellItem(Cell cell) {

@@ -20,6 +20,7 @@ public class CellMemberLeaveEvent extends Event {
 
   private final Cell cell;
   private final Member member;
+  private final boolean banned;
 
   @Override
   public HandlerList getHandlers() {

@@ -1,14 +1,21 @@
 package ml.empee.upgradableCells.controllers.views;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
-import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
 import ml.empee.upgradableCells.services.CellService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -29,27 +36,55 @@ import mr.empee.lightwire.annotations.Singleton;
  */
 
 @Singleton
+@RequiredArgsConstructor
 public class BannedPlayersMenu implements Listener {
-
-  //TODO: Update menu when ban/pardon
 
   @Instance
   private static BannedPlayersMenu instance;
   private final LangConfig langConfig;
   private final CellController cellController;
   private final CellService cellService;
+  private final List<Menu> menus = new ArrayList<>();
 
-  public BannedPlayersMenu(
-      UpgradableCells plugin, LangConfig langConfig,
-      CellService cellService, CellController cellController
-  ) {
-    this.langConfig = langConfig;
-    this.cellController = cellController;
-    this.cellService = cellService;
-
-    plugin.getServer().getPluginManager().registerEvents(this, plugin);
+  @EventHandler
+  public void onMenuUpdate(CellMemberPardonEvent event) {
+    menus.forEach(m -> {
+      if (event.getCell().getId().equals(m.cellId)) {
+        m.refresh();
+      }
+    });
   }
 
+  @EventHandler
+  public void onMenuUpdate(CellMemberLeaveEvent event) {
+    if (!event.isBanned()) {
+      return;
+    }
+
+    menus.forEach(m -> {
+      if (event.getCell().getId().equals(m.cellId)) {
+        m.refresh();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberRoleChangeEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
 
   public static void open(Player player, Long cellId) {
     instance.create(player, cellId).open();
@@ -73,10 +108,19 @@ public class BannedPlayersMenu implements Listener {
 
     @Override
     public void onOpen() {
+      menus.add(this);
+
       var background = new StaticPane(9, 5);
       background.fill(GItem.of(gTheme.background()));
       background.setItem(0, 4, closeItem());
 
+      setBannedMembersView();
+
+      addPane(1, 1, playersPane);
+      addPane(0, 0, background);
+    }
+
+    public void setBannedMembersView() {
       var cell = cellService.findCellById(cellId).orElseThrow();
       var playerRank = cell.getMember(player.getUniqueId()).orElseThrow().getRank();
 
@@ -86,9 +130,16 @@ public class BannedPlayersMenu implements Listener {
               .map(this::playerItem)
               .collect(Collectors.toList())
       );
+    }
 
-      addPane(1, 1, playersPane);
-      addPane(0, 0, background);
+    public void refresh() {
+      setBannedMembersView();
+      update();
+    }
+
+    @Override
+    public void onClose() {
+      menus.remove(this);
     }
 
     private GItem closeItem() {

@@ -3,9 +3,14 @@ package ml.empee.upgradableCells.controllers.views;
 import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
+import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemFlag;
 
 import com.cryptomorin.xseries.XMaterial;
@@ -20,19 +25,59 @@ import ml.empee.upgradableCells.model.Member;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Menu that allows you to manage cell members
  */
 
 @Singleton
 @RequiredArgsConstructor
-public class ManageMemberMenu {
+public class ManageMemberMenu implements Listener {
 
   @Instance
   private static ManageMemberMenu instance;
 
   private final CellController cellController;
   private final LangConfig langConfig;
+  private final List<Menu> menus = new ArrayList<>();
+
+  @EventHandler
+  public void onMenuUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.target.getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMenuUpdate(CellMemberRoleChangeEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.target.getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberLeaveEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
+
+  @EventHandler
+  public void onMemberUpdate(CellMemberRoleChangeEvent event) {
+    menus.forEach(m -> {
+      if (event.getMember().getUuid().equals(m.getPlayer().getUniqueId())) {
+        m.getPlayer().closeInventory();
+      }
+    });
+  }
 
   public static void open(Player viewer, Long cellId, OfflinePlayer target) {
     instance.create(viewer, cellId, target).open();
@@ -57,6 +102,8 @@ public class ManageMemberMenu {
 
     @Override
     public void onOpen() {
+      menus.add(this);
+
       var top = new StaticPane(9, 5);
       top.fill(GItem.of(gTheme.background()));
 
@@ -70,6 +117,11 @@ public class ManageMemberMenu {
       top.setItem(0, 4, closeItem());
 
       addPane(0, 0, top);
+    }
+
+    @Override
+    public void onClose() {
+      menus.remove(this);
     }
 
     private GItem closeItem() {

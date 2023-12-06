@@ -7,10 +7,10 @@ import ml.empee.upgradableCells.config.PluginConfig;
 import ml.empee.upgradableCells.model.CellProject;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.entities.Cell;
-import ml.empee.upgradableCells.model.events.CellMemberBanEvent;
 import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
+import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
 import ml.empee.upgradableCells.repositories.memory.CellMemoryRepository;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.annotations.Singleton;
@@ -221,6 +221,7 @@ public class CellService {
       Bukkit.getPluginManager().callEvent(new CellMemberJoinEvent(cell, member));
     } else {
       cell = cell.withMember(member.withRank(rank));
+      Bukkit.getPluginManager().callEvent(new CellMemberRoleChangeEvent(cell, member, rank));
     }
 
     cell = cellRepository.save(cell);
@@ -233,7 +234,7 @@ public class CellService {
 
     cell = cellRepository.save(cell.withoutMember(uuid));
 
-    Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member));
+    Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member, false));
     return cell;
   }
 
@@ -245,7 +246,7 @@ public class CellService {
     cell = cell.withoutMember(uuid);
     cell = cellRepository.save(cell);
 
-    Bukkit.getPluginManager().callEvent(new CellMemberBanEvent(cell, uuid));
+    Bukkit.getPluginManager().callEvent(new CellMemberLeaveEvent(cell, member, true));
     return cell;
   }
 
