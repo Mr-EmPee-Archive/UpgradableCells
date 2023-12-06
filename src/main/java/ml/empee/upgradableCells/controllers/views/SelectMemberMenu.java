@@ -1,31 +1,30 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.UpgradableCells;
+import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.model.events.CellMemberJoinEvent;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
 import ml.empee.upgradableCells.services.CellService;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.simplemenu.model.panes.ScrollPane;
-import ml.empee.upgradableCells.UpgradableCells;
-import ml.empee.upgradableCells.config.LangConfig;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Menu to claim a cell
@@ -102,7 +101,7 @@ public class SelectMemberMenu implements Listener {
     return new Menu(player, cellId, players, future);
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
 
     private final CompletableFuture<OfflinePlayer> action;
     private final ScrollPane membersPane = ScrollPane.horizontal(7, 3, 3);
@@ -119,7 +118,11 @@ public class SelectMemberMenu implements Listener {
       this.players = new ArrayList<>(players);
 
       this.cell = cellService.findCellById(cellId).orElseThrow();
-      this.title = langConfig.translate("menus.select-player.title");
+    }
+
+    @Override
+    public String title() {
+      return langConfig.translate("menus.select-player.title");
     }
 
     @Override

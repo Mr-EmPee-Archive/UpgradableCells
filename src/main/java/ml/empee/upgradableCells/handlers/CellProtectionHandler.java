@@ -1,5 +1,6 @@
 package ml.empee.upgradableCells.handlers;
 
+import lombok.RequiredArgsConstructor;
 import ml.empee.upgradableCells.UpgradableCells;
 import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
@@ -25,18 +26,11 @@ import org.bukkit.inventory.EquipmentSlot;
  */
 
 @Singleton
+@RequiredArgsConstructor
 public class CellProtectionHandler implements Listener {
 
   private final CellController cellController;
   private final LangConfig langConfig;
-
-  public CellProtectionHandler(
-      UpgradableCells plugin, CellController cellController, LangConfig langConfig) {
-    this.cellController = cellController;
-    this.langConfig = langConfig;
-
-    plugin.getServer().getPluginManager().registerEvents(this, plugin);
-  }
 
   @EventHandler(ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {

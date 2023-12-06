@@ -4,14 +4,12 @@ import com.cryptomorin.xseries.XMaterial;
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
+import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.panes.StaticPane;
-import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.CellProject;
-import ml.empee.upgradableCells.model.Member;
-import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
@@ -63,18 +61,20 @@ public class ManageCellMenu implements Listener {
     return new Menu(viewer, cellId);
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
     private final GTheme gTheme = new GTheme();
 
     private final Long cellId;
 
     public Menu(Player player, Long cellId) {
       super(player, 6);
-
       this.cellId = cellId;
+    }
 
+    @Override
+    public String title() {
       var cell = cellService.findCellById(cellId).orElseThrow();
-      this.title = langConfig.translate("menus.manage-cell.title", cell.getOwnerAsPlayer().getName());
+      return langConfig.translate("menus.manage-cell.title", cell.getOwnerAsPlayer().getName());
     }
 
     @Override

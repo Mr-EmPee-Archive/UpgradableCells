@@ -1,28 +1,27 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
+import lombok.RequiredArgsConstructor;
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.panes.ScrollPane;
 import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.controllers.views.utils.GComponenets;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import ml.empee.upgradableCells.model.entities.Cell;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
-import lombok.RequiredArgsConstructor;
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.simplemenu.model.panes.ScrollPane;
-import ml.empee.upgradableCells.config.LangConfig;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Menu to claim a cell
@@ -57,7 +56,7 @@ public class SelectCellMenu implements Listener {
     });
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
     private final List<Cell> cells;
     private final GTheme gTheme = new GTheme();
     private final CompletableFuture<Long> action;
@@ -65,9 +64,13 @@ public class SelectCellMenu implements Listener {
     public Menu(Player viewer, List<Cell> cells, CompletableFuture<Long> action) {
       super(viewer, 3);
 
-      this.title = langConfig.translate("menus.select-cell.title");
       this.cells = cells;
       this.action = action;
+    }
+
+    @Override
+    public String title() {
+      return langConfig.translate("menus.select-cell.title");
     }
 
     @Override

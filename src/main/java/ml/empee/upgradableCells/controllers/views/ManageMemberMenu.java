@@ -1,29 +1,25 @@
 package ml.empee.upgradableCells.controllers.views;
 
+import com.cryptomorin.xseries.XMaterial;
+import lombok.RequiredArgsConstructor;
+import ml.empee.itembuilder.ItemBuilder;
+import ml.empee.simplemenu.model.GItem;
+import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.panes.StaticPane;
+import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.controllers.views.utils.GTheme;
-import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.model.events.CellMemberLeaveEvent;
-import ml.empee.upgradableCells.model.events.CellMemberPardonEvent;
 import ml.empee.upgradableCells.model.events.CellMemberRoleChangeEvent;
+import mr.empee.lightwire.annotations.Instance;
+import mr.empee.lightwire.annotations.Singleton;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemFlag;
-
-import com.cryptomorin.xseries.XMaterial;
-
-import lombok.RequiredArgsConstructor;
-import ml.empee.itembuilder.ItemBuilder;
-import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.upgradableCells.controllers.CellController;
-import ml.empee.upgradableCells.config.LangConfig;
-import ml.empee.upgradableCells.model.Member;
-import mr.empee.lightwire.annotations.Instance;
-import mr.empee.lightwire.annotations.Singleton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +83,7 @@ public class ManageMemberMenu implements Listener {
     return new Menu(viewer, cellId, target);
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
     private final Long cellId;
     private final OfflinePlayer target;
     private final GTheme gTheme = new GTheme();
@@ -97,7 +93,11 @@ public class ManageMemberMenu implements Listener {
 
       this.cellId = cellId;
       this.target = target;
-      this.title = langConfig.translate("menus.manage-members.title");
+    }
+
+    @Override
+    public String title() {
+      return langConfig.translate("menus.manage-members.title");
     }
 
     @Override

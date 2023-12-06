@@ -1,26 +1,23 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import java.util.stream.Collectors;
-
-import ml.empee.simplemenu.model.panes.StaticPane;
-import ml.empee.upgradableCells.controllers.views.utils.GTheme;
-import ml.empee.upgradableCells.model.entities.Cell;
-import ml.empee.upgradableCells.services.CellService;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-
 import com.cryptomorin.xseries.XMaterial;
-
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
+import ml.empee.simplemenu.model.menus.ChestMenu;
 import ml.empee.simplemenu.model.panes.ScrollPane;
-import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
+import ml.empee.upgradableCells.model.entities.Cell;
+import ml.empee.upgradableCells.services.CellService;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
+
+import java.util.stream.Collectors;
 
 /**
  * Menu to manage banned players
@@ -44,13 +41,17 @@ public class TopCellsMenu {
     return new Menu(player);
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
     private final ScrollPane cellsPane = ScrollPane.horizontal(7, 3, 3);
     private final GTheme gTheme = new GTheme();
 
     public Menu(Player viewer) {
       super(viewer, 5);
-      this.title = langConfig.translate("menus.top-cells.title");
+    }
+
+    @Override
+    public String title() {
+      return langConfig.translate("menus.top-cells.title");
     }
 
     @Override

@@ -1,19 +1,17 @@
 package ml.empee.upgradableCells.controllers.views;
 
-import ml.empee.simplemenu.model.panes.StaticPane;
-import ml.empee.upgradableCells.controllers.views.utils.GTheme;
-import org.bukkit.entity.Player;
-
 import com.cryptomorin.xseries.XMaterial;
-
 import lombok.RequiredArgsConstructor;
 import ml.empee.itembuilder.ItemBuilder;
 import ml.empee.simplemenu.model.GItem;
-import ml.empee.simplemenu.model.menus.InventoryMenu;
-import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.simplemenu.model.menus.ChestMenu;
+import ml.empee.simplemenu.model.panes.StaticPane;
 import ml.empee.upgradableCells.config.LangConfig;
+import ml.empee.upgradableCells.controllers.CellController;
+import ml.empee.upgradableCells.controllers.views.utils.GTheme;
 import mr.empee.lightwire.annotations.Instance;
 import mr.empee.lightwire.annotations.Singleton;
+import org.bukkit.entity.Player;
 
 /**
  * Menu to claim a cell
@@ -37,13 +35,17 @@ public class ClaimCellMenu {
     return new Menu(player);
   }
 
-  private class Menu extends InventoryMenu {
+  private class Menu extends ChestMenu {
 
     private final GTheme gTheme = new GTheme();
 
     public Menu(Player player) {
       super(player, 3);
-      this.title = langConfig.translate("menus.claim-cell.title");
+    }
+
+    @Override
+    public String title() {
+      return langConfig.translate("menus.claim-cell.title");
     }
 
     @Override

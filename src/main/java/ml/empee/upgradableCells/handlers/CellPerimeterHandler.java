@@ -1,5 +1,6 @@
 package ml.empee.upgradableCells.handlers;
 
+import lombok.RequiredArgsConstructor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -14,17 +15,11 @@ import mr.empee.lightwire.annotations.Singleton;
  */
 
 @Singleton
+@RequiredArgsConstructor
 public class CellPerimeterHandler implements Listener {
 
   private final CellService cellService;
   private final PluginConfig pluginConfig;
-
-  public CellPerimeterHandler(
-      UpgradableCells plugin, CellService cellService, PluginConfig pluginConfig
-  ) {
-    this.cellService = cellService;
-    this.pluginConfig = pluginConfig;
-  }
 
   @EventHandler(ignoreCancelled = true)
   public void onPlayerJoin(PlayerJoinEvent event) {
