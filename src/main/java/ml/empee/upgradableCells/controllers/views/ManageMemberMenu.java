@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemFlag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Menu that allows you to manage cell members
@@ -37,7 +38,7 @@ public class ManageMemberMenu implements Listener {
 
   private final CellController cellController;
   private final LangConfig langConfig;
-  private final List<Menu> menus = new ArrayList<>();
+  private final List<Menu> menus = new CopyOnWriteArrayList<>();
 
   @EventHandler
   public void onMenuUpdate(CellMemberLeaveEvent event) {

@@ -21,6 +21,7 @@ import org.bukkit.event.Listener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +36,7 @@ public class SelectCellMenu implements Listener {
   private static SelectCellMenu instance;
   private final LangConfig langConfig;
   private final GComponenets GComponenets;
-  private final List<Menu> menus = new ArrayList<>();
+  private final List<Menu> menus = new CopyOnWriteArrayList<>();
 
   public static CompletableFuture<Long> selectCell(Player player, List<Cell> cells) {
     CompletableFuture<Long> future = new CompletableFuture<>();

@@ -25,6 +25,7 @@ import org.bukkit.event.Listener;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -40,7 +41,7 @@ public class BannedPlayersMenu implements Listener {
   private final LangConfig langConfig;
   private final CellController cellController;
   private final CellService cellService;
-  private final List<Menu> menus = new ArrayList<>();
+  private final List<Menu> menus = new CopyOnWriteArrayList<>();
 
   @EventHandler
   public void onMenuUpdate(CellMemberPardonEvent event) {
