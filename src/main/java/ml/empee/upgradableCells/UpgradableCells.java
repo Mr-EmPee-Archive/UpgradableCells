@@ -1,17 +1,16 @@
 package ml.empee.upgradableCells;
 
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.BukkitCommandManager;
 import lombok.val;
 import ml.empee.simplemenu.SimpleMenu;
-import ml.empee.upgradableCells.config.CommandsConfig;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.config.client.DbClient;
-import ml.empee.upgradableCells.controllers.commands.Command;
 import ml.empee.upgradableCells.utils.Logger;
 import mr.empee.lightwire.Lightwire;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Boot class of this plugin.
@@ -21,12 +20,15 @@ public final class UpgradableCells extends JavaPlugin {
 
   private final Lightwire iocContainer = new Lightwire();
   private final SimpleMenu simpleMenu = new SimpleMenu();
+  private BukkitCommandManager commandManager;
+
 
   /**
    * Called when enabling the plugin
    */
   public void onEnable() {
     simpleMenu.init(this);
+    commandManager = new BukkitCommandManager(this);
 
     iocContainer.addBean(this);
     iocContainer.addBean(getEconomyProvider());
@@ -40,9 +42,8 @@ public final class UpgradableCells extends JavaPlugin {
       l -> getServer().getPluginManager().registerEvents(l, this)
     );
 
-    var commandManager = iocContainer.getBean(CommandsConfig.class);
-    iocContainer.getAllBeans(Command.class).forEach(
-      c -> commandManager.register(c)
+    iocContainer.getAllBeans(BaseCommand.class).forEach(
+      c -> commandManager.registerCommand(c)
     );
   }
 

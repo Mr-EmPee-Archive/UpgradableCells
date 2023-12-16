@@ -1,6 +1,6 @@
 package ml.empee.upgradableCells.repositories;
 
-import io.leangen.geantyref.TypeToken;
+import com.google.gson.reflect.TypeToken;
 import lombok.SneakyThrows;
 import ml.empee.upgradableCells.config.client.DbClient;
 import ml.empee.upgradableCells.model.entities.Cell;
@@ -11,8 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Persist a cell data

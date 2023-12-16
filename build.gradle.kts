@@ -33,6 +33,8 @@ repositories {
   maven("https://jitpack.io")
   maven("https://maven.enginehub.org/repo/")
   maven("https://repo.codemc.io/repository/nms/")
+  maven("https://repo.aikar.co/content/groups/aikar/")
+
   mavenCentral()
   mavenLocal()
 }
@@ -53,10 +55,7 @@ dependencies {
   implementation("com.github.cryptomorin:XSeries:9.4.0") { isTransitive = false }
 
   // Commands
-  implementation("me.lucko:commodore:2.2") { exclude("com.mojang", "brigadier") }
-
-  implementation("cloud.commandframework:cloud-paper:1.8.3")
-  implementation("cloud.commandframework:cloud-annotations:1.8.3")
+  implementation("co.aikar:acf-bukkit:0.5.1-SNAPSHOT")
 }
 
 tasks {

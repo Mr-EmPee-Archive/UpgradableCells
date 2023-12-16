@@ -1,9 +1,10 @@
 package ml.empee.upgradableCells.controllers.commands;
 
-import cloud.commandframework.annotations.Argument;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.annotations.specifier.Greedy;
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Subcommand;
 import lombok.RequiredArgsConstructor;
 import ml.empee.upgradableCells.config.LangConfig;
 import ml.empee.upgradableCells.constants.Permissions;
@@ -11,7 +12,6 @@ import ml.empee.upgradableCells.controllers.CellController;
 import ml.empee.upgradableCells.controllers.views.ClaimCellMenu;
 import ml.empee.upgradableCells.controllers.views.ManageCellMenu;
 import ml.empee.upgradableCells.controllers.views.SelectCellMenu;
-import ml.empee.upgradableCells.controllers.views.TopCellsMenu;
 import ml.empee.upgradableCells.model.Member;
 import ml.empee.upgradableCells.services.CellService;
 import ml.empee.upgradableCells.utils.Logger;
@@ -26,22 +26,18 @@ import java.util.stream.Collectors;
  */
 
 @Singleton
+@CommandAlias("cell")
 @RequiredArgsConstructor
-public class CellCommand implements Command {
+public class CellCommand extends BaseCommand {
 
   private final CellService cellService;
   private final CellController cellController;
   private final LangConfig langConfig;
 
-  @CommandMethod("claim")
-  public void claimCell(Player sender) {
-    ClaimCellMenu.open(sender);
-  }
-
   /**
    * Open the cell management menu
    */
-  @CommandMethod("cell")
+  @Default
   public void openCell(Player sender) {
     var cells = cellService.findCellsByMember(sender.getUniqueId());
 
@@ -58,36 +54,7 @@ public class CellCommand implements Command {
     }
   }
 
-  /**
-   * Cell-Top
-   */
-  @CommandMethod("cell-top")
-  public void openCellTopMenu(Player sender) {
-    TopCellsMenu.open(sender);
-  }
-
-  /**
-   * Teleport a player to his cell
-   */
-  @CommandMethod("home")
-  public void teleportToCell(Player sender) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId());
-
-    if (cell.isEmpty()) {
-      Logger.log(sender, langConfig.translate("cell.not-bought"));
-      return;
-    }
-
-    if (cell.size() == 1) {
-      cellController.teleportToCell(cell.get(0).getId(), sender);
-    } else {
-      SelectCellMenu.selectCell(sender, cell).thenAccept(
-          c -> cellController.teleportToCell(c, sender)
-      );
-    }
-  }
-
-  @CommandMethod("cell join")
+  @Subcommand("join")
   public void joinCell(Player sender) {
     var invites = cellService.getInvitations(sender.getUniqueId());
     if (invites.isEmpty()) {
@@ -107,8 +74,8 @@ public class CellCommand implements Command {
   /**
    * Invite a player to a specific cell
    */
-  @CommandMethod("cell invite <target>")
-  public void inviteToCell(Player sender, @Argument Player target) {
+  @Subcommand("invite")
+  public void inviteToCell(Player sender, Player target) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
         .filter(c -> c.getMember(sender.getUniqueId()).orElseThrow().getRank().hasPermission(Member.Permissions.INVITE))
         .collect(Collectors.toList());
@@ -129,7 +96,7 @@ public class CellCommand implements Command {
   /**
    * Leave a cell
    */
-  @CommandMethod("cell leave")
+  @Subcommand("leave")
   public void leaveCell(Player sender) {
     var cells = cellService.findCellsByMember(sender.getUniqueId()).stream()
       .filter(c -> !sender.getUniqueId().equals(c.getOwner().orElse(null)))
@@ -149,26 +116,8 @@ public class CellCommand implements Command {
     }
   }
 
-  @CommandMethod("cell name <name>")
-  public void setCellName(Player sender, @Argument @Greedy String name) {
-    var cell = cellService.findCellByOwner(sender.getUniqueId());
-
-    if (cell.isEmpty()) {
-      Logger.log(sender, langConfig.translate("cell.not-bought"));
-      return;
-    }
-
-    if (cell.size() == 1) {
-      cellController.setCellName(cell.get(0).getId(), sender, name);
-    } else {
-      SelectCellMenu.selectCell(sender, cell).thenAccept(
-          c -> cellController.setCellName(c, sender, name)
-      );
-    }
-  }
-
-  @CommandMethod("cell description <description>")
-  public void setCellDescription(Player sender, @Argument @Greedy String description) {
+  @Subcommand("description")
+  public void setCellDescription(Player sender, String description) {
     var cell = cellService.findCellByOwner(sender.getUniqueId());
 
     if (cell.isEmpty()) {
@@ -185,8 +134,8 @@ public class CellCommand implements Command {
     }
   }
 
-  @CommandMethod("cell visit <target>")
-  public void visitCell(Player sender, @Argument OfflinePlayer target) {
+  @Subcommand("visit")
+  public void visitCell(Player sender, OfflinePlayer target) {
     var cell = cellService.findCellByOwner(target.getUniqueId());
 
     if (cell.isEmpty()) {
@@ -203,9 +152,27 @@ public class CellCommand implements Command {
     }
   }
 
-  @CommandMethod("cell delete <target>")
+  @Subcommand("name")
+  public void setCellName(Player sender, String name) {
+    var cell = cellService.findCellByOwner(sender.getUniqueId());
+
+    if (cell.isEmpty()) {
+      Logger.log(sender, langConfig.translate("cell.not-bought"));
+      return;
+    }
+
+    if (cell.size() == 1) {
+      cellController.setCellName(cell.get(0).getId(), sender, name);
+    } else {
+      SelectCellMenu.selectCell(sender, cell).thenAccept(
+          c -> cellController.setCellName(c, sender, name)
+      );
+    }
+  }
+
+  @Subcommand("delete")
   @CommandPermission(Permissions.ADMIN)
-  public void deleteCell(Player sender, @Argument OfflinePlayer target) {
+  public void deleteCell(Player sender, OfflinePlayer target) {
     var cell = cellService.findCellByOwner(target.getUniqueId());
 
     if (cell.isEmpty()) {
